@@ -7,7 +7,7 @@ on:
 
 jobs:
   sonarcloud:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # auto-generated
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
