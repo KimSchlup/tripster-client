@@ -1,14 +1,14 @@
 :root {
-  --background: #f2f2f2;
+  --background: #ffffff;
   --foreground: #171717;
 }
 
-/*@media (prefers-color-scheme: dark) {*/
-/*  :root {*/
-/*    --background: #0a0a0a;*/
-/*    --foreground: #ededed;*/
-/*  }*/
-/*}*/
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
 
 html,
 body {
@@ -46,6 +46,7 @@ a {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  background-color: rgb(41, 44, 59);
 }
 
 .login-button {
@@ -59,25 +60,3 @@ a {
   min-height: 100vh;
   background-color: rgb(41, 44, 59);
 }
-
-.banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 90px;
-  background-color: var(--background);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  /*box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);*/  /* Schatten unter dem Banner */
-}
-
-.banner img {
-  cursor: pointer;
-}
-
-/*body {*/
-/*  padding-top: 90px; !* Platz schaffen für den fixierten Banner *!*/
-/*}*/
