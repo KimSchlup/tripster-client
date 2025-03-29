@@ -27,7 +27,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}
+            style={{ paddingTop: "65px" }} // Seite wird um 65px nach unten verschoben, damit nicht überlappt wird mit Header
+      >
         <Banner />
         <ConfigProvider
           theme={{
@@ -52,6 +54,7 @@ export default function RootLayout({
               Input: {
                 colorBorder: "gray", // color boarder selected is not overridden but instead is set by primary color in line 35
                 colorTextPlaceholder: "#888888",
+                colorBgContainer: "#e2e2e2",
                 algorithm: false, // disable algorithm (line 32)
               },
               Form: {
