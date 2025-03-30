@@ -57,7 +57,7 @@ const ProfilePage: React.FC = () => {
             }
         };
         fetchUser();
-    }, [apiService]);
+    }, [apiService, id]);
 
     return (
         <div style={{ padding: "32px", maxWidth: "1500px", margin: "0 auto" }}>
