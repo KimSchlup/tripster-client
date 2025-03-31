@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import type { LeafletMouseEvent } from "leaflet";
 import POIWindow from "@/components/POIWindow";
 import "leaflet/dist/leaflet.css";
 const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
@@ -32,7 +33,7 @@ export default function RoadtripPage() {
 
     function MapClickHandler() {
         if (typeof window === "undefined") return null;
-        useMapEvent("contextmenu", (e) => {
+        useMapEvent("contextmenu", (e: LeafletMouseEvent) => {
             setPopupPosition([e.latlng.lat, e.latlng.lng]);
         });
         return null;
