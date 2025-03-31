@@ -32,7 +32,6 @@ export default function RoadtripPage() {
     }, []);
 
     function MapClickHandler() {
-        if (typeof window === "undefined") return null;
         useMapEvent("contextmenu", (e: LeafletMouseEvent) => {
             setPopupPosition([e.latlng.lat, e.latlng.lng]);
         });
