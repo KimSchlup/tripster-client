@@ -3,10 +3,12 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import POIWindow from "@/components/POIWindow";
+import "leaflet/dist/leaflet.css";
 const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then(mod => mod.TileLayer), { ssr: false });
-import "leaflet/dist/leaflet.css";
-import { useMapEvent, Popup } from "react-leaflet";
+const Popup = dynamic(() => import("react-leaflet").then(mod => mod.Popup), { ssr: false });
+const useMapEvent = dynamic(() => import("react-leaflet").then(mod => mod.useMapEvent), { ssr: false });
 
 export default function RoadtripPage() {
     const [popupPosition, setPopupPosition] = useState<[number, number] | null>(null);
@@ -29,6 +31,7 @@ export default function RoadtripPage() {
     }, []);
 
     function MapClickHandler() {
+        if (typeof window === "undefined") return null;
         useMapEvent("contextmenu", (e) => {
             setPopupPosition([e.latlng.lat, e.latlng.lng]);
         });
@@ -208,6 +211,12 @@ export default function RoadtripPage() {
                     }} className="hover-overlay"/>
                 </button>
             </div>
+            <POIWindow
+                title="Riga"
+                description="Lot to see there, Old Hansa City, Art Nouveau Architecture. Seems to have great Bars and Hostels. There are also some good Museums, like Soviet Cars. We could make a historic city tour?"
+                category="Capital City, Museum, Bars, Architecture"
+                onClose={() => console.log("closed")}
+            />
             <MapContainer
                 style={{ height: "100%", width: "100%" }}
                 center={[47.37013, 8.54427]}
