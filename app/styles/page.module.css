@@ -89,77 +89,288 @@ a.secondary {
   min-width: 180px;
 }
 
-.footer {
-  grid-row-start: 3;
-  display: flex;
-  gap: 24px;
+/* Text Styles */
+.textStyle {
+  font-family: var(--font-manrope);
+  font-weight: 700;
+  word-wrap: break-word;
 }
 
-.footer a {
+.footerLegalText {
+  color: #090909;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.footerSocialText {
+  color: #090909;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.loginButtonText {
+  color: white;
+  font-size: 20px;
+}
+
+.registerButtonText {
+  color: white;
+  font-size: 20px;
+}
+
+.mainHeadingText {
+  color: black;
+  font-size: 32px;
+}
+
+.sectionHeadingText {
+  color: black;
+  font-size: 20px;
+}
+
+.bodyText {
+  color: black;
+  font-size: 14px;
+}
+
+.featureText {
+  color: black;
+  font-size: 14px;
+}
+
+.ctaButtonText {
+  color: white;
+  font-size: 20px;
+}
+
+/* Landing Page Styles */
+.landingPage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: var(--font-manrope);
+  color: #000;
+  background-color: #fff;
+}
+
+/* Header Styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.hamburger div {
+  width: 100%;
+  height: 3px;
+  background-color: #333;
+}
+
+.logo {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.footer img {
-  flex-shrink: 0;
+.logoIcon {
+  width: 40px;
+  height: 40px;
+  color: #333;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
+.logo h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
 
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.authButtons {
+  display: flex;
+  gap: 10px;
+}
 
-  .footer a:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+.loginButton, .registerButton {
+  background-color: #000 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 4px !important;
+  font-weight: 500;
+}
+
+/* Hero Image Styles */
+.heroImage {
+  width: 100%;
+  height: 500px;
+  margin-top: 60px;
+  overflow: hidden;
+  position: relative;
+}
+
+.heroImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  background-image: url('/DALL·E 2025-03-10 12.48.34 - A breathtaking road trip scene featuring a winding highway through stunning landscapes. The road stretches through towering mountains, vast deserts, a 1.png');
+  background-size: cover;
+  background-position: center;
+}
+
+/* Main Content Styles */
+.mainContent {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mainHeading {
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.introSection {
+  margin-bottom: 40px;
+}
+
+.introSection h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.introSection p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.featuresSection {
+  margin-bottom: 40px;
+}
+
+.featuresSection h2 {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.featuresList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.checkIcon {
+  color: green;
+  font-size: 20px;
+  margin-top: 3px;
+}
+
+.feature p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.ctaSection {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.ctaSection h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.ctaSection p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.ctaButton {
+  background-color: #000 !important;
+  color: #fff !important;
+  font-size: 18px !important;
+  height: 50px !important;
+  padding: 0 30px !important;
+  border-radius: 4px !important;
+}
+
+/* Footer Styles */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 40px;
+  border-top: 1px solid #eee;
+  margin-top: auto;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 20px;
+}
+
+.footerLinks a {
+  color: #333;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.footerLinks a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 20px;
+  }
+  
+  .footer {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
   }
 }
 
 @media (max-width: 600px) {
-  .page {
-    padding: 32px;
-    padding-bottom: 80px;
+  .header {
+    padding: 10px;
   }
-
-  .main {
-    align-items: center;
+  
+  .authButtons {
+    gap: 5px;
   }
-
-  .main ol {
-    text-align: center;
+  
+  .mainHeading {
+    font-size: 24px;
   }
-
-  .ctas {
-    flex-direction: column;
-  }
-
-  .ctas a {
-    font-size: 14px;
-    height: 40px;
-    padding: 0 16px;
-  }
-
-  a.secondary {
-    min-width: auto;
-  }
-
-  .footer {
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
+  
+  .introSection h2, .featuresSection h2, .ctaSection h2 {
+    font-size: 20px;
   }
 }

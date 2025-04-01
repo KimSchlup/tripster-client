@@ -1,3 +1,14 @@
+"use client";
+
+import Header from "@/components/Header";
+
 export default function MyRoadtrips() {
-    return <h1>My Roadtrips</h1>;
+    return (
+        <>
+            <Header isLoggedIn={true} userAvatar="/default_user.png" />
+            <div style={{ padding: "32px", maxWidth: "1500px", margin: "0 auto" }}>
+                <h1>My Roadtrips</h1>
+            </div>
+        </>
+    );
 }

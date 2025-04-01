@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { ConfigProvider, theme } from "antd";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "@/styles/globals.css";
-import Banner from "@/components/Banner";
+import Header from "@/components/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +15,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Group 08",
-  description: "sopra-fs25-template-client",
+  title: "MapMates - Your Ultimate Road Trip Companion",
+  description: "Plan your perfect road trip with MapMates. Discover routes, find hidden gems, share with friends, and navigate with confidence.",
 };
 
 export default function RootLayout({
@@ -27,10 +33,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}
-            style={{ paddingTop: "65px" }} // Seite wird um 65px nach unten verschoben, damit nicht überlappt wird mit Header
+      <body className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable}`}
+            style={{ paddingTop: "144px" }} // Page is shifted down by 144px to prevent overlap with Header
       >
-        <Banner />
         <ConfigProvider
           theme={{
             algorithm: theme.defaultAlgorithm,

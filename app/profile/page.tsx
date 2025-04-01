@@ -8,6 +8,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
 import { Switch, Input, Button } from "antd";
 import Image from "next/image";
+import Header from "@/components/Header";
 
 const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div style={{
@@ -60,7 +61,9 @@ const ProfilePage: React.FC = () => {
     }, [apiService, id]);
 
     return (
-        <div style={{ padding: "32px", maxWidth: "1500px", margin: "0 auto" }}>
+        <>
+            <Header isLoggedIn={true} userAvatar="/default_user.png" />
+            <div style={{ padding: "32px", maxWidth: "1500px", margin: "0 auto" }}>
             <h1 style={{ fontSize: "32px", marginBottom: "8px", textAlign: "left" , marginLeft: "40px"}}>My Profile</h1>
             <hr style={{ border: "none", borderBottom: "1px solid #ccc", width: "100%", marginBottom: "32px" }} />
 
@@ -141,7 +144,8 @@ const ProfilePage: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
+            </div>
+        </>
     );
 };
 

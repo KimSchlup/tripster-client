@@ -9,6 +9,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
 import { Button, Card, Table } from "antd";
 import type { TableProps } from "antd"; // antd component library allows imports of types
+import Header from "@/components/Header";
 // Optionally, you can import a CSS module or file for additional styling:
 // import "@/styles/views/Dashboard.scss";
 
@@ -74,7 +75,9 @@ const Dashboard: React.FC = () => {
   // read more here: https://react.dev/reference/react/useEffect#specifying-reactive-dependencies
 
   return (
-    <div className="card-container">
+    <>
+      <Header isLoggedIn={true} userAvatar="/default_user.png" />
+      <div className="card-container">
       <Card
         title="Get all users from secure endpoint:"
         loading={!users}
@@ -98,7 +101,8 @@ const Dashboard: React.FC = () => {
           </>
         )}
       </Card>
-    </div>
+      </div>
+    </>
   );
 };
 
