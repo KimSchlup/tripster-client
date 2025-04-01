@@ -6,7 +6,6 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import Header from "@/components/Header";
 
 interface FormFieldProps {

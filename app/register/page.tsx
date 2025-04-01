@@ -5,7 +5,6 @@ import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
 import { useState } from "react";
-import Link from "next/link";
 import Header from "@/components/Header";
 
 interface RegisterFormProps {
