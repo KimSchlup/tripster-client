@@ -52,7 +52,7 @@ const Login: React.FC = () => {
       <Header isLoginPage={false} />
       
       {/* Main Content */}
-      <div style={{paddingTop: '200px', paddingBottom: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+      <div style={{paddingTop: '100px', paddingBottom: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
         {/* Login Form */}
         <div style={{width: 346, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-end', gap: 13, display: 'inline-flex'}}>
         <form onSubmit={handleLogin} style={{width: '100%'}}>

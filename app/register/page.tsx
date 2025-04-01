@@ -74,7 +74,7 @@ const Register: React.FC = () => {
       <Header isLoginPage={false} />
       
       {/* Main Content */}
-      <div style={{paddingTop: '200px', paddingBottom: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+      <div style={{paddingTop: '100px', paddingBottom: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
         {/* Registration Form */}
         <div style={{width: 345, display: 'flex', flexDirection: 'column', gap: 12}}>
         <form onSubmit={handleRegister} style={{width: '100%'}}>
