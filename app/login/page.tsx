@@ -49,7 +49,7 @@ const Login: React.FC = () => {
   return (
     <div style={{width: '100%', minHeight: '100vh', position: 'relative', background: 'white', overflow: 'hidden'}}>
       {/* Header */}
-      <Header isLoginPage={true} />
+      <Header isLoginPage={false} />
       
       {/* Main Content */}
       <div style={{paddingTop: '200px', paddingBottom: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
