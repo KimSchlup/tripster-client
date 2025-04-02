@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { LeafletMouseEvent } from "leaflet";
 import POIWindow from "@/components/POIWindow";
 import "leaflet/dist/leaflet.css";
+
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false },
@@ -52,7 +53,7 @@ export default function RoadtripPage() {
   }
 
   return (
-    <div style={{ height: "100vh", width: "100%" }}>
+    <div style={{ height: "100vh", width: "100%", marginTop: "-144px"}}>
       <Link
         href="/"
         style={{
