@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import SidebarMenu from "./SidebarMenu";
 
 type HeaderProps = {
   isLoggedIn?: boolean;
@@ -41,55 +42,75 @@ export default function Header({ isLoggedIn = false, isLoginPage = false, userAv
     setMenuOpen(!menuOpen);
   };
 
+  // This functionality is now handled in the SidebarMenu component
+
+  // Prevent scrolling when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
   return (
-    <header 
-      data-property-1={headerVariant}
-      style={{
-        width: "100%",
-        height: 144,
-        padding: "22px 24px",
-        background: "white",
-        overflow: "hidden",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: headerVariant === "NotLoggedIn" ? "center" : "flex-start",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: 1000,
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)"
-      }}
-    >
-      {/* Left section with burger menu */}
-      <div 
-        data-clicked="Default" 
-        data-state="Default" 
+    <>
+      <header 
+        data-property-1={headerVariant}
         style={{
-          width: 36,
-          height: 36,
-          position: "relative",
+          width: "100%",
+          height: 144,
+          padding: "22px 24px",
           background: "white",
           overflow: "hidden",
-          cursor: "pointer"
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: headerVariant === "NotLoggedIn" ? "center" : "flex-start",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          zIndex: 1000,
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)"
         }}
-        onClick={toggleMenu}
       >
+        {/* Left section with burger menu */}
+        <div 
+          className="burger-menu"
+          data-clicked="Default" 
+          data-state="Default" 
+          style={{
+            width: 36,
+            height: 36,
+            position: "relative",
+            background: "white",
+            overflow: "hidden",
+            cursor: "pointer",
+            alignSelf: "center"
+          }}
+          onClick={toggleMenu}
+        >
         <div style={{width: 36, height: 36, left: 0, top: 0, position: "absolute", overflow: "hidden"}}>
           <div style={{width: 36, height: 6.80, left: 0, top: 29.20, position: "absolute", background: "rgba(0, 0, 0, 0.20)"}} />
           <div style={{width: 36, height: 6.80, left: 0, top: 14.60, position: "absolute", background: "rgba(0, 0, 0, 0.20)"}} />
           <div style={{width: 36, height: 6.80, left: 0, top: 0, position: "absolute", background: "rgba(0, 0, 0, 0.20)"}} />
-        </div>
+          </div>
       </div>
 
       {/* Middle section with logo */}
       <div 
         data-size={headerVariant === "NotLoggedIn" ? "Size3" : "big"} 
         style={{
-          width: headerVariant === "NotLoggedIn" ? 393 : 174,
+          width: headerVariant === "NotLoggedIn" ? 393 : "100%",
           height: headerVariant === "NotLoggedIn" ? 137 : 102,
           position: "relative",
           background: "white",
-          overflow: "hidden"
+          overflow: "hidden",
+          display: "flex",
+          justifyContent: headerVariant === "NotLoggedIn" ? "flex-start" : "center",
+          alignItems: "center"
         }}
       >
         <Link href="/">
@@ -99,9 +120,9 @@ export default function Header({ isLoggedIn = false, isLoginPage = false, userAv
             width={121} 
             height={88} 
             style={{
-              position: "absolute",
-              left: headerVariant === "NotLoggedIn" ? 264.69 : 48,
-              top: headerVariant === "NotLoggedIn" ? 33 : 13,
+              position: headerVariant === "NotLoggedIn" ? "absolute" : "relative",
+              left: headerVariant === "NotLoggedIn" ? 264.69 : "auto",
+              top: headerVariant === "NotLoggedIn" ? 33 : "auto",
             }}
           />
         </Link>
@@ -110,8 +131,8 @@ export default function Header({ isLoggedIn = false, isLoginPage = false, userAv
         )}
       </div>
 
-      {/* Right section - either user avatar or login/register buttons */}
-      {headerVariant === "NotLoggedIn" ? (
+      {/* Right section - login/register buttons only for NotLoggedIn variant */}
+      {headerVariant === "NotLoggedIn" && (
         <div style={{width: 288, display: "flex", justifyContent: "space-between", alignItems: "center"}}>
           <div 
             data-clicked="Clicked" 
@@ -154,19 +175,11 @@ export default function Header({ isLoggedIn = false, isLoginPage = false, userAv
             </div>
           </div>
         </div>
-      ) : (
-        <div data-state="Default" style={{width: 74, height: 74, position: "relative"}}>
-          <Link href="/profile">
-            <Image 
-              src={userAvatar} 
-              alt="User Avatar" 
-              width={74} 
-              height={74} 
-              style={{position: "absolute", left: 0, top: 0, borderRadius: "50%"}}
-            />
-          </Link>
-        </div>
       )}
-    </header>
+      </header>
+
+      {/* Sidebar Menu Component */}
+      <SidebarMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+    </>
   );
 }
