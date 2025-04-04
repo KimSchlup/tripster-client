@@ -14,7 +14,7 @@ import Header from "@/components/Header";
 const Profile: React.FC = () => {
   return (
     <>
-      <Header isLoggedIn={true} userAvatar="/default_user.png" />
+      <Header isLoggedIn={true} />
       <div className="card-container">
       <p>
         <strong>SampleUser</strong>

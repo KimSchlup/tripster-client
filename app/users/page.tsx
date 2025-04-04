@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <>
-      <Header isLoggedIn={true} userAvatar="/default_user.png" />
+      <Header isLoggedIn={true} />
       <div className="card-container">
       <Card
         title="Get all users from secure endpoint:"
