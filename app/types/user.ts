@@ -1,4 +1,4 @@
-import { EmergencyContact } from './emergencyContact';
+import { EmergencyContact } from "./emergencyContact";
 
 export interface User {
   id: string | null;
