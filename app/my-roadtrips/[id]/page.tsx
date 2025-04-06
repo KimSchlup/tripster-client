@@ -305,6 +305,7 @@ export default function RoadtripPage() {
         center={[47.37013, 8.54427]}
         zoom={13}
         zoomControl={false}
+        onContextMenu={(e) => e.preventDefault()}
       >
         <MapClickHandler />
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
