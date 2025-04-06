@@ -62,7 +62,7 @@ const ProfilePage: React.FC = () => {
 
     return (
         <>
-            <Header isLoggedIn={true} userAvatar="/default_user.png" />
+            <Header isLoggedIn={true}/>
             <div style={{ padding: "32px", maxWidth: "1500px", margin: "0 auto" }}>
             <h1 style={{ fontSize: "32px", marginBottom: "8px", textAlign: "left" , marginLeft: "40px"}}>My Profile</h1>
             <hr style={{ border: "none", borderBottom: "1px solid #ccc", width: "100%", marginBottom: "32px" }} />
@@ -107,7 +107,7 @@ const ProfilePage: React.FC = () => {
                         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "24px" }}>
                             <Button  onClick={async () => {
                                 if (isEditing) {
-                                    await apiService.put("/users/" + user.id, {
+                                    await apiService.put("/users/" + user?.userId, {
                                         username: editedUsername,
                                         firstName: editedFirstName,
                                         lastName: editedLastName,

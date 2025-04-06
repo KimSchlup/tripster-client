@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SidebarMenu from "./SidebarMenu";
@@ -10,11 +9,10 @@ import SidebarMenu from "./SidebarMenu";
 type HeaderProps = {
   isLoggedIn?: boolean;
   isLoginPage?: boolean;
-  userAvatar?: string;
 };
 
-export default function Header({ isLoggedIn = false, isLoginPage = false, userAvatar = "/default_user.png" }: HeaderProps) {
-  const pathname = usePathname();
+export default function Header({ isLoggedIn = false, isLoginPage = false }: HeaderProps) {
+
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
 

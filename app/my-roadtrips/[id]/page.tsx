@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { LeafletMouseEvent } from "leaflet";
 import POIWindow from "@/components/POIWindow";
 import "leaflet/dist/leaflet.css";
+import { useMapEvent } from "react-leaflet";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -18,10 +19,7 @@ const TileLayer = dynamic(
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
 });
-const useMapEvent = dynamic(
-  () => import("react-leaflet").then((mod) => mod.useMapEvent),
-  { ssr: false },
-);
+
 
 export default function RoadtripPage() {
   const [popupPosition, setPopupPosition] = useState<[number, number] | null>(
@@ -106,10 +104,10 @@ export default function RoadtripPage() {
             overflow: "hidden",
           }}
           onMouseEnter={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0.1"}
           onMouseLeave={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0"}
         >
           <img
@@ -146,10 +144,10 @@ export default function RoadtripPage() {
             overflow: "hidden",
           }}
           onMouseEnter={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0.1"}
           onMouseLeave={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0"}
         >
           <img
@@ -186,10 +184,10 @@ export default function RoadtripPage() {
             overflow: "hidden",
           }}
           onMouseEnter={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0.1"}
           onMouseLeave={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0"}
         >
           <img
@@ -226,10 +224,10 @@ export default function RoadtripPage() {
             overflow: "hidden",
           }}
           onMouseEnter={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0.1"}
           onMouseLeave={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0"}
         >
           <img
@@ -266,10 +264,10 @@ export default function RoadtripPage() {
             overflow: "hidden",
           }}
           onMouseEnter={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0.1"}
           onMouseLeave={(e) =>
-            e.currentTarget.querySelector(".hover-overlay")!.style.opacity =
+            (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
               "0"}
         >
           <img
@@ -305,7 +303,6 @@ export default function RoadtripPage() {
         center={[47.37013, 8.54427]}
         zoom={13}
         zoomControl={false}
-        onContextMenu={(e) => e.preventDefault()}
       >
         <MapClickHandler />
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

@@ -11,8 +11,7 @@ interface POIWindowProps {
 export default function POIWindow(
   { title, description, category, onClose }: POIWindowProps,
 ) {
-  const nodeRef = useRef(null);
-
+    const nodeRef = useRef<HTMLDivElement>(null!);
   return (
     <Draggable handle=".handle" nodeRef={nodeRef}>
       <div

@@ -52,8 +52,8 @@ const Register: React.FC = () => {
       if (response.token) {
         setToken(response.token);
       }
-      if (response.id) {
-        setID(response.id);
+      if (response.userId) {
+        setID(response.userId);
       }
 
       // Navigate to the user overview
