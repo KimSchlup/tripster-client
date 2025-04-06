@@ -1,8 +1,6 @@
 "use client";
 import "@ant-design/v5-patch-for-react-19";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import styles from "@/styles/page.module.css";
 import Header from "@/components/Header";
 
 export default function Home() {
@@ -34,7 +32,7 @@ export default function Home() {
               Hit the Road with Confidence & Adventure!
             </div>
             <div style={{color: 'black', fontSize: 14, fontFamily: 'Manrope', fontWeight: '700', wordWrap: 'break-word'}}>
-              Planning a road trip? Whether you're chasing sunsets, exploring hidden gems, or embarking on the ultimate cross-country adventure, Map Mates is here to make your journey seamless, fun, and unforgettable!
+              Planning a road trip? Whether you&#39;re chasing sunsets, exploring hidden gems, or embarking on the ultimate cross-country adventure, Map Mates is here to make your journey seamless, fun, and unforgettable!
             </div>
           </div>
           
@@ -46,7 +44,7 @@ export default function Home() {
             <div style={{color: 'black', fontSize: 14, fontFamily: 'Manrope', fontWeight: '700', wordWrap: 'break-word'}}>
               ✅ Smart Route Planning – Get the best routes with real-time traffic updates and scenic detours.<br/>
               ✅ Find Hidden Gems – Discover unique spots, quirky roadside attractions, and must-visit local favorites.<br/>
-              ✅ Share the Ride – Plan trips with friends, share itineraries, and track each other's locations.<br/>
+              ✅ Share the Ride – Plan trips with friends, share itineraries, and track each other&#39;s locations.<br/>
               ✅ Budget & Fuel Tracking – Stay on top of expenses, split costs, and find the cheapest gas stations.<br/>
               ✅ Offline Navigation – No signal? No problem. Download maps and keep moving.
             </div>
