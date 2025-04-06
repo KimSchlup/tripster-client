@@ -46,7 +46,7 @@ const Register: React.FC = () => {
       };
 
       // Call the API service
-      const response = await apiService.post<User>("/auth/register", registerData);
+      const response = await apiService.post<User>("/users", registerData);
 
       // Store token and ID if available
       if (response.token) {

@@ -36,7 +36,7 @@ const ProfilePage: React.FC = () => {
     const [editedEmergencyLastName, setEditedEmergencyLastName] = useState("");
     const [editedEmergencyPhone, setEditedEmergencyPhone] = useState("");
 
-    const { value: id } = useLocalStorage<string>("id", "");
+    const { value: id } = useLocalStorage<string>("userId", "");
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -131,7 +131,7 @@ const ProfilePage: React.FC = () => {
                                 //danger
                                 onClick={async () => {
                                     if (confirm("Are you sure you want to permanently delete your account?")) {
-                                        await apiService.delete("/users/" + user.id);
+                                        await apiService.delete("/users/" + user.userId);
                                         // Optional: clear localStorage and redirect to home or login page
                                         window.location.href = "/";
                                     }

@@ -1,7 +1,7 @@
 import { EmergencyContact } from "./emergencyContact";
 
 export interface User {
-  id: string | null;
+  userId: string | null;
   firstName: string | null;
   lastName: string | null;
   username: string | null;

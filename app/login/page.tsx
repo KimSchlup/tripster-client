@@ -17,7 +17,7 @@ const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
   const { set: setToken } = useLocalStorage<string>("token", "");
-  const { set: setID } = useLocalStorage<string>("id", "");
+  const { set: setuserId } = useLocalStorage<string>("userId", "");
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +31,8 @@ const Login: React.FC = () => {
       if (response.token) {
         setToken(response.token);
       } 
-      if (response.id) {
-        setID(response.id);
+      if (response.userId) {
+        setuserId(response.userId);
       }
 
       router.push("/my-roadtrips");
@@ -87,11 +87,22 @@ const Login: React.FC = () => {
           
           <button 
             type="submit"
-            className="form-button"
-            data-clicked="Clicked" 
-            data-state="Default" 
+            style={{
+              zIndex: 9999,
+              pointerEvents: "auto",
+              position: "relative",
+              width: "100%",
+              padding: "10px",
+              backgroundColor: "black",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer"
+            }}
           >
-            <div className="form-button-text">Login</div>
+            Login
           </button>
         </form>
         
