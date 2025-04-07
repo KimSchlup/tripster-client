@@ -187,18 +187,6 @@ const Register: React.FC = () => {
         </form>
         </div>
       </div>
-      
-      {/* Footer */}
-      <div style={{position: 'absolute', bottom: 0, left: 0, width: '100%', padding: '20px', borderTop: '1.5px solid #090909'}}>
-        <div style={{display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px'}}>
-          <div style={{color: '#090909', fontSize: 14, fontFamily: 'Manrope', fontWeight: '700', lineHeight: '24px', wordWrap: 'break-word'}}>
-            AGB <br/>IMPRESSUM<br/>DATENSCHUTZ
-          </div>
-          <div style={{color: '#090909', fontSize: 14, fontFamily: 'Manrope', fontWeight: '700', lineHeight: '24px', wordWrap: 'break-word'}}>
-            INSTAGRAM<br/>TELEGRAM<br/>NEWSLETTER
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
