@@ -4,9 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
-import { Roadtrip, RoadtripMember } from "@/types/roadtrip";
-import Link from "next/link";
-import Image from "next/image";
+import { Roadtrip } from "@/types/roadtrip";
 
 export default function RoadtripSettings() {
     const params = useParams();
@@ -19,7 +17,6 @@ export default function RoadtripSettings() {
     const [roadtripDescription, setRoadtripDescription] = useState("");
     const [votingMechanism, setVotingMechanism] = useState<"majority" | "owner">("majority");
     const [hasSpotifyPlaylist, setHasSpotifyPlaylist] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const apiService = useApi();
     const router = useRouter();
@@ -50,7 +47,6 @@ export default function RoadtripSettings() {
         if (!roadtrip) return;
 
         try {
-            setIsSaving(true);
             setSaveSuccess(false);
 
             const updatedRoadtrip = {
@@ -76,7 +72,7 @@ export default function RoadtripSettings() {
             console.error("Error updating roadtrip:", err);
             setError("Failed to save changes. Please try again later.");
         } finally {
-            setIsSaving(false);
+            // Saving complete
         }
     };
 
@@ -86,7 +82,6 @@ export default function RoadtripSettings() {
         }
 
         try {
-            setIsSaving(true);
             await apiService.delete<void>(`/roadtrips/${roadtripId}`);
             
             // Navigate back to the roadtrips list
@@ -94,7 +89,6 @@ export default function RoadtripSettings() {
         } catch (err) {
             console.error("Error deleting roadtrip:", err);
             setError("Failed to delete roadtrip. Please try again later.");
-            setIsSaving(false);
         }
     };
 
