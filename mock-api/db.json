@@ -1,0 +1,64 @@
+{
+  "roadtrips_1_pois": [
+    {
+      "poiId": 1,
+      "name": "Grossmünster",
+      "coordinate": {
+        "type": "Point",
+        "coordinates": [
+          8.5434,
+          47.3700
+        ]
+      },
+      "description": "Berühmte Kirche und Wahrzeichen von Zürich.",
+      "category": "SIGHTSEEING",
+      "priority": "HIGH",
+      "creatorId": 101,
+      "status": "APPROVED",
+      "upvotes": 85,
+      "downvotes": 2,
+      "eligibleVoteCount": 90,
+      "id": "a1"
+    },
+    {
+      "poiId": 2,
+      "name": "Resti Zeughauskeller",
+      "coordinate": {
+        "type": "Point",
+        "coordinates": [
+          8.5392,
+          47.3699
+        ]
+      },
+      "description": "Traditionelles Schweizer Restaurant. Hier noch ein bisschen mehr text, lorem ipsum dolores Hudigäggeler und testeli Fudi. Hier noch ein bisschen mehr text, lorem ipsum dolores Hudigäggeler und testeli Fudi. Hier noch ein bisschen mehr text, lorem ipsum dolores Hudigäggeler und testeli Fudi. Hier noch ein bisschen mehr text, lorem ipsum dolores Hudigäggeler und testeli Fudi. In diesem Resti gibt es die besten Rösti der Stadt. Hier noch ein bisschen mehr text, lorem ipsum dolores Hudigäggeler und testeli Fudi. Hier noch ein bisschen mehr text, lorem ipsum dolores Hudigäggeler und testeli Fudi. Hier noch ein bisschen mehr text, lorem ipsum dolores Hudigäggeler und testeli Fudi. Hier noch ein bisschen mehr text, lorem ipsum dolores Hudigäggeler und testeli Fudi. ",
+      "category": "FOOD",
+      "priority": "MEDIUM",
+      "creatorId": 102,
+      "status": "PENDING",
+      "upvotes": 45,
+      "downvotes": 3,
+      "eligibleVoteCount": 55,
+      "id": "b2"
+    },
+    {
+      "poiId": 3,
+      "name": "Hostel City Backpacker",
+      "coordinate": {
+        "type": "Point",
+        "coordinates": [
+          8.5357,
+          47.3758
+        ]
+      },
+      "description": "Günstige Unterkunft in der Altstadt.",
+      "category": "ACCOMMODATION",
+      "priority": "OPTIONAL",
+      "creatorId": 103,
+      "status": "REJECTED",
+      "upvotes": 12,
+      "downvotes": 5,
+      "eligibleVoteCount": 20,
+      "id": "c3"
+    }
+  ]
+}
