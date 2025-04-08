@@ -25,6 +25,16 @@ export default function MyRoadtrips() {
             try {
                 setLoading(true);
                 const data = await apiService.get<Roadtrip[]>("/roadtrips");
+                console.log("API response:", data);
+                
+                // Log roadtrips without ID for debugging
+                data.forEach(roadtrip => {
+                    if (roadtrip.id === undefined) {
+                        console.warn("Roadtrip without ID:", roadtrip);
+                    }
+                });
+                
+                console.log("All roadtrips:", data);
                 setRoadtrips(data);
                 setError(null);
             } catch (err) {
@@ -38,8 +48,12 @@ export default function MyRoadtrips() {
         fetchRoadtrips();
     }, [apiService]);
 
-    const handleRoadtripClick = (roadtripId: number) => {
-        router.push(`/my-roadtrips/${roadtripId}`);
+    const handleRoadtripClick = (id: number | undefined) => {
+        if (id === undefined) {
+            console.error("Roadtrip ID is undefined");
+            return;
+        }
+        router.push(`/my-roadtrips/${id}`);
     };
 
     const handleNewRoadtripClick = async () => {
@@ -56,7 +70,9 @@ export default function MyRoadtrips() {
             const createdRoadtrip = await apiService.post<Roadtrip>("/roadtrips", newRoadtrip);
             
             // Redirect to the settings page for the new roadtrip
-            router.push(`/my-roadtrips/${createdRoadtrip.roadtripId}/settings`);
+            // Use id (from backend) or fallback to roadtripId (for backward compatibility)
+            const roadtripId = createdRoadtrip.id || createdRoadtrip.roadtripId;
+            router.push(`/my-roadtrips/${roadtripId}/settings`);
         } catch (err) {
             console.error("Error creating new roadtrip:", err);
             setError("Failed to create new roadtrip. Please try again later.");
@@ -89,7 +105,7 @@ export default function MyRoadtrips() {
                         {/* Display existing roadtrips */}
                         {roadtrips.map((roadtrip, index) => (
                             <div 
-                                key={`roadtrip-${roadtrip.roadtripId || index}`}
+                                key={`roadtrip-${roadtrip.id || index}`}
                                 style={{
                                     width: 328, 
                                     boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', 
@@ -97,9 +113,12 @@ export default function MyRoadtrips() {
                                     justifyContent: 'flex-start', 
                                     alignItems: 'flex-start', 
                                     display: 'flex',
-                                    cursor: 'pointer'
+                                    cursor: roadtrip.id ? 'pointer' : 'not-allowed'
                                 }}
-                                onClick={() => handleRoadtripClick(roadtrip.roadtripId)}
+                                onClick={() => {
+                                    console.log("Clicked roadtrip with ID:", roadtrip.id);
+                                    handleRoadtripClick(roadtrip.id);
+                                }}
                             >
                                 <div style={{width: 328, height: 100, background: '#D9D9D9', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                                     <div style={{color: 'white', fontSize: 24, fontFamily: 'Manrope', fontWeight: '700'}}>
@@ -112,11 +131,11 @@ export default function MyRoadtrips() {
                                 <div style={{width: 328, height: 40, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'black', fontSize: 14, fontFamily: 'Manrope', fontWeight: '700', wordWrap: 'break-word'}}>
                                     {formatMembersList(roadtrip.roadtripMembers)}
                                 </div>
-                                {roadtrip.roadtripDescription && (
+                                {(roadtrip.description || roadtrip.roadtripDescription) && (
                                     <div style={{width: '100%', justifyContent: 'flex-start', alignItems: 'center', display: 'flex'}}>
                                         <div style={{width: '100%', padding: '0 10px', justifyContent: 'space-between', alignItems: 'center', display: 'flex'}}>
                                             <div style={{width: '100%', height: 35, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'black', fontSize: 14, fontFamily: 'Manrope', fontWeight: '700', wordWrap: 'break-word'}}>
-                                                {roadtrip.roadtripDescription}
+                                                {roadtrip.description || roadtrip.roadtripDescription}
                                             </div>
                                         </div>
                                     </div>

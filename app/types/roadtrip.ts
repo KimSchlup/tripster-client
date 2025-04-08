@@ -4,8 +4,10 @@ export interface RoadtripMember {
 }
 
 export interface Roadtrip {
-  roadtripId: number;
+  id: number;                   // Primary ID from backend
+  roadtripId?: number;          // Kept for backward compatibility
   name: string;
-  roadtripDescription?: string;
+  description?: string;         // From backend DTO
+  roadtripDescription?: string; // Kept for backward compatibility
   roadtripMembers: RoadtripMember[];
 }

@@ -7,6 +7,7 @@ import type { LeafletMouseEvent } from "leaflet";
 import POIWindow from "@/components/POIWindow";
 import "leaflet/dist/leaflet.css";
 import { useMapEvent } from "react-leaflet";
+import { useParams, useRouter } from "next/navigation";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -22,6 +23,8 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
 
 
 export default function RoadtripPage() {
+  const params = useParams();
+  const router = useRouter();
   const [popupPosition, setPopupPosition] = useState<[number, number] | null>(
     null,
   );
@@ -262,6 +265,12 @@ export default function RoadtripPage() {
             position: "relative",
             borderRadius: "30%",
             overflow: "hidden",
+            cursor: "pointer"
+          }}
+          onClick={() => {
+            if (params.id) {
+              router.push(`/my-roadtrips/${params.id}/settings`);
+            }
           }}
           onMouseEnter={(e) =>
             (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity =
