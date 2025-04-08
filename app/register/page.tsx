@@ -27,6 +27,7 @@ const Register: React.FC = () => {
   const [isLastNameValid, setIsLastNameValid] = useState(true);
   const [username, setUsername] = useState("");
   const [isUsernameValid, setIsUsernameValid] = useState(true);
+  const [isUsernameTaken, setIsUsernameTaken] = useState(false);
   const [email, setEmail] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [password, setPassword] = useState("");
@@ -38,6 +39,27 @@ const Register: React.FC = () => {
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
+  };
+
+  // Check if username is already taken
+  const checkUsernameAvailability = async (username: string): Promise<boolean> => {
+    try {
+      if (!username.trim()) return true; // Skip check if username is empty
+      
+      // Get all users to check if username exists
+      const users = await apiService.get<User[]>("/users");
+      
+      // Check if any user has the same username (case insensitive)
+      const usernameTaken = users.some(user => 
+        user.username?.toLowerCase() === username.toLowerCase()
+      );
+      
+      setIsUsernameTaken(usernameTaken);
+      return !usernameTaken;
+    } catch (error) {
+      console.error("Error checking username availability:", error);
+      return true; // Assume username is available if check fails
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -60,6 +82,11 @@ const Register: React.FC = () => {
       // Check if username is not empty
       if (!username.trim()) {
         setIsUsernameValid(false);
+        isValid = false;
+      }
+      
+      // Check if username is already taken
+      if (username.trim() && isUsernameTaken) {
         isValid = false;
       }
 
@@ -209,10 +236,17 @@ const Register: React.FC = () => {
                 setUsername(newUsername);
                 // Reset validation when user types
                 setIsUsernameValid(true);
+                setIsUsernameTaken(false);
               }}
-              onBlur={() => {
+              onBlur={async () => {
                 // Validate on blur
-                setIsUsernameValid(!!username.trim());
+                const isEmpty = !username.trim();
+                setIsUsernameValid(!isEmpty);
+                
+                // Check username availability if not empty
+                if (!isEmpty) {
+                  await checkUsernameAvailability(username);
+                }
               }}
               required
               className="form-input"
@@ -220,6 +254,11 @@ const Register: React.FC = () => {
             {!isUsernameValid && (
               <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
                 Username cannot be empty
+              </div>
+            )}
+            {isUsernameTaken && (
+              <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
+                This username is already taken. Please choose another one.
               </div>
             )}
           </div>
