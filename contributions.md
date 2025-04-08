@@ -59,8 +59,8 @@ reason).
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@RicoCamenzind]** | [08.04.2025]   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/a35fb739195a9e723f39bfdbc333f4e6e5afa989) | Implementation of POI's, atleast the first iteration of them. Test cases are still missing and some more methods are also required for future features, more to come next week. | Poi's are essential for our application to make it possible to generate routes and for the front end to be able to render different locations on our map. |
+|                    | [04.04.2025]   | [Commit 2](https://github.com/KimSchlup/tripster-server/commit/e8707a8661217a8a8bdb6a9bad4f6fdf6536cd80) | fixed User creation and DTOMapper for such by mainly removing unnecessary attributes and correcting code. | Since the entire project relies on being able to create user's, eing able to actually create them in the backend is pretty userful. |
 
 ---
 
