@@ -8,7 +8,7 @@ import { Roadtrip } from "@/types/roadtrip";
 
 export default function RoadtripSettings() {
     const params = useParams();
-    const roadtripId = params.id as string;
+    const id = params.id as string;
     const [roadtrip, setRoadtrip] = useState<Roadtrip | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -25,10 +25,11 @@ export default function RoadtripSettings() {
         const fetchRoadtrip = async () => {
             try {
                 setLoading(true);
-                const data = await apiService.get<Roadtrip>(`/roadtrips/${roadtripId}`);
+                const data = await apiService.get<Roadtrip>(`/roadtrips/${id}`);
                 setRoadtrip(data);
                 setRoadtripName(data.name);
-                setRoadtripDescription(data.roadtripDescription || "");
+                // Use description from backend or fallback to roadtripDescription for backward compatibility
+                setRoadtripDescription(data.description || data.roadtripDescription || "");
                 setError(null);
             } catch (err) {
                 console.error("Error fetching roadtrip:", err);
@@ -38,10 +39,10 @@ export default function RoadtripSettings() {
             }
         };
 
-        if (roadtripId) {
+        if (id) {
             fetchRoadtrip();
         }
-    }, [apiService, roadtripId]);
+    }, [apiService, id]);
 
     const handleSave = async () => {
         if (!roadtrip) return;
@@ -52,13 +53,14 @@ export default function RoadtripSettings() {
             const updatedRoadtrip = {
                 ...roadtrip,
                 name,
-                roadtripDescription: roadtripDescription || undefined,
+                description: roadtripDescription || undefined, // Use description for backend
+                roadtripDescription: roadtripDescription || undefined, // Keep for backward compatibility
                 roadtripDestination,
                 votingMechanism,
                 hasSpotifyPlaylist
             };
 
-            await apiService.put<Roadtrip>(`/roadtrips/${roadtripId}`, updatedRoadtrip);
+            await apiService.put<Roadtrip>(`/roadtrips/${id}`, updatedRoadtrip);
             setSaveSuccess(true);
             
             // Update local state
@@ -82,7 +84,7 @@ export default function RoadtripSettings() {
         }
 
         try {
-            await apiService.delete<void>(`/roadtrips/${roadtripId}`);
+            await apiService.delete<void>(`/roadtrips/${id}`);
             
             // Navigate back to the roadtrips list
             router.push("/my-roadtrips");
@@ -96,7 +98,7 @@ export default function RoadtripSettings() {
         if (!roadtrip) return;
         
         // In a real implementation, this would call the API to remove the user
-        console.log(`Removing user ${userId} from roadtrip ${roadtripId}`);
+        console.log(`Removing user ${userId} from roadtrip ${id}`);
         
         // For now, just update the local state
         const updatedMembers = roadtrip.roadtripMembers.filter(member => member.id !== userId);
