@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import Image from "next/image";
 import Draggable from "react-draggable";
 import { PoiCategory } from "@/types/poi";
 
@@ -57,39 +58,39 @@ export default function POIWindow(
               color: "#000000",
             }}
           >
-            <img
-              src="/map-elements/close.svg"
-              alt="Close"
-              style={{
-                width: "24px",
-                height: "24px",
-                cursor: "pointer"
-              }}
+            <Image
+                src="/map-elements/close.svg"
+                alt="Close"
+                width={24}
+                height={24}
+                style={{
+                    cursor: "pointer"
+                }}
             />
           </button>
-          <img
+          <Image
             src="/map-elements/garbage_bin.svg"
             alt="Delete"
+            width={24}
+            height={24}
             onClick={() => onDelete?.()}
             style={{
               position: "absolute",
               top: "24px",
               right: "24px",
-              width: "24px",
-              height: "24px",
               cursor: "pointer"
             }}
           />
-            <img
+            <Image
                 src="/map-elements/edit.svg"
                 alt="Edit"
+                width={24}
+                height={24}
                 onClick={() => setIsEditing(true)}
                 style={{
                     position: "absolute",
                     top: "24px",
                     right: "60px",
-                    width: "24px",
-                    height: "24px",
                     cursor: "pointer",
                 }}
             />

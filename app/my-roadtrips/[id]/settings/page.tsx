@@ -129,7 +129,7 @@ export default function RoadtripSettings() {
 
     return (
         <>
-            <Header isLoggedIn={true} />
+            <Header />
             <div className="container" style={{ 
                 padding: "32px", 
                 margin: "144px auto 0", 

@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import {useEffect, useState} from "react";
 import type {LeafletMouseEvent} from "leaflet";
 import {Icon} from "leaflet";
@@ -97,10 +98,12 @@ export default function RoadtripPage() {
           zIndex: 1000,
         }}
       >
-        <img
+        <Image
           src="/logo-no-text-white.png"
           alt="Logo"
-          style={{ width: "60px", height: "60px", borderRadius: "10%" }}
+          width={60}
+          height={60}
+          style={{ borderRadius: "10%" }}
         />
       </Link>
       <VerticalSidebar

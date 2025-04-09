@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 interface VerticalSidebarProps {
     sidebarTop: string,
@@ -58,7 +59,7 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
         }
       >
-        <img src="/map-elements/wayfinder.svg" alt="Wayfinder" style={{ width: "50px", height: "50px" }} />
+        <Image src="/map-elements/wayfinder.svg" alt="Wayfinder" width={50} height={50} />
         <span
           className="hover-overlay"
           style={{
@@ -96,7 +97,7 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
         }
       >
-        <img src="/map-elements/poi-list.svg" alt="POI List" style={{ width: "45px", height: "45px" }} />
+        <Image src="/map-elements/poi-list.svg" alt="POI List" width={45} height={45} />
         <span
           className="hover-overlay"
           style={{
@@ -134,7 +135,7 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
         }
       >
-        <img src="/map-elements/layer-manager.svg" alt="Layer Manager" style={{ width: "50px", height: "50px" }} />
+        <Image src="/map-elements/layer-manager.svg" alt="Layer Manager" width={50} height={50} />
         <span
           className="hover-overlay"
           style={{
@@ -172,7 +173,7 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
         }
       >
-        <img src="/map-elements/checklist.svg" alt="Checklist" style={{ width: "50px", height: "50px" }} />
+        <Image src="/map-elements/checklist.svg" alt="Checklist" width={50} height={50} />
         <span
           className="hover-overlay"
           style={{
@@ -210,7 +211,7 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
         }
       >
-        <img src="/map-elements/settings.svg" alt="Settings" style={{ width: "50px", height: "50px" }} />
+        <Image src="/map-elements/settings.svg" alt="Settings" width={50} height={50} />
         <span
           className="hover-overlay"
           style={{
