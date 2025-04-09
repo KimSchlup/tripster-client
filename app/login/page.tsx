@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import useLocalStorage from "@/hooks/useLocalStorage";
+import { useAuth } from "@/hooks/useAuth";
 import { User } from "@/types/user";
 import { useState } from "react";
 import Link from "next/link";
@@ -16,8 +16,7 @@ interface FormFieldProps {
 const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
-  const { set: setToken } = useLocalStorage<string>("token", "");
-  const { set: setuserId } = useLocalStorage<string>("userId", "");
+  const { login } = useAuth();
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -28,11 +27,8 @@ const Login: React.FC = () => {
       const values: FormFieldProps = { username, password };
       const response = await apiService.post<User>("/auth/login", values);
 
-      if (response.token) {
-        setToken(response.token);
-      } 
-      if (response.userId) {
-        setuserId(response.userId);
+      if (response.token && response.userId) {
+        login(response.token, response.userId);
       }
 
       router.push("/my-roadtrips");
@@ -48,7 +44,7 @@ const Login: React.FC = () => {
   return (
     <div style={{width: '100%', minHeight: '100vh', position: 'relative', background: 'white', overflow: 'hidden'}}>
       {/* Header */}
-      <Header isLoginPage={false} />
+      <Header isLoginPage={true} />
       
       {/* Main Content */}
       <div style={{paddingTop: '100px', paddingBottom: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
