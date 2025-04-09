@@ -1,6 +1,7 @@
 "use client";
 import "@ant-design/v5-patch-for-react-19";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Header from "@/components/Header";
 
 export default function Home() {
@@ -11,10 +12,12 @@ export default function Home() {
 
       {/* Hero Image */}
       <div style={{width: '100%', height: 866}}>
-        <img 
-          style={{width: '100%', height: '100%', objectFit: 'cover'}} 
+        <Image 
+          style={{objectFit: 'cover'}} 
           src="/DALL·E 2025-03-10 12.48.34 - A breathtaking road trip scene featuring a winding highway through stunning landscapes. The road stretches through towering mountains, vast deserts, a 1.png" 
           alt="Road trip landscape"
+          fill
+          priority
         />
       </div>
       

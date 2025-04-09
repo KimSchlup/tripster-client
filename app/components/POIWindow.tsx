@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import Image from "next/image";
 import Draggable from "react-draggable";
 import { PoiCategory } from "@/types/poi";
 
@@ -57,14 +58,14 @@ export default function POIWindow(
               color: "#000000",
             }}
           >
-            <img
-              src="/map-elements/close.svg"
-              alt="Close"
-              style={{
-                width: "24px",
-                height: "24px",
-                cursor: "pointer"
-              }}
+            <Image
+                src="/map-elements/close.svg"
+                alt="Close"
+                width={24}
+                height={24}
+                style={{
+                    cursor: "pointer"
+                }}
             />
           </button>
           <img
