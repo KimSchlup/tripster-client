@@ -36,13 +36,13 @@ const ProfilePage: React.FC = () => {
     const [editedEmergencyLastName, setEditedEmergencyLastName] = useState("");
     const [editedEmergencyPhone, setEditedEmergencyPhone] = useState("");
 
-    const { value: id } = useLocalStorage<string>("userId", "");
+    const { value: userId } = useLocalStorage<string>("userId", "");
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                console.log("Fetching user with ID:", id);
-                const response = await apiService.get<User>("/users/" + id);
+                console.log("Fetching user with ID:", userId);
+                const response = await apiService.get<User>("/users/" + userId);
                 setUser(response);
                 setEditedUsername(response.username || "");
                 setEditedFirstName(response.firstName || "");
@@ -58,7 +58,7 @@ const ProfilePage: React.FC = () => {
             }
         };
         fetchUser();
-    }, [apiService, id]);
+    }, [apiService, userId]);
 
     return (
         <>

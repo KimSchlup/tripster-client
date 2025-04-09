@@ -19,7 +19,7 @@ const Register: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
   const { set: setToken } = useLocalStorage<string>("token", "");
-  const { set: setID } = useLocalStorage<string>("id", "");
+  const { set: setuserId } = useLocalStorage<string>("userId", "");
   
   const [firstName, setFirstName] = useState("");
   const [isFirstNameValid, setIsFirstNameValid] = useState(true);
@@ -137,7 +137,7 @@ const Register: React.FC = () => {
         setToken(response.token);
       }
       if (response.userId) {
-        setID(response.userId);
+        setuserId(response.userId);
       }
 
       // Navigate to the user overview
