@@ -177,7 +177,7 @@ export default function Header({ isLoggedIn = false, isLoginPage = false }: Head
       </header>
 
       {/* Sidebar Menu Component */}
-      <SidebarMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <SidebarMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} isLoggedIn={isLoggedIn} />
     </>
   );
 }
