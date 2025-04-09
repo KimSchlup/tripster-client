@@ -4,7 +4,7 @@
 import "@ant-design/v5-patch-for-react-19";
 import React, { useEffect, useState } from "react";
 import { useApi } from "@/hooks/useApi";
-import useLocalStorage from "@/hooks/useLocalStorage";
+import { useAuth } from "@/hooks/useAuth";
 import { User } from "@/types/user";
 import { Switch, Input, Button } from "antd";
 import Image from "next/image";
@@ -36,7 +36,7 @@ const ProfilePage: React.FC = () => {
     const [editedEmergencyLastName, setEditedEmergencyLastName] = useState("");
     const [editedEmergencyPhone, setEditedEmergencyPhone] = useState("");
 
-    const { value: userId } = useLocalStorage<string>("userId", "");
+    const { userId } = useAuth();
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -62,7 +62,7 @@ const ProfilePage: React.FC = () => {
 
     return (
         <>
-            <Header isLoggedIn={true}/>
+            <Header />
             <div style={{ padding: "32px", maxWidth: "1500px", margin: "0 auto" }}>
             <h1 style={{ fontSize: "32px", marginBottom: "8px", textAlign: "left" , marginLeft: "40px"}}>My Profile</h1>
             <hr style={{ border: "none", borderBottom: "1px solid #ccc", width: "100%", marginBottom: "32px" }} />

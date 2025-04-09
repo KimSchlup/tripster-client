@@ -4,14 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import SidebarMenu from "./SidebarMenu";
 
 type HeaderProps = {
-  isLoggedIn?: boolean;
   isLoginPage?: boolean;
 };
 
-export default function Header({ isLoggedIn = false, isLoginPage = false }: HeaderProps) {
+export default function Header({ isLoginPage = false }: HeaderProps) {
+  const { isLoggedIn } = useAuth();
 
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -177,7 +178,7 @@ export default function Header({ isLoggedIn = false, isLoginPage = false }: Head
       </header>
 
       {/* Sidebar Menu Component */}
-      <SidebarMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} isLoggedIn={isLoggedIn} />
+      <SidebarMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
     </>
   );
 }

@@ -8,7 +8,7 @@ export default function Home() {
   const router = useRouter();
   return (
     <div style={{width: '100%', background: 'white', position: 'relative'}}>
-      <Header isLoggedIn={false} />
+      <Header />
 
       {/* Hero Image */}
       <div style={{width: '100%', height: 866}}>
