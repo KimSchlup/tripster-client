@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
 import { Roadtrip } from "@/types/roadtrip";
-import { ApplicationError } from "@/types/error";
 
 
 interface newRoadtripProps {
@@ -41,8 +40,8 @@ export default function MyRoadtrips() {
             } catch (err) {
                 console.error("Error fetching roadtrips:", err);
                 
-                // Check if it's a 404 error (not authenticated)
-                const error = err as any;
+                // Check if it's a 401 error (not authenticated)
+                const error = err as { status?: number };
                 if (error && error.status === 401) {
                     setError("Please login first in order to access your roadtrips.");
                 } else {
