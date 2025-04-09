@@ -39,7 +39,14 @@ export default function MyRoadtrips() {
                 setError(null);
             } catch (err) {
                 console.error("Error fetching roadtrips:", err);
-                setError("Failed to load roadtrips. Please try again later.");
+                
+                // Check if it's a 401 error (not authenticated)
+                const error = err as { status?: number };
+                if (error && error.status === 401) {
+                    setError("Please login first in order to access your roadtrips.");
+                } else {
+                    setError("Failed to load roadtrips. Please try again later.");
+                }
             } finally {
                 setLoading(false);
             }
