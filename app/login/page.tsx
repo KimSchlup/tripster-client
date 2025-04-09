@@ -1,44 +1,41 @@
-"use client"; // For components that need React hooks and browser APIs, SSR (server side rendering) has to be disabled. Read more here: https://nextjs.org/docs/pages/building-your-application/rendering/server-side-rendering
+"use client";
 
-import { useRouter } from "next/navigation"; // use NextJS router for navigation
+import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
-import { Button, Form, Input } from "antd";
-// Optionally, you can import a CSS module or file for additional styling:
-// import styles from "@/styles/page.module.css";
+import { useState } from "react";
+import Link from "next/link";
+import Header from "@/components/Header";
 
 interface FormFieldProps {
-  label: string;
-  value: string;
+  username: string;
+  password: string;
 }
 
 const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
-  const [form] = Form.useForm();
-  // useLocalStorage hook example use
-  // The hook returns an object with the value and two functions
-  // Simply choose what you need from the hook:
-  const {
-    // value: token, // is commented out because we do not need the token value
-    set: setToken, // we need this method to set the value of the token to the one we receive from the POST request to the backend server API
-    // clear: clearToken, // is commented out because we do not need to clear the token when logging in
-  } = useLocalStorage<string>("token", ""); // note that the key we are selecting is "token" and the default value we are setting is an empty string
-  // if you want to pick a different token, i.e "usertoken", the line above would look as follows: } = useLocalStorage<string>("usertoken", "");
+  const { set: setToken } = useLocalStorage<string>("token", "");
+  const { set: setuserId } = useLocalStorage<string>("userId", "");
+  
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleLogin = async (values: FormFieldProps) => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      // Call the API service and let it handle JSON serialization and error handling
-      const response = await apiService.post<User>("/users", values);
+      const values: FormFieldProps = { username, password };
+      const response = await apiService.post<User>("/auth/login", values);
 
-      // Use the useLocalStorage hook that returned a setter function (setToken in line 41) to store the token if available
       if (response.token) {
         setToken(response.token);
+      } 
+      if (response.userId) {
+        setuserId(response.userId);
       }
 
-      // Navigate to the user overview
-      router.push("/users");
+      router.push("/my-roadtrips");
     } catch (error) {
       if (error instanceof Error) {
         alert(`Something went wrong during the login:\n${error.message}`);
@@ -49,35 +46,73 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-container">
-      <Form
-        form={form}
-        name="login"
-        size="large"
-        variant="outlined"
-        onFinish={handleLogin}
-        layout="vertical"
-      >
-        <Form.Item
-          name="username"
-          label="Username"
-          rules={[{ required: true, message: "Please input your username!" }]}
-        >
-          <Input placeholder="Enter username" />
-        </Form.Item>
-        <Form.Item
-          name="name"
-          label="Name"
-          rules={[{ required: true, message: "Please input your name!" }]}
-        >
-          <Input placeholder="Enter name" />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" className="login-button">
+    <div style={{width: '100%', minHeight: '100vh', position: 'relative', background: 'white', overflow: 'hidden'}}>
+      {/* Header */}
+      <Header isLoginPage={false} />
+      
+      {/* Main Content */}
+      <div style={{paddingTop: '100px', paddingBottom: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        {/* Login Form */}
+        <div style={{width: 346, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-end', gap: 13, display: 'inline-flex'}}>
+        <form onSubmit={handleLogin} style={{width: '100%'}}>
+          <div className="form-input-container" data-clicked={username ? "Clicked" : "Default"} data-state="Default">
+            {!username && (
+              <div className="form-input-placeholder">
+                <div>username</div>
+              </div>
+            )}
+            <input 
+              type="text" 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+          
+          <div className="form-input-container" data-clicked={password ? "Clicked" : "Default"} data-state="Default">
+            {!password && (
+              <div className="form-input-placeholder">
+                <div>password</div>
+              </div>
+            )}
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+          
+          <button 
+            type="submit"
+            style={{
+              zIndex: 9999,
+              pointerEvents: "auto",
+              position: "relative",
+              width: "100%",
+              padding: "10px",
+              backgroundColor: "black",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer"
+            }}
+          >
             Login
-          </Button>
-        </Form.Item>
-      </Form>
+          </button>
+        </form>
+        
+        <div style={{alignSelf: 'stretch', height: 36, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column'}}>
+          <span style={{color: 'black', fontSize: 14, fontFamily: 'Manrope', fontWeight: '700', lineHeight: 24, wordWrap: 'break-word'}}>
+            or <Link href="/register" style={{color: '#449BFF', textDecoration: 'none'}}>register</Link>
+          </span>
+        </div>
+        </div>
+      </div>
     </div>
   );
 };

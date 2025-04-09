@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { ConfigProvider, theme } from "antd";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "@/styles/globals.css";
@@ -14,9 +14,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Group 08",
-  description: "sopra-fs25-template-client",
+  title: "MapMates - Your Ultimate Road Trip Companion",
+  description: "Plan your perfect road trip with MapMates. Discover routes, find hidden gems, share with friends, and navigate with confidence.",
 };
 
 export default function RootLayout({
@@ -26,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable}`}
+            style={{ paddingTop: "144px" }} // Page is shifted down by 144px to prevent overlap with Header
+      >
         <ConfigProvider
           theme={{
             algorithm: theme.defaultAlgorithm,
@@ -43,13 +51,14 @@ export default function RootLayout({
             // if a component type needs special styling, setting here will override default options set in token
             components: {
               Button: {
-                colorPrimary: "#75bd9d", // this will color all buttons in #75bd9d, overriding the default primaryColor #22426b set in token line 35
+                colorPrimary: "#303030", // this will color all buttons in #75bd9d, overriding the default primaryColor #22426b set in token line 35
                 algorithm: true, // enable algorithm (redundant with line 33 but here for demo purposes)
                 controlHeight: 38,
               },
               Input: {
                 colorBorder: "gray", // color boarder selected is not overridden but instead is set by primary color in line 35
                 colorTextPlaceholder: "#888888",
+                colorBgContainer: "#e2e2e2",
                 algorithm: false, // disable algorithm (line 32)
               },
               Form: {
