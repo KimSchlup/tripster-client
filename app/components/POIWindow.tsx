@@ -68,29 +68,29 @@ export default function POIWindow(
                 }}
             />
           </button>
-          <img
+          <Image
             src="/map-elements/garbage_bin.svg"
             alt="Delete"
+            width={24}
+            height={24}
             onClick={() => onDelete?.()}
             style={{
               position: "absolute",
               top: "24px",
               right: "24px",
-              width: "24px",
-              height: "24px",
               cursor: "pointer"
             }}
           />
-            <img
+            <Image
                 src="/map-elements/edit.svg"
                 alt="Edit"
+                width={24}
+                height={24}
                 onClick={() => setIsEditing(true)}
                 style={{
                     position: "absolute",
                     top: "24px",
                     right: "60px",
-                    width: "24px",
-                    height: "24px",
                     cursor: "pointer",
                 }}
             />
