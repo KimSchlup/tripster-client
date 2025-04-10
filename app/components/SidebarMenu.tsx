@@ -27,7 +27,7 @@ export default function SidebarMenu({ isOpen, onClose, isLoggedIn = false }: Sid
     if (isLoggedIn && itemName === 'logout') {
       try {
         // Send POST request to logout endpoint
-        await apiService.post('/logout', {});
+        await apiService.post('/auth/logout', {});
         
         // Clear authentication data
         setToken("");
