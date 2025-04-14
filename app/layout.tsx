@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { ConfigProvider, theme } from "antd";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
+import { AuthProvider } from "@/hooks/useAuth";
 import "@/styles/globals.css";
 
 const geistSans = Geist({
@@ -69,7 +70,11 @@ export default function RootLayout({
             },
           }}
         >
-          <AntdRegistry>{children}</AntdRegistry>
+          <AntdRegistry>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </AntdRegistry>
         </ConfigProvider>
       </body>
     </html>

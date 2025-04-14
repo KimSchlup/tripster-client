@@ -3,20 +3,16 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useApi } from "@/hooks/useApi";
-import useLocalStorage from "@/hooks/useLocalStorage";
+import { useAuth } from "@/hooks/useAuth";
 
 type SidebarMenuProps = {
   isOpen: boolean;
   onClose: () => void;
-  isLoggedIn?: boolean;
 };
 
-export default function SidebarMenu({ isOpen, onClose, isLoggedIn = false }: SidebarMenuProps) {
+export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
   const router = useRouter();
-  const apiService = useApi();
-  const { set: setToken } = useLocalStorage<string>("token", "");
-  const { set: setUserId } = useLocalStorage<string>("userId", "");
+  const { isLoggedIn, logout } = useAuth();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [clickedItem, setClickedItem] = useState<string | null>(null);
 
@@ -26,25 +22,12 @@ export default function SidebarMenu({ isOpen, onClose, isLoggedIn = false }: Sid
     // Handle logout separately
     if (isLoggedIn && itemName === 'logout') {
       try {
-        // Send POST request to logout endpoint
-        await apiService.post('/auth/logout', {});
-        
-        // Clear authentication data
-        setToken("");
-        setUserId("");
-        
-        // Redirect to home page
-        setTimeout(() => {
-          router.push('/');
-          onClose();
-        }, 300);
+        await logout();
+        onClose();
+
       } catch (error) {
         console.error('Logout failed:', error);
-        // Still redirect to home page even if logout request fails
-        setTimeout(() => {
-          router.push('/');
-          onClose();
-        }, 300);
+        onClose();
       }
     } else {
       // Normal navigation for other menu items

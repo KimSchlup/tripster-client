@@ -2,20 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import useLocalStorage from "@/hooks/useLocalStorage";
+import { useAuth } from "@/hooks/useAuth";
+import { User } from "@/types/user";
+
 import { useState } from "react";
 import Header from "@/components/Header";
 
 const Register: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
-
-interface LoginResponse {
-  token: string;
-  userId: string;
-}
-  const { set: setToken } = useLocalStorage<string>("token", "");
-  const { set: setuserId } = useLocalStorage<string>("userId", "");
+  const { login } = useAuth();
 
   const [firstName, setFirstName] = useState("");
   const [isFirstNameValid, setIsFirstNameValid] = useState(true);
@@ -102,13 +98,11 @@ interface LoginResponse {
       await apiService.post("/users", registerData);
 
       const loginData = { username, password };
-      const loginResponse = await apiService.post<LoginResponse>("/auth/login", loginData);
+      const response = await apiService.post<User>("/auth/login", loginData);
 
-      if (loginResponse.token) {
-        setToken(loginResponse.token);
-      }
-      if (loginResponse.userId) {
-        setuserId(loginResponse.userId);
+      // Store token and ID if available
+      if (response.token && response.userId) {
+        login(response.token, response.userId);
       }
 
       // Navigate to the user overview
@@ -125,8 +119,8 @@ interface LoginResponse {
   return (
     <div style={{width: '100%', minHeight: '100vh', position: 'relative', background: 'white', overflow: 'hidden'}}>
       {/* Header */}
-      <Header isLoginPage={false} />
-
+      <Header isLoginPage={true} />
+      
       {/* Main Content */}
       <div style={{paddingTop: '100px', paddingBottom: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
         {/* Registration Form */}
