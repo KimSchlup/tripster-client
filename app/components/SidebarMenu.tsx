@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 type SidebarMenuProps = {
   isOpen: boolean;
@@ -11,15 +12,29 @@ type SidebarMenuProps = {
 
 export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
   const router = useRouter();
+  const { isLoggedIn, logout } = useAuth();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [clickedItem, setClickedItem] = useState<string | null>(null);
 
-  const handleItemClick = (route: string, itemName: string) => {
+  const handleItemClick = async (route: string, itemName: string) => {
     setClickedItem(itemName);
-    setTimeout(() => {
-      router.push(route);
-      onClose();
-    }, 300); // Add a small delay for the click effect
+    
+    // Handle logout separately
+    if (isLoggedIn && itemName === 'logout') {
+      try {
+        await logout();
+        onClose();
+      } catch (error) {
+        console.error('Logout failed:', error);
+        onClose();
+      }
+    } else {
+      // Normal navigation for other menu items
+      setTimeout(() => {
+        router.push(route);
+        onClose();
+      }, 300); // Add a small delay for the click effect
+    }
   };
 
   // Get text color based on item state
@@ -236,7 +251,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
             }}>My Profile</div>
           </div>
 
-          {/* Register - Original style */}
+          {/* Register/Logout - Changes based on login status */}
           <div 
             data-property-1="Default" 
             style={{
@@ -253,20 +268,20 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
               cursor: 'pointer',
               transition: 'color 0.2s ease'
             }}
-            onClick={() => handleItemClick('/register', 'register')}
-            onMouseEnter={() => setHoveredItem('register')}
+            onClick={() => handleItemClick(isLoggedIn ? '/' : '/register', isLoggedIn ? 'logout' : 'register')}
+            onMouseEnter={() => setHoveredItem(isLoggedIn ? 'logout' : 'register')}
             onMouseLeave={() => setHoveredItem(null)}
           >
-            <div data-color="Default" data-type="Sign Up" style={{
+            <div data-color="Default" data-type={isLoggedIn ? "Logout" : "Sign Up"} style={{
               width: 35, 
               height: 35, 
               position: 'relative', 
-              opacity: getIconOpacity('register'),
+              opacity: getIconOpacity(isLoggedIn ? 'logout' : 'register'),
               transition: 'opacity 0.2s ease'
             }}>
               <Image 
                 src="/icons8-vertragsarbeit-96.png" 
-                alt="Register Icon" 
+                alt={isLoggedIn ? "Logout Icon" : "Register Icon"} 
                 width={33} 
                 height={33} 
                 style={{left: 1, top: 1.50, position: 'absolute'}} 
@@ -278,65 +293,67 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
               justifyContent: 'center', 
               display: 'flex', 
               flexDirection: 'column', 
-              color: getTextColor('register'), 
+              color: getTextColor(isLoggedIn ? 'logout' : 'register'), 
               fontSize: 20, 
               fontFamily: 'Manrope', 
               fontWeight: '700', 
               wordWrap: 'break-word',
               transition: 'color 0.2s ease'
-            }}>Register</div>
+            }}>{isLoggedIn ? 'Logout' : 'Register'}</div>
           </div>
 
-          {/* Login - Original style */}
-          <div 
-            data-property-1="Default" 
-            style={{
-              width: '100%', 
-              height: 84, 
-              padding: 20, 
-              background: '#D9D9D9', 
-              borderRadius: 3, 
-              outline: '1px rgba(0, 0, 0, 0.20) solid', 
-              outlineOffset: '-1px', 
-              justifyContent: 'flex-start', 
-              alignItems: 'center', 
-              display: 'flex',
-              cursor: 'pointer',
-              transition: 'color 0.2s ease'
-            }}
-            onClick={() => handleItemClick('/login', 'login')}
-            onMouseEnter={() => setHoveredItem('login')}
-            onMouseLeave={() => setHoveredItem(null)}
-          >
-            <div data-color="Default" data-type="Login" style={{
-              width: 35, 
-              height: 35, 
-              position: 'relative', 
-              opacity: getIconOpacity('login'),
-              transition: 'opacity 0.2s ease'
-            }}>
-              <Image 
-                src="/login.png" 
-                alt="Login Icon" 
-                width={34} 
-                height={34} 
-                style={{left: 0, top: 1, position: 'absolute'}} 
-              />
+          {/* Login - Only shown when not logged in */}
+          {!isLoggedIn && (
+            <div 
+              data-property-1="Default" 
+              style={{
+                width: '100%', 
+                height: 84, 
+                padding: 20, 
+                background: '#D9D9D9', 
+                borderRadius: 3, 
+                outline: '1px rgba(0, 0, 0, 0.20) solid', 
+                outlineOffset: '-1px', 
+                justifyContent: 'flex-start', 
+                alignItems: 'center', 
+                display: 'flex',
+                cursor: 'pointer',
+                transition: 'color 0.2s ease'
+              }}
+              onClick={() => handleItemClick('/login', 'login')}
+              onMouseEnter={() => setHoveredItem('login')}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <div data-color="Default" data-type="Login" style={{
+                width: 35, 
+                height: 35, 
+                position: 'relative', 
+                opacity: getIconOpacity('login'),
+                transition: 'opacity 0.2s ease'
+              }}>
+                <Image 
+                  src="/login.png" 
+                  alt="Login Icon" 
+                  width={34} 
+                  height={34} 
+                  style={{left: 0, top: 1, position: 'absolute'}} 
+                />
+              </div>
+              <div style={{
+                width: 252, 
+                height: 83, 
+                justifyContent: 'center', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                color: getTextColor('login'), 
+                fontSize: 20, 
+                fontFamily: 'Manrope', 
+                fontWeight: '700', 
+                wordWrap: 'break-word',
+                transition: 'color 0.2s ease'
+              }}>Login</div>
             </div>
-            <div style={{
-              width: 252, 
-              height: 83, 
-              justifyContent: 'center', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              color: getTextColor('login'), 
-              fontSize: 20, 
-              fontFamily: 'Manrope', 
-              fontWeight: '700', 
-              wordWrap: 'break-word',
-              transition: 'color 0.2s ease'
-            }}>Login</div>
-          </div>
+          )}
         </div>
       </div>
     </div>
