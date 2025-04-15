@@ -154,13 +154,14 @@ export default function MyRoadtrips() {
         <>
             <Header />
             <div style={{ padding: "32px", maxWidth: "1500px", margin: "0 auto" }}>
-                <h1>My Roadtrips</h1>
+                <h1 style={{ fontSize: "32px", marginBottom: "8px", textAlign: "left", marginLeft: "40px" }}>My Roadtrips</h1>
+                <hr style={{ border: "none", borderBottom: "1px solid #ccc", width: "100%", marginBottom: "32px" }} />
                 
                 {loading && <p>Loading roadtrips...</p>}
                 {error && <p style={{ color: "red" }}>{error}</p>}
                 
                 {!loading && !error && (
-                    <div key="roadtrips-container" style={{width: '100%', display: 'flex', flexWrap: 'wrap', gap: '20px', borderRadius: 5, border: '1px #9747FF solid', padding: '20px'}}>
+                    <div key="roadtrips-container" style={{width: '100%', display: 'flex', flexWrap: 'wrap', gap: '20px', padding: '20px'}}>
                         {/* Display existing roadtrips */}
                         {roadtrips.map((roadtrip, index) => (
                             <div 
