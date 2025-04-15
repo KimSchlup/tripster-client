@@ -19,6 +19,9 @@ export default function RoadtripSettings() {
     const [votingMechanism, setVotingMechanism] = useState<"majority" | "owner">("majority");
     const [hasSpotifyPlaylist, setHasSpotifyPlaylist] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [showAddMemberPopup, setShowAddMemberPopup] = useState(false);
+    const [newMemberUsername, setNewMemberUsername] = useState("");
+    const [addMemberError, setAddMemberError] = useState<string | null>(null);
     const apiService = useApi();
     const router = useRouter();
 
@@ -143,8 +146,58 @@ export default function RoadtripSettings() {
     };
 
     const handleAddUser = () => {
-        // In a real implementation, this would open a modal to search for users
-        console.log("Add user clicked");
+        setShowAddMemberPopup(true);
+        setNewMemberUsername("");
+        setAddMemberError(null);
+    };
+
+    const handleAddMemberSubmit = async () => {
+        if (!newMemberUsername.trim()) {
+            setAddMemberError("Please enter a username");
+            return;
+        }
+
+        try {
+            setAddMemberError(null);
+            
+            // In a real implementation, you would call the API to add the member
+            // For now, we'll simulate adding a member with a random ID
+            const newMember = {
+                id: `user-${Date.now()}`,
+                name: newMemberUsername
+            };
+            
+            // Add the member to the roadtrip
+            const updatedMembers = [...(roadtrip?.roadtripMembers || []), newMember];
+            
+            // Update both state variables
+            setRoadtripMembers(updatedMembers);
+            
+            if (roadtrip) {
+                setRoadtrip({
+                    ...roadtrip,
+                    roadtripMembers: updatedMembers
+                });
+            }
+            
+            // Close the popup
+            setShowAddMemberPopup(false);
+            
+            // In a real implementation, you would call the API to add the member
+            // const response = await apiService.post(`/roadtrips/${id}/members`, { username: newMemberUsername });
+            // Then fetch the updated members list
+            // const members = await apiService.get<{ id: string; name: string }[]>(`/roadtrips/${id}/members`);
+            // setRoadtripMembers(members);
+            // if (roadtrip) {
+            //     setRoadtrip({
+            //         ...roadtrip,
+            //         roadtripMembers: members
+            //     });
+            // }
+        } catch (err) {
+            console.error("Error adding member:", err);
+            setAddMemberError("Failed to add member. Please try again.");
+        }
     };
 
     const handleInviteGuest = () => {
@@ -687,6 +740,115 @@ export default function RoadtripSettings() {
                     </div>
                 )}
             </div>
+
+            {/* Add Member Popup */}
+            {showAddMemberPopup && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0, 0, 0, 0.5)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        width: "400px",
+                        background: "white",
+                        borderRadius: 10,
+                        padding: "20px",
+                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)"
+                    }}>
+                        <div style={{
+                            color: "black",
+                            fontSize: 24,
+                            fontFamily: "Manrope",
+                            fontWeight: 700,
+                            marginBottom: "20px"
+                        }}>
+                            Add Member
+                        </div>
+                        
+                        <div style={{
+                            marginBottom: "20px"
+                        }}>
+                            <div style={{
+                                color: "black",
+                                fontSize: 16,
+                                fontFamily: "Manrope",
+                                fontWeight: 700,
+                                marginBottom: "5px"
+                            }}>
+                                Username
+                            </div>
+                            <input
+                                type="text"
+                                value={newMemberUsername}
+                                onChange={(e) => setNewMemberUsername(e.target.value)}
+                                placeholder="Enter username"
+                                style={{
+                                    width: "100%",
+                                    padding: "10px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: 5,
+                                    fontSize: 16
+                                }}
+                            />
+                            {addMemberError && (
+                                <div style={{
+                                    color: "red",
+                                    fontSize: 14,
+                                    marginTop: "5px"
+                                }}>
+                                    {addMemberError}
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: "10px"
+                        }}>
+                            <button
+                                onClick={() => setShowAddMemberPopup(false)}
+                                style={{
+                                    padding: "10px 20px",
+                                    background: "#ccc",
+                                    borderRadius: 5,
+                                    border: "none",
+                                    color: "black",
+                                    fontSize: 16,
+                                    fontFamily: "Manrope",
+                                    fontWeight: 700,
+                                    cursor: "pointer"
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleAddMemberSubmit}
+                                style={{
+                                    padding: "10px 20px",
+                                    background: "black",
+                                    borderRadius: 5,
+                                    border: "none",
+                                    color: "white",
+                                    fontSize: 16,
+                                    fontFamily: "Manrope",
+                                    fontWeight: 700,
+                                    cursor: "pointer"
+                                }}
+                            >
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
