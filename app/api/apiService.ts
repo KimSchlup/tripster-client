@@ -35,6 +35,8 @@ export class ApiService {
         
         console.log("Clean token being used in header:", cleanToken);
         headers["Authorization"] = cleanToken;
+      } else {
+        console.warn("No valid token found for Authorization header");
       }
     } catch (error) {
       console.error("Error accessing token:", error);
@@ -112,13 +114,23 @@ export class ApiService {
    * POST request.
    * @param endpoint - The API endpoint (e.g. "/users").
    * @param data - The payload to post.
+   * @param options - Optional configuration for the request.
    * @returns JSON data of type T.
    */
-  public async post<T>(endpoint: string, data: unknown): Promise<T> {
+  public async post<T>(endpoint: string, data: unknown, options?: { headers?: HeadersInit }): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    
+    // Merge default headers with any provided headers
+    const headers = {
+      ...this.defaultHeaders(),
+      ...(options?.headers || {})
+    };
+    
+    console.log(`POST request to ${endpoint} with headers:`, headers);
+    
     const res = await fetch(url, {
       method: "POST",
-      headers: this.defaultHeaders(),
+      headers: headers,
       body: JSON.stringify(data),
     });
     return this.processResponse<T>(

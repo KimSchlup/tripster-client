@@ -40,13 +40,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Logout function - makes API request to logout endpoint
   const logout = async () => {
     try {
-      // Send POST request to logout endpoint
-      await apiService.post('/auth/logout', {});
+      // Get the current token before we clear it
+      const currentToken = token;
+      
+      if (currentToken) {
+        // Send POST request to logout endpoint with the token explicitly in headers
+        await apiService.post('/auth/logout', {}, {
+          headers: {
+            'Authorization': currentToken
+          }
+        });
+        console.log('Logout request sent with token in headers:', currentToken);
+      } else {
+        console.warn('No token available for logout request');
+      }
     } catch (error) {
       console.error('Logout API call failed:', error);
       // Continue with logout process even if API call fails
     } finally {
-      // Clear authentication data
+      // Clear authentication data after the request is complete
       clearToken();
       clearUserId();
       setIsLoggedIn(false);
