@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@/hooks/useAuth";
 import { Roadtrip } from "@/types/roadtrip";
 import type { RoadtripSettings } from "@/types/roadtripSettings";
 import { BasemapType, DecisionProcess } from "@/types/roadtripSettings";
@@ -38,6 +39,7 @@ export default function RoadtripSettings() {
     const [addMemberError, setAddMemberError] = useState<string | null>(null);
     const apiService = useApi();
     const router = useRouter();
+    const { userId: currentUserId } = useAuth();
 
     useEffect(() => {
         const fetchRoadtripAndSettings = async () => {
@@ -470,7 +472,8 @@ export default function RoadtripSettings() {
                                                     alignItems: "center",
                                                     background: "rgba(128, 128, 128, 0.55)",
                                                     borderRadius: 10,
-                                                    padding: "5px 10px"
+                                                    padding: "5px 10px",
+                                                    position: "relative"
                                                 }}
                                             >
                                                 <div style={{
@@ -482,19 +485,23 @@ export default function RoadtripSettings() {
                                                 }}>
                                                     {member.name}
                                                 </div>
-                                                <div 
-                                                    style={{
-                                                        cursor: "pointer",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        width: "20px",
-                                                        height: "20px"
-                                                    }}
-                                                    onClick={() => handleRemoveUser(member.id)}
-                                                >
-                                                    ✕
-                                                </div>
+                                                {member.id !== currentUserId && (
+                                                    <button 
+                                                        onClick={() => handleRemoveUser(member.id)}
+                                                        style={{
+                                                            marginLeft: "10px",
+                                                            background: "#E74C3C",
+                                                            color: "white",
+                                                            border: "none",
+                                                            borderRadius: "3px",
+                                                            padding: "2px 8px",
+                                                            fontSize: "12px",
+                                                            cursor: "pointer"
+                                                        }}
+                                                    >
+                                                        Remove Member
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
