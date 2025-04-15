@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import Draggable from "react-draggable";
-import { PoiCategory, PoiPriority, PoiAcceptanceStatus } from "@/types/poi";
+import { PoiCategory, PoiPriority } from "@/types/poi";
 
 interface POIWindowProps {
   title: string;
