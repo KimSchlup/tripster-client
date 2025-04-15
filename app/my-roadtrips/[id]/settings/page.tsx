@@ -37,6 +37,8 @@ export default function RoadtripSettings() {
     const [showAddMemberPopup, setShowAddMemberPopup] = useState(false);
     const [newMemberUsername, setNewMemberUsername] = useState("");
     const [addMemberError, setAddMemberError] = useState<string | null>(null);
+    const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+    const [isOwner, setIsOwner] = useState<boolean>(true); // For now, assume the user is the owner
     const apiService = useApi();
     const router = useRouter();
     const { userId: currentUserId } = useAuth();
@@ -110,6 +112,31 @@ export default function RoadtripSettings() {
     }, [apiService, id]);
 
     // Fetch roadtrip members separately
+    // Close member selection when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            // Check if the click was outside of any member
+            const memberElements = document.querySelectorAll('.roadtrip-member');
+            let clickedOnMember = false;
+            
+            memberElements.forEach(element => {
+                if (element.contains(event.target as Node)) {
+                    clickedOnMember = true;
+                }
+            });
+            
+            if (!clickedOnMember && selectedMemberId) {
+                setSelectedMemberId(null);
+            }
+        };
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [selectedMemberId]);
+
     useEffect(() => {
         const fetchRoadtripMembers = async () => {
             if (!id) return;
@@ -314,6 +341,23 @@ export default function RoadtripSettings() {
         setSpotifyPlaylistUrl(e.target.value);
     };
 
+    const handleLeaveRoadtrip = async () => {
+        if (!window.confirm("Are you sure you want to leave this roadtrip?")) {
+            return;
+        }
+
+        try {
+            // Remove the current user from the roadtrip
+            await apiService.delete<void>(`/roadtrips/${id}/members/${currentUserId}`);
+            
+            // Navigate back to the roadtrips list
+            router.push("/my-roadtrips");
+        } catch (err) {
+            console.error("Error leaving roadtrip:", err);
+            setError("Failed to leave roadtrip. Please try again later.");
+        }
+    };
+
     return (
         <>
             <Header />
@@ -467,13 +511,16 @@ export default function RoadtripSettings() {
                                         {(roadtrip?.roadtripMembers || roadtripMembers).map((member) => (
                                             <div 
                                                 key={member.id}
+                                                className="roadtrip-member"
+                                                onClick={() => isOwner && setSelectedMemberId(selectedMemberId === member.id ? null : member.id)}
                                                 style={{
                                                     display: "flex",
                                                     alignItems: "center",
                                                     background: "rgba(128, 128, 128, 0.55)",
                                                     borderRadius: 10,
                                                     padding: "5px 10px",
-                                                    position: "relative"
+                                                    position: "relative",
+                                                    cursor: "pointer"
                                                 }}
                                             >
                                                 <div style={{
@@ -485,22 +532,38 @@ export default function RoadtripSettings() {
                                                 }}>
                                                     {member.name}
                                                 </div>
-                                                {member.id !== currentUserId && (
-                                                    <button 
-                                                        onClick={() => handleRemoveUser(member.id)}
-                                                        style={{
-                                                            marginLeft: "10px",
-                                                            background: "#E74C3C",
-                                                            color: "white",
-                                                            border: "none",
-                                                            borderRadius: "3px",
-                                                            padding: "2px 8px",
-                                                            fontSize: "12px",
-                                                            cursor: "pointer"
-                                                        }}
-                                                    >
-                                                        Remove Member
-                                                    </button>
+                                                {selectedMemberId === member.id && member.id !== currentUserId && (
+                                                    <div style={{
+                                                        position: "absolute",
+                                                        top: "100%",
+                                                        left: 0,
+                                                        zIndex: 10,
+                                                        marginTop: "5px",
+                                                        background: "white",
+                                                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                                                        borderRadius: "5px",
+                                                        padding: "5px"
+                                                    }}>
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveUser(member.id);
+                                                                setSelectedMemberId(null);
+                                                            }}
+                                                            style={{
+                                                                background: "#E74C3C",
+                                                                color: "white",
+                                                                border: "none",
+                                                                borderRadius: "3px",
+                                                                padding: "5px 10px",
+                                                                fontSize: "12px",
+                                                                cursor: "pointer",
+                                                                whiteSpace: "nowrap"
+                                                            }}
+                                                        >
+                                                            Remove Member
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </div>
                                         ))}
@@ -753,24 +816,45 @@ export default function RoadtripSettings() {
                             {/* Buttons */}
                             <div style={{
                                 display: "flex",
-                                justifyContent: "flex-end",
+                                justifyContent: "space-between",
                                 gap: "20px",
                                 marginTop: "20px"
                             }}>
-                                <button 
-                                    onClick={handleDelete}
-                                    className="form-button"
-                                    style={{ background: "#E74C3C", width: "auto" }}
-                                >
-                                    <span className="form-button-text">Delete Roadtrip</span>
-                                </button>
-                                <button 
-                                    onClick={handleSave}
-                                    className="form-button"
-                                    style={{ width: "auto" }}
-                                >
-                                    <span className="form-button-text">Update Settings</span>
-                                </button>
+                                {/* Leave Roadtrip button for non-owners */}
+                                {!isOwner && (
+                                    <button 
+                                        onClick={handleLeaveRoadtrip}
+                                        className="form-button"
+                                        style={{ background: "#E74C3C", width: "auto" }}
+                                    >
+                                        <span className="form-button-text">Leave Roadtrip</span>
+                                    </button>
+                                )}
+                                
+                                {/* Spacer div to push the other buttons to the right when Leave button is not shown */}
+                                {isOwner && <div></div>}
+                                
+                                <div style={{
+                                    display: "flex",
+                                    gap: "20px"
+                                }}>
+                                    {isOwner && (
+                                        <button 
+                                            onClick={handleDelete}
+                                            className="form-button"
+                                            style={{ background: "#E74C3C", width: "auto" }}
+                                        >
+                                            <span className="form-button-text">Delete Roadtrip</span>
+                                        </button>
+                                    )}
+                                    <button 
+                                        onClick={handleSave}
+                                        className="form-button"
+                                        style={{ width: "auto" }}
+                                    >
+                                        <span className="form-button-text">Update Settings</span>
+                                    </button>
+                                </div>
                             </div>
                             
                             {saveSuccess && (
@@ -785,6 +869,23 @@ export default function RoadtripSettings() {
                                     Settings updated successfully!
                                 </div>
                             )}
+                            
+                            {/* Test button to toggle owner status - for development only */}
+                            <div style={{ marginTop: "20px", textAlign: "center" }}>
+                                <button 
+                                    onClick={() => setIsOwner(!isOwner)}
+                                    style={{
+                                        padding: "5px 10px",
+                                        background: "#888",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "3px",
+                                        cursor: "pointer"
+                                    }}
+                                >
+                                    Toggle Owner Status (Current: {isOwner ? "Owner" : "Member"})
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
