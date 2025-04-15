@@ -7,8 +7,9 @@ import { useApi } from "@/hooks/useApi";
 import { Roadtrip } from "@/types/roadtrip";
 import type { RoadtripSettings } from "@/types/roadtripSettings";
 import { BasemapType, DecisionProcess } from "@/types/roadtripSettings";
-import { RoadtripMember, InvitationStatus } from "@/types/roadtripMember";
+import { RoadtripMember } from "@/types/roadtripMember";
 import { User } from "@/types/user";
+import type { GeoJSON } from 'geojson';
 
 export default function RoadtripSettings() {
     const params = useParams();
@@ -25,12 +26,9 @@ export default function RoadtripSettings() {
     const [roadtripSettings, setRoadtripSettings] = useState<RoadtripSettings | null>(null);
     const [basemapType, setBasemapType] = useState<BasemapType>(BasemapType.STANDARD);
     const [decisionProcess, setDecisionProcess] = useState<DecisionProcess>(DecisionProcess.MAJORITY);
-    const [boundingBox, setBoundingBox] = useState<any | null>(null);
+    const [boundingBox, setBoundingBox] = useState<GeoJSON | undefined>(undefined);
     const [startDate, setStartDate] = useState<string | undefined>(undefined);
     const [endDate, setEndDate] = useState<string | undefined>(undefined);
-    
-    // UI state
-    const [votingMechanism, setVotingMechanism] = useState<"majority" | "owner">("majority");
     const [hasSpotifyPlaylist, setHasSpotifyPlaylist] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [showAddMemberPopup, setShowAddMemberPopup] = useState(false);
@@ -70,10 +68,6 @@ export default function RoadtripSettings() {
                         
                         if (settingsData.decisionProcess) {
                             setDecisionProcess(settingsData.decisionProcess);
-                            // Map DecisionProcess to votingMechanism
-                            setVotingMechanism(
-                                settingsData.decisionProcess === DecisionProcess.MAJORITY ? "majority" : "owner"
-                            );
                         }
                         
                         if (settingsData.boundingBox) {
@@ -168,15 +162,10 @@ export default function RoadtripSettings() {
             
             // Then update the settings
             if (roadtripSettings) {
-                // Map votingMechanism to DecisionProcess
-                const updatedDecisionProcess = votingMechanism === "majority" 
-                    ? DecisionProcess.MAJORITY 
-                    : DecisionProcess.OWNER;
-                
                 const updatedSettings: RoadtripSettings = {
                     ...roadtripSettings,
                     basemapType,
-                    decisionProcess: updatedDecisionProcess,
+                    decisionProcess,
                     boundingBox,
                     startDate,
                     endDate
@@ -770,7 +759,7 @@ export default function RoadtripSettings() {
                                         gap: "10px"
                                     }}>
                                         <div 
-                                            onClick={() => setVotingMechanism("majority")}
+                                            onClick={() => setDecisionProcess(DecisionProcess.MAJORITY)}
                                             style={{
                                                 display: "flex",
                                                 alignItems: "center",
@@ -787,7 +776,7 @@ export default function RoadtripSettings() {
                                                 justifyContent: "center",
                                                 alignItems: "center"
                                             }}>
-                                                {votingMechanism === "majority" && (
+                                                {decisionProcess === DecisionProcess.MAJORITY && (
                                                     <div style={{
                                                         width: 10,
                                                         height: 7,
@@ -805,7 +794,7 @@ export default function RoadtripSettings() {
                                             </div>
                                         </div>
                                         <div 
-                                            onClick={() => setVotingMechanism("owner")}
+                                            onClick={() => setDecisionProcess(DecisionProcess.OWNER)}
                                             style={{
                                                 display: "flex",
                                                 alignItems: "center",
@@ -822,7 +811,7 @@ export default function RoadtripSettings() {
                                                 justifyContent: "center",
                                                 alignItems: "center"
                                             }}>
-                                                {votingMechanism === "owner" && (
+                                                {decisionProcess === DecisionProcess.OWNER && (
                                                     <div style={{
                                                         width: 10,
                                                         height: 7,
