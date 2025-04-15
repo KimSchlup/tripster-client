@@ -18,7 +18,6 @@ export enum PoiCategory {
     SIGHTSEEING = "SIGHTSEEING",
     FOOD = "FOOD",
     ACCOMMODATION = "ACCOMMODATION",
-    ACTIVITY = "ACTIVITY",
     OTHER = "OTHER"
 }
 
