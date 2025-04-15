@@ -43,7 +43,8 @@ export default function RoadtripPage() {
   const [pois, setPois] = useState<PointOfInterest[]>([]);
   const [newPoi, setNewPoi] = useState<PointOfInterest | null>(null);
   const [selectedPoi, setSelectedPoi] = useState<PointOfInterest | null>(null);
-  const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number, y: number } | null>(null);
+  const [contextMenuLatLng, setContextMenuLatLng] = useState<{ lat: number, lng: number } | null>(null);
+  const [contextMenuScreenPosition, setContextMenuScreenPosition] = useState<{ x: number, y: number } | null>(null);
   const [showPOIList, setShowPOIList] = useState(false);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export default function RoadtripPage() {
     async function fetchPois() {
       try {
         const apiService = new ApiService();
-        const data = await apiService.get<PointOfInterest[]>(`/roadtrips_1_pois`); //TODO: ersetzen mit korrekter URI `/roadtrips/${id}/pois`
+        const data = await apiService.get<PointOfInterest[]>(`/roadtrips/1/pois`);
         setPois(data);
         console.log("Fetched POIs:", data);
       } catch (error) {
@@ -78,7 +79,8 @@ export default function RoadtripPage() {
 
   function MapClickHandler() {
     useMapEvent("contextmenu", (e: LeafletMouseEvent) => {
-      setContextMenuPosition({ x: e.originalEvent.clientX, y: e.originalEvent.clientY });
+      setContextMenuLatLng({ lat: e.latlng.lat, lng: e.latlng.lng });
+      setContextMenuScreenPosition({ x: e.originalEvent.clientX, y: e.originalEvent.clientY });
     });
     return null;
   }
@@ -120,28 +122,43 @@ export default function RoadtripPage() {
           title={newPoi.name}
           description={newPoi.description}
           category={newPoi.category}
-          onSave={({ title, description, category }) => {
-            setPois((prevPois) => {
-              const updatedPoi: PointOfInterest = {
-                ...newPoi,
-                name: title,
-                description: description,
-                category: category as PoiCategory,
-              };
-              return [...prevPois, updatedPoi];
-            });
-            setNewPoi(null);
-            setContextMenuPosition(null);
+          onSave={async ({ title, description, category }) => {
+            if (!newPoi) return;
+            const updatedPoi: PointOfInterest = {
+              ...newPoi,
+              name: title,
+              description: description,
+              category: category as PoiCategory,
+            };
+            try {
+              const apiService = new ApiService();
+              const createdPoi = await apiService.post<PointOfInterest>(`/roadtrips/1/pois`, updatedPoi);
+              setPois((prevPois) => [...prevPois, createdPoi]);
+              console.log("POI created successfully");
+            } catch (error) {
+              console.error("Failed to create POI:", error);
+            }
+            //setNewPoi(null);
+            setContextMenuLatLng(null);
+            setContextMenuScreenPosition(null);
           }}
           onDelete={() => {
+            if (!newPoi) return;
+            setPois((prevPois) => prevPois.filter((poi) => poi.poiId !== newPoi.poiId));
+            const apiService = new ApiService();
+            apiService.delete(`/roadtrips/1/pois/${newPoi.poiId}`).catch((error) => {
+              console.error("Failed to delete POI:", error);
+            });
             setNewPoi(null);
-            setContextMenuPosition(null);
+            setContextMenuLatLng(null);
+            setContextMenuScreenPosition(null);
           }}
           onUpvote={() => {}}
           onDownvote={() => {}}
           onClose={() => {
             setNewPoi(null);
-            setContextMenuPosition(null);
+            setContextMenuLatLng(null);
+            setContextMenuScreenPosition(null);
           }}
           isNew={true}
         />
@@ -151,29 +168,51 @@ export default function RoadtripPage() {
           title={selectedPoi.name}
           description={selectedPoi.description}
           category={selectedPoi.category}
-          onSave={({ title, description, category }) => {
+          onSave={async ({ title, description, category }) => {
+            const updatedPoi: PointOfInterest = {
+              ...selectedPoi,
+              name: title,
+              description: description,
+              category: category as PoiCategory,
+            };
             setPois((prevPois) =>
               prevPois.map((poi) =>
-                poi.poiId === selectedPoi.poiId
-                  ? { ...poi, name: title, description: description, category: category as PoiCategory }
-                  : poi
+                poi.poiId === selectedPoi?.poiId ? updatedPoi : poi
               )
             );
+            try {
+              const apiService = new ApiService();
+              await apiService.put(`/roadtrips/1/pois/${selectedPoi?.poiId}`, updatedPoi);
+              console.log("POI updated successfully");
+            } catch (error) {
+              console.error("Failed to update POI:", error);
+            }
             setSelectedPoi(null);
           }}
-          onDelete={() => setSelectedPoi(null)}
+          onDelete={async () => {
+            if (!selectedPoi) return;
+            setPois((prevPois) => prevPois.filter((poi) => poi.poiId !== selectedPoi.poiId));
+            try {
+              const apiService = new ApiService();
+              await apiService.delete(`/roadtrips/1/pois/${selectedPoi.poiId}`);
+              console.log("POI deleted successfully");
+            } catch (error) {
+              console.error("Failed to delete POI:", error);
+            }
+            setSelectedPoi(null);
+          }}
           onUpvote={() => {}}
           onDownvote={() => {}}
           onClose={() => setSelectedPoi(null)}
           isNew={false}
         />
       )}
-      {contextMenuPosition && (
+      {contextMenuLatLng && contextMenuScreenPosition && (
         <div
           style={{
             position: "absolute",
-            top: contextMenuPosition.y,
-            left: contextMenuPosition.x,
+            top: contextMenuScreenPosition.y,
+            left: contextMenuScreenPosition.x,
             background: "white",
             border: "1px solid #ccc",
             borderRadius: "4px",
@@ -191,7 +230,7 @@ export default function RoadtripPage() {
               name: "",
               coordinate: {
                 type: "Point",
-                coordinates: [contextMenuPosition.x, contextMenuPosition.y],
+                coordinates: [contextMenuLatLng.lng, contextMenuLatLng.lat],
               },
               description: "",
               category: PoiCategory.OTHER,
@@ -203,7 +242,8 @@ export default function RoadtripPage() {
               eligibleVoteCount: 0,
             };
             setNewPoi(newPoint);
-            setContextMenuPosition(null);
+            setContextMenuScreenPosition(null);
+            setContextMenuLatLng(null);
           }}>Add POI</button>
         </div>
       )}
