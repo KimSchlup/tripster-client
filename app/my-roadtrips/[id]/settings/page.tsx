@@ -29,14 +29,39 @@ export default function RoadtripSettings() {
         const fetchRoadtrip = async () => {
             try {
                 setLoading(true);
-                const data = await apiService.get<Roadtrip>(`/roadtrips/${id}`);
-                setRoadtrip(data);
-                setRoadtripName(data.name);
-                // Use description from backend or fallback to roadtripDescription for backward compatibility
-                setRoadtripDescription(data.description || data.roadtripDescription || "");
-                setError(null);
+                console.log(`Fetching roadtrip settings for ID: ${id}`);
+                
+                // Try to fetch from the settings endpoint
+                try {
+                    console.log(`Attempting to fetch from /roadtrips/${id}/settings endpoint`);
+                    const data = await apiService.get<Roadtrip>(`/roadtrips/${id}/settings`);
+                    console.log("Successfully received roadtrip data from settings endpoint:", JSON.stringify(data, null, 2));
+                    setRoadtrip(data);
+                    setRoadtripName(data.name);
+                    // Use description from backend or fallback to roadtripDescription for backward compatibility
+                    setRoadtripDescription(data.description || data.roadtripDescription || "");
+                    setError(null);
+                } catch (settingsErr) {
+                    console.error("Error fetching from settings endpoint:", settingsErr);
+                    console.error("Error details:", JSON.stringify(settingsErr, null, 2));
+                    
+                    // If settings endpoint fails, try the regular endpoint as fallback
+                    console.log(`Attempting to fetch from regular /roadtrips/${id} endpoint as fallback`);
+                    try {
+                        const fallbackData = await apiService.get<Roadtrip>(`/roadtrips/${id}`);
+                        console.log("Successfully received roadtrip data from regular endpoint:", JSON.stringify(fallbackData, null, 2));
+                        setRoadtrip(fallbackData);
+                        setRoadtripName(fallbackData.name);
+                        setRoadtripDescription(fallbackData.description || fallbackData.roadtripDescription || "");
+                        setError(null);
+                    } catch (fallbackErr) {
+                        console.error("Error fetching from fallback endpoint:", fallbackErr);
+                        console.error("Fallback error details:", JSON.stringify(fallbackErr, null, 2));
+                        throw fallbackErr; // Re-throw to be caught by the outer catch block
+                    }
+                }
             } catch (err) {
-                console.error("Error fetching roadtrip:", err);
+                console.error("Error fetching roadtrip (all attempts failed):", err);
                 setError("Failed to load roadtrip. Please try again later.");
             } finally {
                 setLoading(false);
@@ -91,7 +116,7 @@ export default function RoadtripSettings() {
                 hasSpotifyPlaylist
             };
 
-            await apiService.put<Roadtrip>(`/roadtrips/${id}`, updatedRoadtrip);
+            await apiService.put<Roadtrip>(`/roadtrips/${id}/settings`, updatedRoadtrip);
             setSaveSuccess(true);
             
             // Update local state
@@ -290,116 +315,49 @@ export default function RoadtripSettings() {
                                             justifyContent: "space-between",
                                             gap: "20px"
                                         }}>
-                                            <div style={{
-                                                width: "48%",
-                                                height: 50,
-                                                position: "relative",
-                                                background: "rgba(128, 128, 128, 0.55)",
-                                                borderRadius: 3,
-                                                display: "flex",
-                                                alignItems: "center"
-                                            }}>
-                                                <div style={{
-                                                    position: "absolute",
-                                                    left: 10,
-                                                    color: "white",
-                                                    fontSize: 14,
-                                                    fontFamily: "Manrope",
-                                                    fontWeight: 700
-                                                }}>
-                                                    Name
-                                                </div>
+                                            <div className="form-input-container" style={{ width: "48%" }} data-clicked={name ? "Clicked" : "Default"} data-state="Default">
+                                                {!name && (
+                                                    <div className="form-input-placeholder">
+                                                        <div>Name</div>
+                                                    </div>
+                                                )}
                                                 <input
                                                     type="text"
                                                     value={name}
                                                     onChange={(e) => setRoadtripName(e.target.value)}
-                                                    style={{
-                                                        width: "100%",
-                                                        height: "100%",
-                                                        background: "transparent",
-                                                        border: "none",
-                                                        color: "white",
-                                                        fontSize: 14,
-                                                        fontFamily: "Manrope",
-                                                        fontWeight: 700,
-                                                        paddingLeft: 60,
-                                                        paddingRight: 10
-                                                    }}
+                                                    className="form-input"
+                                                    required
                                                 />
                                             </div>
-                                            <div style={{
-                                                width: "48%",
-                                                height: 50,
-                                                position: "relative",
-                                                background: "rgba(128, 128, 128, 0.55)",
-                                                borderRadius: 3,
-                                                display: "flex",
-                                                alignItems: "center"
-                                            }}>
-                                                <div style={{
-                                                    position: "absolute",
-                                                    left: 10,
-                                                    color: "white",
-                                                    fontSize: 14,
-                                                    fontFamily: "Manrope",
-                                                    fontWeight: 700
-                                                }}>
-                                                    Destination
-                                                </div>
+                                            <div className="form-input-container" style={{ width: "48%" }} data-clicked={roadtripDestination ? "Clicked" : "Default"} data-state="Default">
+                                                {!roadtripDestination && (
+                                                    <div className="form-input-placeholder">
+                                                        <div>Destination</div>
+                                                    </div>
+                                                )}
                                                 <input
                                                     type="text"
                                                     value={roadtripDestination}
                                                     onChange={(e) => setRoadtripDestination(e.target.value)}
-                                                    style={{
-                                                        width: "100%",
-                                                        height: "100%",
-                                                        background: "transparent",
-                                                        border: "none",
-                                                        color: "white",
-                                                        fontSize: 14,
-                                                        fontFamily: "Manrope",
-                                                        fontWeight: 700,
-                                                        paddingLeft: 100,
-                                                        paddingRight: 10
-                                                    }}
+                                                    className="form-input"
+                                                    required
                                                 />
                                             </div>
                                         </div>
-                                        <div style={{
-                                            width: "100%",
-                                            height: 75,
-                                            position: "relative",
-                                            background: "rgba(128, 128, 128, 0.55)",
-                                            borderRadius: 3,
-                                            display: "flex",
-                                            alignItems: "center"
-                                        }}>
-                                            <div style={{
-                                                position: "absolute",
-                                                left: 10,
-                                                color: "white",
-                                                fontSize: 14,
-                                                fontFamily: "Manrope",
-                                                fontWeight: 700
-                                            }}>
-                                                Description
-                                            </div>
+                                        <div className="form-input-container" style={{ width: "100%", height: "75px" }} data-clicked={roadtripDescription ? "Clicked" : "Default"} data-state="Default">
+                                            {!roadtripDescription && (
+                                                <div className="form-input-placeholder">
+                                                    <div>Description</div>
+                                                </div>
+                                            )}
                                             <textarea
                                                 value={roadtripDescription}
                                                 onChange={(e) => setRoadtripDescription(e.target.value)}
+                                                className="form-input"
                                                 style={{
-                                                    width: "100%",
                                                     height: "100%",
-                                                    background: "transparent",
-                                                    border: "none",
-                                                    color: "white",
-                                                    fontSize: 14,
-                                                    fontFamily: "Manrope",
-                                                    fontWeight: 700,
-                                                    paddingLeft: 100,
-                                                    paddingRight: 10,
-                                                    paddingTop: 10,
-                                                    paddingBottom: 10,
+                                                    paddingTop: "10px",
+                                                    paddingBottom: "10px",
                                                     resize: "none"
                                                 }}
                                             />
@@ -473,35 +431,17 @@ export default function RoadtripSettings() {
                                     }}>
                                         <button 
                                             onClick={handleAddUser}
-                                            style={{
-                                                padding: "16px 20px",
-                                                background: "black",
-                                                borderRadius: 3,
-                                                color: "white",
-                                                fontSize: 20,
-                                                fontFamily: "Manrope",
-                                                fontWeight: 700,
-                                                border: "none",
-                                                cursor: "pointer"
-                                            }}
+                                            className="form-button"
+                                            style={{ width: "auto" }}
                                         >
-                                            Add user
+                                            <span className="form-button-text">Add user</span>
                                         </button>
                                         <button 
                                             onClick={handleInviteGuest}
-                                            style={{
-                                                padding: "16px 20px",
-                                                background: "black",
-                                                borderRadius: 3,
-                                                color: "white",
-                                                fontSize: 20,
-                                                fontFamily: "Manrope",
-                                                fontWeight: 700,
-                                                border: "none",
-                                                cursor: "pointer"
-                                            }}
+                                            className="form-button"
+                                            style={{ width: "auto" }}
                                         >
-                                            Invite Guest
+                                            <span className="form-button-text">Invite Guest</span>
                                         </button>
                                     </div>
                                 </div>
@@ -692,35 +632,17 @@ export default function RoadtripSettings() {
                             }}>
                                 <button 
                                     onClick={handleDelete}
-                                    style={{
-                                        padding: "16px 20px",
-                                        background: "#E74C3C",
-                                        borderRadius: 3,
-                                        color: "white",
-                                        fontSize: 20,
-                                        fontFamily: "Manrope",
-                                        fontWeight: 700,
-                                        border: "none",
-                                        cursor: "pointer"
-                                    }}
+                                    className="form-button"
+                                    style={{ background: "#E74C3C", width: "auto" }}
                                 >
-                                    Delete Roadtrip
+                                    <span className="form-button-text">Delete Roadtrip</span>
                                 </button>
                                 <button 
                                     onClick={handleSave}
-                                    style={{
-                                        padding: "16px 20px",
-                                        background: "black",
-                                        borderRadius: 3,
-                                        color: "white",
-                                        fontSize: 20,
-                                        fontFamily: "Manrope",
-                                        fontWeight: 700,
-                                        border: "none",
-                                        cursor: "pointer"
-                                    }}
+                                    className="form-button"
+                                    style={{ width: "auto" }}
                                 >
-                                    Update Settings
+                                    <span className="form-button-text">Update Settings</span>
                                 </button>
                             </div>
                             
@@ -775,28 +697,20 @@ export default function RoadtripSettings() {
                         <div style={{
                             marginBottom: "20px"
                         }}>
-                            <div style={{
-                                color: "black",
-                                fontSize: 16,
-                                fontFamily: "Manrope",
-                                fontWeight: 700,
-                                marginBottom: "5px"
-                            }}>
-                                Username
+                            <div className="form-input-container" data-clicked={newMemberUsername ? "Clicked" : "Default"} data-state="Default">
+                                {!newMemberUsername && (
+                                    <div className="form-input-placeholder">
+                                        <div>Username</div>
+                                    </div>
+                                )}
+                                <input
+                                    type="text"
+                                    value={newMemberUsername}
+                                    onChange={(e) => setNewMemberUsername(e.target.value)}
+                                    className="form-input"
+                                    required
+                                />
                             </div>
-                            <input
-                                type="text"
-                                value={newMemberUsername}
-                                onChange={(e) => setNewMemberUsername(e.target.value)}
-                                placeholder="Enter username"
-                                style={{
-                                    width: "100%",
-                                    padding: "10px",
-                                    border: "1px solid #ccc",
-                                    borderRadius: 5,
-                                    fontSize: 16
-                                }}
-                            />
                             {addMemberError && (
                                 <div style={{
                                     color: "red",
@@ -815,35 +729,17 @@ export default function RoadtripSettings() {
                         }}>
                             <button
                                 onClick={() => setShowAddMemberPopup(false)}
-                                style={{
-                                    padding: "10px 20px",
-                                    background: "#ccc",
-                                    borderRadius: 5,
-                                    border: "none",
-                                    color: "black",
-                                    fontSize: 16,
-                                    fontFamily: "Manrope",
-                                    fontWeight: 700,
-                                    cursor: "pointer"
-                                }}
+                                className="form-button"
+                                style={{ background: "#ccc", width: "auto" }}
                             >
-                                Cancel
+                                <span className="form-button-text">Cancel</span>
                             </button>
                             <button
                                 onClick={handleAddMemberSubmit}
-                                style={{
-                                    padding: "10px 20px",
-                                    background: "black",
-                                    borderRadius: 5,
-                                    border: "none",
-                                    color: "white",
-                                    fontSize: 16,
-                                    fontFamily: "Manrope",
-                                    fontWeight: 700,
-                                    cursor: "pointer"
-                                }}
+                                className="form-button"
+                                style={{ width: "auto" }}
                             >
-                                Add
+                                <span className="form-button-text">Add</span>
                             </button>
                         </div>
                     </div>

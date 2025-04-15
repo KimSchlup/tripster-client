@@ -44,7 +44,6 @@ export default function MyRoadtrips() {
                 
                 // Add a small delay to ensure token is properly set in headers
                 await new Promise(resolve => setTimeout(resolve, 500));
-                
                 const data = await apiService.get<Roadtrip[]>("/roadtrips");
                 console.log("API response:", data);
                 

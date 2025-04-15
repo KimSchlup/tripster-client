@@ -63,20 +63,36 @@ export class ApiService {
       let errorDetail = res.statusText;
       try {
         const contentType = res.headers.get("Content-Type") || "";
+        console.log("Error response content type:", contentType);
+        
+        // Log the raw response for debugging
+        const rawResponse = await res.text();
+        console.log("Raw error response:", rawResponse);
+        
+        // Try to parse as JSON if appropriate
         if (contentType.includes("application/json")) {
-          const errorInfo = await res.json();
-          if (errorInfo?.message) {
-            errorDetail = errorInfo.message;
-          } else {
-            errorDetail = JSON.stringify(errorInfo);
+          try {
+            const errorInfo = JSON.parse(rawResponse);
+            console.log("Parsed error info:", errorInfo);
+            if (errorInfo?.message) {
+              errorDetail = errorInfo.message;
+            } else {
+              errorDetail = JSON.stringify(errorInfo);
+            }
+          } catch (parseError) {
+            console.error("Error parsing JSON response:", parseError);
+            errorDetail = rawResponse;
           }
         } else {
-          errorDetail = await res.text(); // Liest reinen Text
+          errorDetail = rawResponse;
         }
-      } catch {
+      } catch (error) {
+        console.error("Error processing response:", error);
         // Falls JSON-Parsing und Text-Fallback fehlschlagen, bleibt res.statusText.
       }
       const detailedMessage = `${errorMessage} (${res.status}: ${errorDetail})`;
+      console.error("Detailed error message:", detailedMessage);
+      
       const error: ApplicationError = new Error(
           detailedMessage,
       ) as ApplicationError;
@@ -104,6 +120,7 @@ export class ApiService {
       method: "GET",
       headers: this.defaultHeaders(),
     });
+    console.log(this.defaultHeaders)
     return this.processResponse<T>(
         res,
         "An error occurred while fetching the data.\n",
