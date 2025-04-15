@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import {useEffect, useState} from "react";
+import {useParams, useRouter} from "next/navigation";
 import type {LeafletMouseEvent} from "leaflet";
 import {Icon} from "leaflet";
 import POIWindow from "@/components/POIWindow";
@@ -39,6 +40,10 @@ function createColoredMarker(color: string): Icon {
 }
 
 export default function RoadtripPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params.id as string;
+
   const [sidebarTop, setSidebarTop] = useState("30%");
   const [pois, setPois] = useState<PointOfInterest[]>([]);
   const [newPoi, setNewPoi] = useState<PointOfInterest | null>(null);
@@ -67,7 +72,7 @@ export default function RoadtripPage() {
     async function fetchPois() {
       try {
         const apiService = new ApiService();
-        const data = await apiService.get<PointOfInterest[]>(`/roadtrips/1/pois`);
+        const data = await apiService.get<PointOfInterest[]>(`/roadtrips/${id}/pois`);
         setPois(data);
         console.log("Fetched POIs:", data);
       } catch (error) {
@@ -75,7 +80,7 @@ export default function RoadtripPage() {
       }
     }
     fetchPois();
-  }, []);
+  }, [id]);
 
   function MapClickHandler() {
     useMapEvent("contextmenu", (e: LeafletMouseEvent) => {
@@ -114,7 +119,7 @@ export default function RoadtripPage() {
         onPOIList={() => setShowPOIList((prev) => !prev)}
         onChecklist={() => console.log("klick on Checklist")}
         onLayerManager={() => console.log("klick on LayerManager")}
-        onSettings={() => console.log("klick on Settings")}
+      onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
       />
       {showPOIList && <POIList pois={pois} />}
       {newPoi && (
@@ -122,31 +127,34 @@ export default function RoadtripPage() {
           title={newPoi.name}
           description={newPoi.description}
           category={newPoi.category}
-          onSave={async ({ title, description, category }) => {
+          priority={newPoi.priority}
+          status={newPoi.status}
+          onSave={async ({ title, description, category, priority }) => {
             if (!newPoi) return;
             const updatedPoi: PointOfInterest = {
               ...newPoi,
               name: title,
               description: description,
               category: category as PoiCategory,
+              priority: priority as PoiPriority,
             };
             try {
               const apiService = new ApiService();
-              const createdPoi = await apiService.post<PointOfInterest>(`/roadtrips/1/pois`, updatedPoi);
+              const createdPoi = await apiService.post<PointOfInterest>(`/roadtrips/${id}/pois`, updatedPoi);
               setPois((prevPois) => [...prevPois, createdPoi]);
               console.log("POI created successfully");
             } catch (error) {
               console.error("Failed to create POI:", error);
             }
-            //setNewPoi(null);
             setContextMenuLatLng(null);
             setContextMenuScreenPosition(null);
+            setNewPoi(null);
           }}
           onDelete={() => {
             if (!newPoi) return;
             setPois((prevPois) => prevPois.filter((poi) => poi.poiId !== newPoi.poiId));
             const apiService = new ApiService();
-            apiService.delete(`/roadtrips/1/pois/${newPoi.poiId}`).catch((error) => {
+            apiService.delete(`/roadtrips/${id}/pois/${newPoi.poiId}`).catch((error) => {
               console.error("Failed to delete POI:", error);
             });
             setNewPoi(null);
@@ -168,12 +176,15 @@ export default function RoadtripPage() {
           title={selectedPoi.name}
           description={selectedPoi.description}
           category={selectedPoi.category}
-          onSave={async ({ title, description, category }) => {
+          priority={selectedPoi.priority}
+          status={selectedPoi.status}
+          onSave={async ({ title, description, category, priority }) => {
             const updatedPoi: PointOfInterest = {
               ...selectedPoi,
               name: title,
               description: description,
               category: category as PoiCategory,
+              priority: priority as PoiPriority,
             };
             setPois((prevPois) =>
               prevPois.map((poi) =>
@@ -182,7 +193,7 @@ export default function RoadtripPage() {
             );
             try {
               const apiService = new ApiService();
-              await apiService.put(`/roadtrips/1/pois/${selectedPoi?.poiId}`, updatedPoi);
+              await apiService.put(`/roadtrips/${id}/pois/${selectedPoi?.poiId}`, updatedPoi);
               console.log("POI updated successfully");
             } catch (error) {
               console.error("Failed to update POI:", error);
@@ -194,7 +205,7 @@ export default function RoadtripPage() {
             setPois((prevPois) => prevPois.filter((poi) => poi.poiId !== selectedPoi.poiId));
             try {
               const apiService = new ApiService();
-              await apiService.delete(`/roadtrips/1/pois/${selectedPoi.poiId}`);
+              await apiService.delete(`/roadtrips/${id}/pois/${selectedPoi.poiId}`);
               console.log("POI deleted successfully");
             } catch (error) {
               console.error("Failed to delete POI:", error);
