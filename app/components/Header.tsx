@@ -114,7 +114,7 @@ export default function Header({ isLoginPage = false }: HeaderProps) {
       >
         <Link href="/">
           <Image 
-            src="/logo-modified.png" 
+            src="/Logo_big.png" 
             alt="Logo" 
             width={121} 
             height={88} 
