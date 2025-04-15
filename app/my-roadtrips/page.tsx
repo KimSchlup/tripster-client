@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@/hooks/useAuth";
 import { Roadtrip } from "@/types/roadtrip";
 
 
@@ -19,31 +20,61 @@ export default function MyRoadtrips() {
     const [error, setError] = useState<string | null>(null);
     const apiService = useApi();
     const router = useRouter();
+    const { isLoggedIn } = useAuth();
 
     useEffect(() => {
         const fetchRoadtrips = async () => {
+            // Check token directly from localStorage for debugging
+            const token = localStorage.getItem("token");
+            console.log("Token in my-roadtrips page:", token);
+            
+            // If user is not logged in, don't try to fetch roadtrips
+            if (!isLoggedIn || !token) {
+                console.log("User not logged in or no token found");
+                setError("Please login first in order to access your roadtrips.");
+                setLoading(false);
+                // Redirect to login page
+                router.push('/login');
+                return;
+            }
+            
             try {
                 setLoading(true);
+                console.log("Fetching roadtrips with token:", token);
+                
+                // Add a small delay to ensure token is properly set in headers
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
                 const data = await apiService.get<Roadtrip[]>("/roadtrips");
                 console.log("API response:", data);
                 
                 // Log roadtrips without ID for debugging
-                data.forEach(roadtrip => {
-                    if (roadtrip.id === undefined) {
-                        console.warn("Roadtrip without ID:", roadtrip);
-                    }
-                });
-                
-                console.log("All roadtrips:", data);
-                setRoadtrips(data);
-                setError(null);
+                if (Array.isArray(data)) {
+                    data.forEach(roadtrip => {
+                        if (roadtrip.id === undefined) {
+                            console.warn("Roadtrip without ID:", roadtrip);
+                        }
+                    });
+                    
+                    setRoadtrips(data);
+                    setError(null);
+                } else {
+                    console.error("Unexpected response format:", data);
+                    setError("Received invalid data format from server.");
+                }
             } catch (err) {
                 console.error("Error fetching roadtrips:", err);
                 
                 // Check if it's a 401 error (not authenticated)
                 const error = err as { status?: number };
                 if (error && error.status === 401) {
-                    setError("Please login first in order to access your roadtrips.");
+                    console.log("Authentication error (401)");
+                    // Clear token and redirect to login
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("userId");
+                    setError("Your session has expired. Please login again.");
+                    // Redirect to login page
+                    router.push('/login');
                 } else {
                     setError("Failed to load roadtrips. Please try again later.");
                 }
@@ -53,7 +84,7 @@ export default function MyRoadtrips() {
         };
 
         fetchRoadtrips();
-    }, [apiService]);
+    }, [apiService, isLoggedIn, router]);
 
     const handleRoadtripClick = (id: number | undefined) => {
         if (id === undefined) {
@@ -64,25 +95,46 @@ export default function MyRoadtrips() {
     };
 
     const handleNewRoadtripClick = async () => {
+        // If user is not logged in, redirect to login page
+        if (!isLoggedIn) {
+            router.push('/login');
+            return;
+        }
+        
         try {
-            // Create a new empty roadtrip without Id
+            // Create a new empty roadtrip
             const newRoadtrip: newRoadtripProps = {
-                name: "",
+                name: "New Roadtrip",
                 roadtripMembers: [],
                 roadtripDescription: ""
             };
-        
+            
+            console.log("Creating new roadtrip...");
             
             // Post the new roadtrip to the API
             const createdRoadtrip = await apiService.post<Roadtrip>("/roadtrips", newRoadtrip);
+            console.log("Created roadtrip:", createdRoadtrip);
             
             // Redirect to the settings page for the new roadtrip
             // Use id (from backend) or fallback to roadtripId (for backward compatibility)
             const roadtripId = createdRoadtrip.id || createdRoadtrip.roadtripId;
+            
+            if (roadtripId === undefined) {
+                throw new Error("Created roadtrip has no ID");
+            }
+            
             router.push(`/my-roadtrips/${roadtripId}/settings`);
         } catch (err) {
             console.error("Error creating new roadtrip:", err);
-            setError("Failed to create new roadtrip. Please try again later.");
+            
+            // Check if it's an authentication error
+            const error = err as { status?: number };
+            if (error && error.status === 401) {
+                setError("Please login first in order to create a roadtrip.");
+                router.push('/login');
+            } else {
+                setError("Failed to create new roadtrip. Please try again later.");
+            }
         }
     };
 

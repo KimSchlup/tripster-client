@@ -23,11 +23,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Check if user is logged in based on token presence
   useEffect(() => {
+    // Initially just check if token exists
+    console.log("Token in useAuth:", token);
     setIsLoggedIn(!!token);
   }, [token]);
 
-  // Login function
+  // Login function - store token as is
   const login = (newToken: string, newUserId: string) => {
+    console.log("Storing token:", newToken);
+    // Store the token exactly as received from the backend
     setToken(newToken);
     setUserId(newUserId);
     setIsLoggedIn(true);

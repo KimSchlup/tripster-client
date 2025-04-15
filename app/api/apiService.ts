@@ -15,11 +15,33 @@ export class ApiService {
   }
 
   private defaultHeaders(): HeadersInit {
-    return {
+    const headers: HeadersInit = {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
-      "Authorization": JSON.parse(localStorage.getItem("token") || '""'),
     };
+    
+    try {
+      // Get token from localStorage directly
+      const token = localStorage.getItem("token");
+      console.log("Raw token from localStorage:", token);
+      
+      // Only add Authorization header if token exists and is not empty
+      if (token && token !== "" && token !== "null" && token !== "undefined") {
+        // Remove any quotes that might be wrapping the token
+        let cleanToken = token;
+        if (cleanToken.startsWith('"') && cleanToken.endsWith('"')) {
+          cleanToken = cleanToken.slice(1, -1);
+        }
+        
+        console.log("Clean token being used in header:", cleanToken);
+        headers["Authorization"] = cleanToken;
+      }
+    } catch (error) {
+      console.error("Error accessing token:", error);
+    }
+    
+    console.log("Final headers:", headers);
+    return headers;
   }
 
   /**
