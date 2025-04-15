@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       // Send POST request to logout endpoint
-      await apiService.post('/logout', {});
+      await apiService.post('/auth/logout', {});
     } catch (error) {
       console.error('Logout API call failed:', error);
       // Continue with logout process even if API call fails
