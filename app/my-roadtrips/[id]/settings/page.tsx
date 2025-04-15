@@ -10,6 +10,7 @@ import { BasemapType, DecisionProcess } from "@/types/roadtripSettings";
 import { RoadtripMember } from "@/types/roadtripMember";
 import { User } from "@/types/user";
 import type { GeoJSON } from 'geojson';
+import Checkbox from "@/components/Checkbox";
 
 export default function RoadtripSettings() {
     const params = useParams();
@@ -30,6 +31,7 @@ export default function RoadtripSettings() {
     const [startDate, setStartDate] = useState<string | undefined>(undefined);
     const [endDate, setEndDate] = useState<string | undefined>(undefined);
     const [hasSpotifyPlaylist, setHasSpotifyPlaylist] = useState(false);
+    const [spotifyPlaylistUrl, setSpotifyPlaylistUrl] = useState("");
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [showAddMemberPopup, setShowAddMemberPopup] = useState(false);
     const [newMemberUsername, setNewMemberUsername] = useState("");
@@ -61,10 +63,8 @@ export default function RoadtripSettings() {
                         
                         setRoadtripSettings(settingsData);
                         
-                        // Update state with settings data
-                        if (settingsData.basemapType) {
-                            setBasemapType(settingsData.basemapType);
-                        }
+                        // Always set basemap type to STANDARD by default
+                        setBasemapType(BasemapType.STANDARD);
                         
                         if (settingsData.decisionProcess) {
                             setDecisionProcess(settingsData.decisionProcess);
@@ -306,6 +306,10 @@ export default function RoadtripSettings() {
 
     const handleToggleSpotifyPlaylist = () => {
         setHasSpotifyPlaylist(!hasSpotifyPlaylist);
+    };
+
+    const handleSpotifyUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSpotifyPlaylistUrl(e.target.value);
     };
 
     return (
@@ -553,111 +557,21 @@ export default function RoadtripSettings() {
                                                 flexDirection: "column",
                                                 gap: "10px"
                                             }}>
-                                                <div 
-                                                    onClick={() => setBasemapType(BasemapType.STANDARD)}
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: "10px",
-                                                        cursor: "pointer"
-                                                    }}
-                                                >
-                                                    <div style={{
-                                                        width: 16,
-                                                        height: 16,
-                                                        background: "#2C2C2C",
-                                                        borderRadius: 4,
-                                                        display: "flex",
-                                                        justifyContent: "center",
-                                                        alignItems: "center"
-                                                    }}>
-                                                        {basemapType === BasemapType.STANDARD && (
-                                                            <div style={{
-                                                                width: 10,
-                                                                height: 7,
-                                                                background: "#F5F5F5"
-                                                            }}></div>
-                                                        )}
-                                                    </div>
-                                                    <div style={{
-                                                        color: "black",
-                                                        fontSize: 16,
-                                                        fontFamily: "Manrope",
-                                                        fontWeight: 700
-                                                    }}>
-                                                        Standard
-                                                    </div>
-                                                </div>
-                                                <div 
-                                                    onClick={() => setBasemapType(BasemapType.SATELLITE)}
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: "10px",
-                                                        cursor: "pointer"
-                                                    }}
-                                                >
-                                                    <div style={{
-                                                        width: 16,
-                                                        height: 16,
-                                                        background: "#2C2C2C",
-                                                        borderRadius: 4,
-                                                        display: "flex",
-                                                        justifyContent: "center",
-                                                        alignItems: "center"
-                                                    }}>
-                                                        {basemapType === BasemapType.SATELLITE && (
-                                                            <div style={{
-                                                                width: 10,
-                                                                height: 7,
-                                                                background: "#F5F5F5"
-                                                            }}></div>
-                                                        )}
-                                                    </div>
-                                                    <div style={{
-                                                        color: "black",
-                                                        fontSize: 16,
-                                                        fontFamily: "Manrope",
-                                                        fontWeight: 700
-                                                    }}>
-                                                        Satellite
-                                                    </div>
-                                                </div>
-                                                <div 
-                                                    onClick={() => setBasemapType(BasemapType.TERRAIN)}
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: "10px",
-                                                        cursor: "pointer"
-                                                    }}
-                                                >
-                                                    <div style={{
-                                                        width: 16,
-                                                        height: 16,
-                                                        background: "#2C2C2C",
-                                                        borderRadius: 4,
-                                                        display: "flex",
-                                                        justifyContent: "center",
-                                                        alignItems: "center"
-                                                    }}>
-                                                        {basemapType === BasemapType.TERRAIN && (
-                                                            <div style={{
-                                                                width: 10,
-                                                                height: 7,
-                                                                background: "#F5F5F5"
-                                                            }}></div>
-                                                        )}
-                                                    </div>
-                                                    <div style={{
-                                                        color: "black",
-                                                        fontSize: 16,
-                                                        fontFamily: "Manrope",
-                                                        fontWeight: 700
-                                                    }}>
-                                                        Terrain
-                                                    </div>
-                                                </div>
+                                                <Checkbox
+                                                    checked={basemapType === BasemapType.STANDARD}
+                                                    onChange={() => setBasemapType(BasemapType.STANDARD)}
+                                                    label="Standard"
+                                                />
+                                                <Checkbox
+                                                    checked={basemapType === BasemapType.SATELLITE}
+                                                    onChange={() => setBasemapType(BasemapType.SATELLITE)}
+                                                    label="Satellite"
+                                                />
+                                                <Checkbox
+                                                    checked={basemapType === BasemapType.TERRAIN}
+                                                    onChange={() => setBasemapType(BasemapType.TERRAIN)}
+                                                    label="Terrain"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -758,76 +672,16 @@ export default function RoadtripSettings() {
                                         flexDirection: "column",
                                         gap: "10px"
                                     }}>
-                                        <div 
-                                            onClick={() => setDecisionProcess(DecisionProcess.MAJORITY)}
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "10px",
-                                                cursor: "pointer"
-                                            }}
-                                        >
-                                            <div style={{
-                                                width: 16,
-                                                height: 16,
-                                                background: "#2C2C2C",
-                                                borderRadius: 4,
-                                                display: "flex",
-                                                justifyContent: "center",
-                                                alignItems: "center"
-                                            }}>
-                                                {decisionProcess === DecisionProcess.MAJORITY && (
-                                                    <div style={{
-                                                        width: 10,
-                                                        height: 7,
-                                                        background: "#F5F5F5"
-                                                    }}></div>
-                                                )}
-                                            </div>
-                                            <div style={{
-                                                color: "black",
-                                                fontSize: 20,
-                                                fontFamily: "Manrope",
-                                                fontWeight: 700
-                                            }}>
-                                                Majority Vote
-                                            </div>
-                                        </div>
-                                        <div 
-                                            onClick={() => setDecisionProcess(DecisionProcess.OWNER)}
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "10px",
-                                                cursor: "pointer"
-                                            }}
-                                        >
-                                            <div style={{
-                                                width: 16,
-                                                height: 16,
-                                                background: "#2C2C2C",
-                                                borderRadius: 4,
-                                                display: "flex",
-                                                justifyContent: "center",
-                                                alignItems: "center"
-                                            }}>
-                                                {decisionProcess === DecisionProcess.OWNER && (
-                                                    <div style={{
-                                                        width: 10,
-                                                        height: 7,
-                                                        background: "#F5F5F5"
-                                                    }}></div>
-                                                )}
-                                            </div>
-                                            <div style={{
-                                                color: "black",
-                                                fontSize: 20,
-                                                fontFamily: "Manrope",
-                                                fontWeight: 700
-                                            }}>
-                                                Decision by Owner
-                                            </div>
-                                        </div>
+                                        <Checkbox
+                                            checked={decisionProcess === DecisionProcess.MAJORITY}
+                                            onChange={() => setDecisionProcess(DecisionProcess.MAJORITY)}
+                                            label="Majority Vote"
+                                        />
+                                        <Checkbox
+                                            checked={decisionProcess === DecisionProcess.OWNER}
+                                            onChange={() => setDecisionProcess(DecisionProcess.OWNER)}
+                                            label="Decision by Owner"
+                                        />
                                     </div>
                                 </div>
                                 
@@ -854,60 +708,37 @@ export default function RoadtripSettings() {
                                         flexDirection: "column",
                                         gap: "10px"
                                     }}>
-                                        <div 
-                                            onClick={handleToggleSpotifyPlaylist}
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "10px",
-                                                cursor: "pointer"
-                                            }}
-                                        >
-                                            <div style={{
-                                                width: 16,
-                                                height: 16,
-                                                background: "#2C2C2C",
-                                                borderRadius: 4,
-                                                display: "flex",
-                                                justifyContent: "center",
-                                                alignItems: "center"
-                                            }}>
-                                                {hasSpotifyPlaylist && (
-                                                    <div style={{
-                                                        width: 10,
-                                                        height: 7,
-                                                        background: "#F5F5F5"
-                                                    }}></div>
-                                                )}
-                                            </div>
-                                            <div style={{
-                                                color: "black",
-                                                fontSize: 20,
-                                                fontFamily: "Manrope",
-                                                fontWeight: 700
-                                            }}>
-                                                Spotify Playlist
-                                            </div>
+                                        <div>
+                                            <Checkbox
+                                                checked={hasSpotifyPlaylist}
+                                                onChange={handleToggleSpotifyPlaylist}
+                                                label="Spotify Playlist"
+                                                variant="external-link"
+                                            />
+                                            {hasSpotifyPlaylist && (
+                                                <div style={{ marginTop: "10px", marginLeft: "26px" }}>
+                                                    <input
+                                                        type="text"
+                                                        value={spotifyPlaylistUrl}
+                                                        onChange={handleSpotifyUrlChange}
+                                                        placeholder="Enter Spotify playlist URL"
+                                                        style={{
+                                                            width: "100%",
+                                                            padding: "8px",
+                                                            border: "1px solid #ccc",
+                                                            borderRadius: "4px",
+                                                            fontSize: "14px"
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
-                                        <div 
-                                            onClick={handleAddLink}
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "10px",
-                                                cursor: "pointer",
-                                                marginTop: "10px"
-                                            }}
-                                        >
-                                            <div style={{
-                                                color: "black",
-                                                fontSize: 16,
-                                                fontFamily: "Manrope",
-                                                fontWeight: 700
-                                            }}>
-                                                + Add Link
-                                            </div>
-                                        </div>
+                                        <Checkbox
+                                            variant="add"
+                                            onChange={handleAddLink}
+                                            label="Add Link"
+                                            style={{ marginTop: "10px" }}
+                                        />
                                     </div>
                                 </div>
                             </div>
