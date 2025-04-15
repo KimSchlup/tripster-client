@@ -104,9 +104,24 @@ export class ApiService {
       error.status = res.status;
       throw error;
     }
-    return res.headers.get("Content-Type")?.includes("application/json")
-        ? res.json() as Promise<T>
-        : Promise.resolve(res as T);
+    // Handle empty responses (e.g., 204 No Content)
+    if (res.status === 204 || res.headers.get("Content-Length") === "0") {
+      console.log("Empty response received, returning undefined");
+      return Promise.resolve(undefined as unknown as T);
+    }
+    
+    // Handle JSON responses
+    if (res.headers.get("Content-Type")?.includes("application/json")) {
+      try {
+        return res.json() as Promise<T>;
+      } catch (error) {
+        console.error("Error parsing JSON response:", error);
+        return Promise.resolve(undefined as unknown as T);
+      }
+    }
+    
+    // Handle other response types
+    return Promise.resolve(res as unknown as T);
   }
 
   /**

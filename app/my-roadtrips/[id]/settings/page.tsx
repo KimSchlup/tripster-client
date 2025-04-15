@@ -5,6 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
 import { Roadtrip } from "@/types/roadtrip";
+import type { RoadtripSettings } from "@/types/roadtripSettings";
+import { BasemapType, DecisionProcess } from "@/types/roadtripSettings";
+import { RoadtripMember, InvitationStatus } from "@/types/roadtripMember";
+import { User } from "@/types/user";
 
 export default function RoadtripSettings() {
     const params = useParams();
@@ -16,6 +20,16 @@ export default function RoadtripSettings() {
     const [name, setRoadtripName] = useState("");
     const [roadtripDestination, setRoadtripDestination] = useState("Switzerland");
     const [roadtripDescription, setRoadtripDescription] = useState("");
+    
+    // RoadtripSettings state
+    const [roadtripSettings, setRoadtripSettings] = useState<RoadtripSettings | null>(null);
+    const [basemapType, setBasemapType] = useState<BasemapType>(BasemapType.STANDARD);
+    const [decisionProcess, setDecisionProcess] = useState<DecisionProcess>(DecisionProcess.MAJORITY);
+    const [boundingBox, setBoundingBox] = useState<any | null>(null);
+    const [startDate, setStartDate] = useState<string | undefined>(undefined);
+    const [endDate, setEndDate] = useState<string | undefined>(undefined);
+    
+    // UI state
     const [votingMechanism, setVotingMechanism] = useState<"majority" | "owner">("majority");
     const [hasSpotifyPlaylist, setHasSpotifyPlaylist] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
@@ -26,42 +40,68 @@ export default function RoadtripSettings() {
     const router = useRouter();
 
     useEffect(() => {
-        const fetchRoadtrip = async () => {
+        const fetchRoadtripAndSettings = async () => {
             try {
                 setLoading(true);
-                console.log(`Fetching roadtrip settings for ID: ${id}`);
+                console.log(`Fetching roadtrip data for ID: ${id}`);
                 
-                // Try to fetch from the settings endpoint
+                // First fetch the basic roadtrip info (name, description, etc.)
                 try {
-                    console.log(`Attempting to fetch from /roadtrips/${id}/settings endpoint`);
-                    const data = await apiService.get<Roadtrip>(`/roadtrips/${id}/settings`);
-                    console.log("Successfully received roadtrip data from settings endpoint:", JSON.stringify(data, null, 2));
-                    setRoadtrip(data);
-                    setRoadtripName(data.name);
-                    // Use description from backend or fallback to roadtripDescription for backward compatibility
-                    setRoadtripDescription(data.description || data.roadtripDescription || "");
-                    setError(null);
-                } catch (settingsErr) {
-                    console.error("Error fetching from settings endpoint:", settingsErr);
-                    console.error("Error details:", JSON.stringify(settingsErr, null, 2));
+                    console.log(`Fetching basic roadtrip data from /roadtrips/${id}`);
+                    const roadtripData = await apiService.get<Roadtrip>(`/roadtrips/${id}`);
+                    console.log("Successfully received roadtrip data:", JSON.stringify(roadtripData, null, 2));
                     
-                    // If settings endpoint fails, try the regular endpoint as fallback
-                    console.log(`Attempting to fetch from regular /roadtrips/${id} endpoint as fallback`);
+                    setRoadtrip(roadtripData);
+                    setRoadtripName(roadtripData.name);
+                    setRoadtripDescription(roadtripData.description || roadtripData.roadtripDescription || "");
+                    
+                    // Then fetch the settings
                     try {
-                        const fallbackData = await apiService.get<Roadtrip>(`/roadtrips/${id}`);
-                        console.log("Successfully received roadtrip data from regular endpoint:", JSON.stringify(fallbackData, null, 2));
-                        setRoadtrip(fallbackData);
-                        setRoadtripName(fallbackData.name);
-                        setRoadtripDescription(fallbackData.description || fallbackData.roadtripDescription || "");
-                        setError(null);
-                    } catch (fallbackErr) {
-                        console.error("Error fetching from fallback endpoint:", fallbackErr);
-                        console.error("Fallback error details:", JSON.stringify(fallbackErr, null, 2));
-                        throw fallbackErr; // Re-throw to be caught by the outer catch block
+                        console.log(`Fetching roadtrip settings from /roadtrips/${id}/settings`);
+                        const settingsData = await apiService.get<RoadtripSettings>(`/roadtrips/${id}/settings`);
+                        console.log("Successfully received roadtrip settings:", JSON.stringify(settingsData, null, 2));
+                        
+                        setRoadtripSettings(settingsData);
+                        
+                        // Update state with settings data
+                        if (settingsData.basemapType) {
+                            setBasemapType(settingsData.basemapType);
+                        }
+                        
+                        if (settingsData.decisionProcess) {
+                            setDecisionProcess(settingsData.decisionProcess);
+                            // Map DecisionProcess to votingMechanism
+                            setVotingMechanism(
+                                settingsData.decisionProcess === DecisionProcess.MAJORITY ? "majority" : "owner"
+                            );
+                        }
+                        
+                        if (settingsData.boundingBox) {
+                            setBoundingBox(settingsData.boundingBox);
+                        }
+                        
+                        if (settingsData.startDate) {
+                            setStartDate(settingsData.startDate);
+                        }
+                        
+                        if (settingsData.endDate) {
+                            setEndDate(settingsData.endDate);
+                        }
+                        
+                    } catch (settingsErr) {
+                        console.error("Error fetching roadtrip settings:", settingsErr);
+                        console.error("Settings error details:", JSON.stringify(settingsErr, null, 2));
+                        // Continue showing the page with just the basic roadtrip info
                     }
+                    
+                    setError(null);
+                } catch (roadtripErr) {
+                    console.error("Error fetching basic roadtrip data:", roadtripErr);
+                    console.error("Roadtrip error details:", JSON.stringify(roadtripErr, null, 2));
+                    setError("Failed to load roadtrip. Please try again later.");
                 }
             } catch (err) {
-                console.error("Error fetching roadtrip (all attempts failed):", err);
+                console.error("Error fetching data (all attempts failed):", err);
                 setError("Failed to load roadtrip. Please try again later.");
             } finally {
                 setLoading(false);
@@ -69,7 +109,7 @@ export default function RoadtripSettings() {
         };
 
         if (id) {
-            fetchRoadtrip();
+            fetchRoadtripAndSettings();
         }
     }, [apiService, id]);
 
@@ -79,15 +119,23 @@ export default function RoadtripSettings() {
             if (!id) return;
             
             try {
-                const members = await apiService.get<{ id: string; name: string }[]>(`/roadtrips/${id}/members`);
+                // GET /roadtrips/{roadtripId}/members - Returns List<User>
+                const members = await apiService.get<User[]>(`/roadtrips/${id}/members`);
                 console.log("Fetched roadtrip members:", members);
-                setRoadtripMembers(members);
+                
+                // Convert User[] to the format expected by the UI
+                const formattedMembers = members.map(user => ({
+                    id: user.userId?.toString() || "unknown",
+                    name: user.username || "Unknown User"
+                }));
+                
+                setRoadtripMembers(formattedMembers);
                 
                 // Also update the roadtrip object with the members if it exists
                 if (roadtrip) {
                     setRoadtrip({
                         ...roadtrip,
-                        roadtripMembers: members
+                        roadtripMembers: formattedMembers
                     });
                 }
             } catch (err) {
@@ -106,17 +154,42 @@ export default function RoadtripSettings() {
         try {
             setSaveSuccess(false);
 
+            // First update the basic roadtrip info
             const updatedRoadtrip = {
                 ...roadtrip,
                 name,
                 description: roadtripDescription || undefined, // Use description for backend
                 roadtripDescription: roadtripDescription || undefined, // Keep for backward compatibility
-                roadtripDestination,
-                votingMechanism,
-                hasSpotifyPlaylist
+                roadtripDestination
             };
 
-            await apiService.put<Roadtrip>(`/roadtrips/${id}/settings`, updatedRoadtrip);
+            console.log("Updating roadtrip:", JSON.stringify(updatedRoadtrip, null, 2));
+            await apiService.put<Roadtrip>(`/roadtrips/${id}`, updatedRoadtrip);
+            
+            // Then update the settings
+            if (roadtripSettings) {
+                // Map votingMechanism to DecisionProcess
+                const updatedDecisionProcess = votingMechanism === "majority" 
+                    ? DecisionProcess.MAJORITY 
+                    : DecisionProcess.OWNER;
+                
+                const updatedSettings: RoadtripSettings = {
+                    ...roadtripSettings,
+                    basemapType,
+                    decisionProcess: updatedDecisionProcess,
+                    boundingBox,
+                    startDate,
+                    endDate
+                };
+                
+                console.log("Updating roadtrip settings:", JSON.stringify(updatedSettings, null, 2));
+                // Use void as the response type since we expect a 204 No Content response
+                await apiService.put<void>(`/roadtrips/${id}/settings`, updatedSettings);
+                
+                // Update local state with the updated settings
+                setRoadtripSettings(updatedSettings);
+            }
+            
             setSaveSuccess(true);
             
             // Update local state
@@ -150,24 +223,29 @@ export default function RoadtripSettings() {
         }
     };
 
-    const handleRemoveUser = (userId: string) => {
+    const handleRemoveUser = async (userId: string) => {
         if (!roadtrip) return;
         
-        // In a real implementation, this would call the API to remove the user
-        console.log(`Removing user ${userId} from roadtrip ${id}`);
-        
-        // Update both state variables
-        const updatedMembers = (roadtrip.roadtripMembers || []).filter(member => member.id !== userId);
-        setRoadtripMembers(updatedMembers);
-        
-        // Also update the roadtrip object if it exists
-        setRoadtrip({
-            ...roadtrip,
-            roadtripMembers: updatedMembers
-        });
-        
-        // In a real implementation, you would also call the API to remove the user
-        // apiService.delete(`/roadtrips/${id}/members/${userId}`);
+        try {
+            console.log(`Removing user ${userId} from roadtrip ${id}`);
+            
+            // Call the API to remove the user
+            // DELETE /roadtrips/{roadtripId}/members/{userId}
+            await apiService.delete<void>(`/roadtrips/${id}/members/${userId}`);
+            
+            // Update both state variables
+            const updatedMembers = (roadtrip.roadtripMembers || []).filter(member => member.id !== userId);
+            setRoadtripMembers(updatedMembers);
+            
+            // Also update the roadtrip object if it exists
+            setRoadtrip({
+                ...roadtrip,
+                roadtripMembers: updatedMembers
+            });
+        } catch (err) {
+            console.error("Error removing member:", err);
+            setError("Failed to remove member. Please try again later.");
+        }
     };
 
     const handleAddUser = () => {
@@ -185,40 +263,42 @@ export default function RoadtripSettings() {
         try {
             setAddMemberError(null);
             
-            // In a real implementation, you would call the API to add the member
-            // For now, we'll simulate adding a member with a random ID
-            const newMember = {
-                id: `user-${Date.now()}`,
-                name: newMemberUsername
+            // First, we need to find the user ID for the given username
+            // This would typically be done through a user search API
+            // For now, we'll simulate it with a fixed user ID
+            const userId = "123"; // In a real implementation, this would come from a user search
+            
+            // Call the API to add the member
+            // POST /roadtrips/{roadtripId}/members with userId in the body
+            const requestBody = {
+                userId: userId
             };
             
-            // Add the member to the roadtrip
-            const updatedMembers = [...(roadtrip?.roadtripMembers || []), newMember];
+            // Make the API call
+            const response = await apiService.post<RoadtripMember>(`/roadtrips/${id}/members`, requestBody);
+            console.log("Added member:", response);
+            
+            // Refresh the member list
+            const members = await apiService.get<User[]>(`/roadtrips/${id}/members`);
+            
+            // Convert User[] to the format expected by the UI
+            const formattedMembers = members.map(user => ({
+                id: user.userId?.toString() || "unknown",
+                name: user.username || "Unknown User"
+            }));
             
             // Update both state variables
-            setRoadtripMembers(updatedMembers);
+            setRoadtripMembers(formattedMembers);
             
             if (roadtrip) {
                 setRoadtrip({
                     ...roadtrip,
-                    roadtripMembers: updatedMembers
+                    roadtripMembers: formattedMembers
                 });
             }
             
             // Close the popup
             setShowAddMemberPopup(false);
-            
-            // In a real implementation, you would call the API to add the member
-            // const response = await apiService.post(`/roadtrips/${id}/members`, { username: newMemberUsername });
-            // Then fetch the updated members list
-            // const members = await apiService.get<{ id: string; name: string }[]>(`/roadtrips/${id}/members`);
-            // setRoadtripMembers(members);
-            // if (roadtrip) {
-            //     setRoadtrip({
-            //         ...roadtrip,
-            //         roadtripMembers: members
-            //     });
-            // }
         } catch (err) {
             console.error("Error adding member:", err);
             setAddMemberError("Failed to add member. Please try again.");
@@ -443,6 +523,226 @@ export default function RoadtripSettings() {
                                         >
                                             <span className="form-button-text">Invite Guest</span>
                                         </button>
+                                    </div>
+                                </div>
+                                
+                                {/* Map Settings Section */}
+                                <div style={{
+                                    width: "100%",
+                                    background: "white",
+                                    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
+                                    borderRadius: 10,
+                                    padding: "20px"
+                                }}>
+                                    <div style={{
+                                        color: "black",
+                                        fontSize: 24,
+                                        fontFamily: "Manrope",
+                                        fontWeight: 700,
+                                        marginBottom: "20px"
+                                    }}>
+                                        Map Settings
+                                    </div>
+                                    
+                                    <div style={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: "20px"
+                                    }}>
+                                        <div>
+                                            <div style={{
+                                                color: "black",
+                                                fontSize: 18,
+                                                fontFamily: "Manrope",
+                                                fontWeight: 700,
+                                                marginBottom: "10px"
+                                            }}>
+                                                Basemap Type
+                                            </div>
+                                            <div style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "10px"
+                                            }}>
+                                                <div 
+                                                    onClick={() => setBasemapType(BasemapType.STANDARD)}
+                                                    style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "10px",
+                                                        cursor: "pointer"
+                                                    }}
+                                                >
+                                                    <div style={{
+                                                        width: 16,
+                                                        height: 16,
+                                                        background: "#2C2C2C",
+                                                        borderRadius: 4,
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center"
+                                                    }}>
+                                                        {basemapType === BasemapType.STANDARD && (
+                                                            <div style={{
+                                                                width: 10,
+                                                                height: 7,
+                                                                background: "#F5F5F5"
+                                                            }}></div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{
+                                                        color: "black",
+                                                        fontSize: 16,
+                                                        fontFamily: "Manrope",
+                                                        fontWeight: 700
+                                                    }}>
+                                                        Standard
+                                                    </div>
+                                                </div>
+                                                <div 
+                                                    onClick={() => setBasemapType(BasemapType.SATELLITE)}
+                                                    style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "10px",
+                                                        cursor: "pointer"
+                                                    }}
+                                                >
+                                                    <div style={{
+                                                        width: 16,
+                                                        height: 16,
+                                                        background: "#2C2C2C",
+                                                        borderRadius: 4,
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center"
+                                                    }}>
+                                                        {basemapType === BasemapType.SATELLITE && (
+                                                            <div style={{
+                                                                width: 10,
+                                                                height: 7,
+                                                                background: "#F5F5F5"
+                                                            }}></div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{
+                                                        color: "black",
+                                                        fontSize: 16,
+                                                        fontFamily: "Manrope",
+                                                        fontWeight: 700
+                                                    }}>
+                                                        Satellite
+                                                    </div>
+                                                </div>
+                                                <div 
+                                                    onClick={() => setBasemapType(BasemapType.TERRAIN)}
+                                                    style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "10px",
+                                                        cursor: "pointer"
+                                                    }}
+                                                >
+                                                    <div style={{
+                                                        width: 16,
+                                                        height: 16,
+                                                        background: "#2C2C2C",
+                                                        borderRadius: 4,
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center"
+                                                    }}>
+                                                        {basemapType === BasemapType.TERRAIN && (
+                                                            <div style={{
+                                                                width: 10,
+                                                                height: 7,
+                                                                background: "#F5F5F5"
+                                                            }}></div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{
+                                                        color: "black",
+                                                        fontSize: 16,
+                                                        fontFamily: "Manrope",
+                                                        fontWeight: 700
+                                                    }}>
+                                                        Terrain
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Trip Dates Section */}
+                                <div style={{
+                                    width: "100%",
+                                    background: "white",
+                                    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
+                                    borderRadius: 10,
+                                    padding: "20px"
+                                }}>
+                                    <div style={{
+                                        color: "black",
+                                        fontSize: 24,
+                                        fontFamily: "Manrope",
+                                        fontWeight: 700,
+                                        marginBottom: "20px"
+                                    }}>
+                                        Trip Dates
+                                    </div>
+                                    
+                                    <div style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        gap: "20px"
+                                    }}>
+                                        <div style={{ width: "48%" }}>
+                                            <div style={{
+                                                color: "black",
+                                                fontSize: 16,
+                                                fontFamily: "Manrope",
+                                                fontWeight: 700,
+                                                marginBottom: "5px"
+                                            }}>
+                                                Start Date
+                                            </div>
+                                            <input
+                                                type="date"
+                                                value={startDate || ""}
+                                                onChange={(e) => setStartDate(e.target.value)}
+                                                style={{
+                                                    width: "100%",
+                                                    padding: "10px",
+                                                    border: "1px solid #ccc",
+                                                    borderRadius: 5,
+                                                    fontSize: 16
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ width: "48%" }}>
+                                            <div style={{
+                                                color: "black",
+                                                fontSize: 16,
+                                                fontFamily: "Manrope",
+                                                fontWeight: 700,
+                                                marginBottom: "5px"
+                                            }}>
+                                                End Date
+                                            </div>
+                                            <input
+                                                type="date"
+                                                value={endDate || ""}
+                                                onChange={(e) => setEndDate(e.target.value)}
+                                                style={{
+                                                    width: "100%",
+                                                    padding: "10px",
+                                                    border: "1px solid #ccc",
+                                                    borderRadius: 5,
+                                                    fontSize: 16
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 
