@@ -51,7 +51,7 @@ export default function MyRoadtrips() {
                 // Log roadtrips without ID for debugging
                 if (Array.isArray(data)) {
                     data.forEach(roadtrip => {
-                        if (roadtrip.id === undefined) {
+                        if (roadtrip.roadtripId === undefined) {
                             console.warn("Roadtrip without ID:", roadtrip);
                         }
                     });
@@ -86,12 +86,12 @@ export default function MyRoadtrips() {
         fetchRoadtrips();
     }, [apiService, isLoggedIn, router]);
 
-    const handleRoadtripClick = (id: number | undefined) => {
-        if (id === undefined) {
+    const handleRoadtripClick = (roadtripId: number | undefined) => {
+        if (roadtripId === undefined) {
             console.error("Roadtrip ID is undefined");
             return;
         }
-        router.push(`/my-roadtrips/${id}`);
+        router.push(`/my-roadtrips/${roadtripId}`);
     };
 
     const handleNewRoadtripClick = async () => {
@@ -116,8 +116,8 @@ export default function MyRoadtrips() {
             console.log("Created roadtrip:", createdRoadtrip);
             
             // Redirect to the settings page for the new roadtrip
-            // Use id (from backend) or fallback to roadtripId (for backward compatibility)
-            const roadtripId = createdRoadtrip.id || createdRoadtrip.roadtripId;
+            // Use roadtripId from backend
+            const roadtripId = createdRoadtrip.roadtripId;
             
             if (roadtripId === undefined) {
                 throw new Error("Created roadtrip has no ID");
@@ -164,7 +164,7 @@ export default function MyRoadtrips() {
                         {/* Display existing roadtrips */}
                         {roadtrips.map((roadtrip, index) => (
                             <div 
-                                key={`roadtrip-${roadtrip.id || index}`}
+                                key={`roadtrip-${roadtrip.roadtripId || index}`}
                                 style={{
                                     width: 328, 
                                     boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', 
@@ -172,11 +172,11 @@ export default function MyRoadtrips() {
                                     justifyContent: 'flex-start', 
                                     alignItems: 'flex-start', 
                                     display: 'flex',
-                                    cursor: roadtrip.id ? 'pointer' : 'not-allowed'
+                                    cursor: roadtrip.roadtripId ? 'pointer' : 'not-allowed'
                                 }}
                                 onClick={() => {
-                                    console.log("Clicked roadtrip with ID:", roadtrip.id);
-                                    handleRoadtripClick(roadtrip.id);
+                                    console.log("Clicked roadtrip with ID:", roadtrip.roadtripId);
+                                    handleRoadtripClick(roadtrip.roadtripId);
                                 }}
                             >
                                 <div style={{width: 328, height: 100, background: '#D9D9D9', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
