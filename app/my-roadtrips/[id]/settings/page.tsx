@@ -10,6 +10,7 @@ export default function RoadtripSettings() {
     const params = useParams();
     const id = params.id as string;
     const [roadtrip, setRoadtrip] = useState<Roadtrip | null>(null);
+    const [roadtripMembers, setRoadtripMembers] = useState<{ id: string; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [name, setRoadtripName] = useState("");
@@ -43,6 +44,33 @@ export default function RoadtripSettings() {
             fetchRoadtrip();
         }
     }, [apiService, id]);
+
+    // Fetch roadtrip members separately
+    useEffect(() => {
+        const fetchRoadtripMembers = async () => {
+            if (!id) return;
+            
+            try {
+                const members = await apiService.get<{ id: string; name: string }[]>(`/roadtrips/${id}/members`);
+                console.log("Fetched roadtrip members:", members);
+                setRoadtripMembers(members);
+                
+                // Also update the roadtrip object with the members if it exists
+                if (roadtrip) {
+                    setRoadtrip({
+                        ...roadtrip,
+                        roadtripMembers: members
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching roadtrip members:", err);
+                // Don't set an error state here, as we still want to show the roadtrip settings
+                // even if we can't fetch the members
+            }
+        };
+
+        fetchRoadtripMembers();
+    }, [apiService, id, roadtrip]);
 
     const handleSave = async () => {
         if (!roadtrip) return;
@@ -100,12 +128,18 @@ export default function RoadtripSettings() {
         // In a real implementation, this would call the API to remove the user
         console.log(`Removing user ${userId} from roadtrip ${id}`);
         
-        // For now, just update the local state
-        const updatedMembers = roadtrip.roadtripMembers.filter(member => member.id !== userId);
+        // Update both state variables
+        const updatedMembers = (roadtrip.roadtripMembers || []).filter(member => member.id !== userId);
+        setRoadtripMembers(updatedMembers);
+        
+        // Also update the roadtrip object if it exists
         setRoadtrip({
             ...roadtrip,
             roadtripMembers: updatedMembers
         });
+        
+        // In a real implementation, you would also call the API to remove the user
+        // apiService.delete(`/roadtrips/${id}/members/${userId}`);
     };
 
     const handleAddUser = () => {
@@ -131,8 +165,8 @@ export default function RoadtripSettings() {
         <>
             <Header />
             <div className="container" style={{ 
-                padding: "32px", 
-                margin: "144px auto 0", 
+                padding: "16px", 
+                margin: "16px auto 0", 
                 maxWidth: "1400px"
             }}>
                 {loading && <p>Loading roadtrip settings...</p>}
@@ -184,7 +218,6 @@ export default function RoadtripSettings() {
                                     padding: "20px"
                                 }}>
                                     <div style={{
-                                        textAlign: "center",
                                         color: "black",
                                         fontSize: 24,
                                         fontFamily: "Manrope",
@@ -330,7 +363,6 @@ export default function RoadtripSettings() {
                                     padding: "20px"
                                 }}>
                                     <div style={{
-                                        textAlign: "center",
                                         color: "black",
                                         fontSize: 24,
                                         fontFamily: "Manrope",
@@ -346,7 +378,7 @@ export default function RoadtripSettings() {
                                         gap: "10px",
                                         marginBottom: "20px"
                                     }}>
-                                        {roadtrip?.roadtripMembers.map((member) => (
+                                        {(roadtrip?.roadtripMembers || roadtripMembers).map((member) => (
                                             <div 
                                                 key={member.id}
                                                 style={{
