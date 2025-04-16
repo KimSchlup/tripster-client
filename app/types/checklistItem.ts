@@ -16,9 +16,6 @@ export enum ChecklistItemPriority {
 }
 
 export enum ChecklistItemCategory {
-  PREPARATION = "PREPARATION",
-  PACKING = "PACKING",
-  ACCOMMODATION = "ACCOMMODATION",
-  TRANSPORTATION = "TRANSPORTATION",
-  OTHER = "OTHER"
+  ITEM = "ITEM",
+  TODO = "TODO"
 }

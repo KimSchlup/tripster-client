@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import Draggable from "react-draggable";
 import { ChecklistItemCategory, ChecklistItemPriority } from "@/types/checklistItem";
+import Checkbox from "@/components/Checkbox";
 
 interface ChecklistItemWindowProps {
   name: string;
@@ -275,16 +276,10 @@ export default function ChecklistItemWindow({
           }}>
             <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Status</div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={editableIsCompleted}
-                onChange={(e) => isEditing && setEditableIsCompleted(e.target.checked)}
+                onChange={(checked) => isEditing && setEditableIsCompleted(checked)}
                 disabled={!isEditing}
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  cursor: isEditing ? "pointer" : "default"
-                }}
               />
               <span style={{ fontSize: "14px", fontWeight: 700, color: "black" }}>
                 {editableIsCompleted ? "Completed" : "Not Completed"}

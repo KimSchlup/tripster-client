@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
 import { ChecklistItem, ChecklistItemCategory, ChecklistItemPriority } from "@/types/checklistItem";
@@ -10,7 +10,6 @@ import Checkbox from "@/components/Checkbox";
 
 export default function ChecklistPage() {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
   const apiService = useApi();
 
@@ -42,7 +41,7 @@ export default function ChecklistPage() {
             isCompleted: true,
             assignedUser: "John",
             priority: ChecklistItemPriority.HIGH,
-            category: ChecklistItemCategory.ACCOMMODATION,
+            category: ChecklistItemCategory.TODO,
             roadtripId: parseInt(id)
           },
           {
@@ -51,7 +50,7 @@ export default function ChecklistPage() {
             isCompleted: false,
             assignedUser: "Sarah",
             priority: ChecklistItemPriority.MEDIUM,
-            category: ChecklistItemCategory.PACKING,
+            category: ChecklistItemCategory.ITEM,
             roadtripId: parseInt(id)
           },
           {
@@ -60,7 +59,7 @@ export default function ChecklistPage() {
             isCompleted: false,
             assignedUser: null,
             priority: ChecklistItemPriority.HIGH,
-            category: ChecklistItemCategory.TRANSPORTATION,
+            category: ChecklistItemCategory.TODO,
             roadtripId: parseInt(id)
           }
         ]);
@@ -459,15 +458,9 @@ export default function ChecklistPage() {
                           gap: "10px",
                           flex: 1
                         }}>
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={item.isCompleted}
                             onChange={() => handleToggleCompletion(item)}
-                            style={{
-                              width: "20px",
-                              height: "20px",
-                              cursor: "pointer"
-                            }}
                           />
                           <div style={{
                             display: "flex",
@@ -545,7 +538,7 @@ export default function ChecklistPage() {
                     fontSize: "18px",
                     color: "#666"
                   }}>
-                    No checklist items found. Click "Add Item" to create one.
+                    No checklist items found. Click &quot;Add Item&quot; to create one.
                   </p>
                 </div>
               )}
@@ -560,7 +553,7 @@ export default function ChecklistPage() {
           name=""
           isCompleted={false}
           assignedUser={null}
-          category={ChecklistItemCategory.OTHER}
+          category={ChecklistItemCategory.ITEM}
           priority={ChecklistItemPriority.MEDIUM}
           onClose={() => setShowAddItemWindow(false)}
           onSave={handleAddItem}
