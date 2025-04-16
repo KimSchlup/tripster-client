@@ -21,12 +21,11 @@ export default function RoadtripSettings() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [name, setRoadtripName] = useState("");
-    const [roadtripDestination, setRoadtripDestination] = useState("Switzerland");
     const [roadtripDescription, setRoadtripDescription] = useState("");
     
     // RoadtripSettings state
     const [roadtripSettings, setRoadtripSettings] = useState<RoadtripSettings | null>(null);
-    const [basemapType, setBasemapType] = useState<BasemapType>(BasemapType.STANDARD);
+    const [basemapType, setBasemapType] = useState<BasemapType>(BasemapType.DEFAULT);
     const [decisionProcess, setDecisionProcess] = useState<DecisionProcess>(DecisionProcess.MAJORITY);
     const [boundingBox, setBoundingBox] = useState<GeoJSON | undefined>(undefined);
     const [startDate, setStartDate] = useState<string | undefined>(undefined);
@@ -67,8 +66,18 @@ export default function RoadtripSettings() {
                         
                         setRoadtripSettings(settingsData);
                         
-                        // Always set basemap type to STANDARD by default
-                        setBasemapType(BasemapType.STANDARD);
+                        // Set basemap type from settings or DEFAULT if not set
+                        if (settingsData.basemapType) {
+                            // Check if the basemapType is "STANDARD" (invalid value)
+                            if (settingsData.basemapType === "STANDARD" as any) {
+                                console.warn(`Found invalid basemapType "STANDARD" in settings. Using DEFAULT instead.`);
+                                setBasemapType(BasemapType.DEFAULT);
+                            } else {
+                                setBasemapType(settingsData.basemapType);
+                            }
+                        } else {
+                            setBasemapType(BasemapType.DEFAULT);
+                        }
                         
                         if (settingsData.decisionProcess) {
                             setDecisionProcess(settingsData.decisionProcess);
@@ -84,6 +93,11 @@ export default function RoadtripSettings() {
                         
                         if (settingsData.endDate) {
                             setEndDate(settingsData.endDate);
+                        }
+                        
+                        if (settingsData.spotifyPlaylistUrl) {
+                            setSpotifyPlaylistUrl(settingsData.spotifyPlaylistUrl);
+                            setHasSpotifyPlaylist(true);
                         }
                         
                     } catch (settingsErr) {
@@ -178,26 +192,45 @@ export default function RoadtripSettings() {
             setSaveSuccess(false);
 
             // First update the basic roadtrip info
+            // Only include fields that are expected by the API according to the REST specification
             const updatedRoadtrip = {
                 ...roadtrip,
                 name,
-                description: roadtripDescription || undefined, // Use description for backend
-                roadtripDescription: roadtripDescription || undefined, // Keep for backward compatibility
-                roadtripDestination
+                description: roadtripDescription || undefined // Use description for backend
             };
 
             console.log("Updating roadtrip:", JSON.stringify(updatedRoadtrip, null, 2));
-            await apiService.put<Roadtrip>(`/roadtrips/${id}`, updatedRoadtrip);
+            await apiService.put<void>(`/roadtrips/${id}`, updatedRoadtrip);
             
             // Then update the settings
             if (roadtripSettings) {
+                // Log the current basemapType value for debugging
+                console.log(`Current basemapType value: ${basemapType}`);
+                console.log(`Valid BasemapType values:`, Object.values(BasemapType));
+                
+                // Ensure basemapType is a valid enum value
+                let validBasemapType = basemapType;
+                
+                // Explicitly check for "STANDARD" value which is causing the error
+                if (basemapType === "STANDARD" as any) {
+                    console.warn(`Found invalid basemapType "STANDARD". Replacing with DEFAULT.`);
+                    validBasemapType = BasemapType.DEFAULT;
+                }
+                // Check if the current value is valid
+                else if (!Object.values(BasemapType).includes(basemapType)) {
+                    console.warn(`Invalid basemapType: ${basemapType}. Defaulting to DEFAULT.`);
+                    validBasemapType = BasemapType.DEFAULT;
+                }
+                
+                // Create the updated settings object with the validated basemapType
                 const updatedSettings: RoadtripSettings = {
                     ...roadtripSettings,
-                    basemapType,
+                    basemapType: validBasemapType,
                     decisionProcess,
                     boundingBox,
                     startDate,
-                    endDate
+                    endDate,
+                    spotifyPlaylistUrl: hasSpotifyPlaylist ? spotifyPlaylistUrl : undefined
                 };
                 
                 console.log("Updating roadtrip settings:", JSON.stringify(updatedSettings, null, 2));
@@ -213,10 +246,11 @@ export default function RoadtripSettings() {
             // Update local state
             setRoadtrip(updatedRoadtrip);
             
-            // Show success message briefly
+            // Show success message briefly, then redirect
             setTimeout(() => {
-                setSaveSuccess(false);
-            }, 3000);
+                // Navigate to the roadtrip page
+                router.push(`/my-roadtrips/${id}`);
+            }, 1000);
         } catch (err) {
             console.error("Error updating roadtrip:", err);
             setError("Failed to save changes. Please try again later.");
@@ -429,39 +463,19 @@ export default function RoadtripSettings() {
                                         flexDirection: "column",
                                         gap: "20px"
                                     }}>
-                                        <div style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            gap: "20px"
-                                        }}>
-                                            <div className="form-input-container" style={{ width: "48%" }} data-clicked={name ? "Clicked" : "Default"} data-state="Default">
-                                                {!name && (
-                                                    <div className="form-input-placeholder">
-                                                        <div>Name</div>
-                                                    </div>
-                                                )}
-                                                <input
-                                                    type="text"
-                                                    value={name}
-                                                    onChange={(e) => setRoadtripName(e.target.value)}
-                                                    className="form-input"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-input-container" style={{ width: "48%" }} data-clicked={roadtripDestination ? "Clicked" : "Default"} data-state="Default">
-                                                {!roadtripDestination && (
-                                                    <div className="form-input-placeholder">
-                                                        <div>Destination</div>
-                                                    </div>
-                                                )}
-                                                <input
-                                                    type="text"
-                                                    value={roadtripDestination}
-                                                    onChange={(e) => setRoadtripDestination(e.target.value)}
-                                                    className="form-input"
-                                                    required
-                                                />
-                                            </div>
+                                        <div className="form-input-container" style={{ width: "100%" }} data-clicked={name ? "Clicked" : "Default"} data-state="Default">
+                                            {!name && (
+                                                <div className="form-input-placeholder">
+                                                    <div>Name</div>
+                                                </div>
+                                            )}
+                                            <input
+                                                type="text"
+                                                value={name}
+                                                onChange={(e) => setRoadtripName(e.target.value)}
+                                                className="form-input"
+                                                required
+                                            />
                                         </div>
                                         <div className="form-input-container" style={{ width: "100%", height: "75px" }} data-clicked={roadtripDescription ? "Clicked" : "Default"} data-state="Default">
                                             {!roadtripDescription && (
@@ -627,21 +641,36 @@ export default function RoadtripSettings() {
                                                 flexDirection: "column",
                                                 gap: "10px"
                                             }}>
-                                                <Checkbox
-                                                    checked={basemapType === BasemapType.STANDARD}
-                                                    onChange={() => setBasemapType(BasemapType.STANDARD)}
-                                                    label="Standard"
-                                                />
-                                                <Checkbox
-                                                    checked={basemapType === BasemapType.SATELLITE}
-                                                    onChange={() => setBasemapType(BasemapType.SATELLITE)}
-                                                    label="Satellite"
-                                                />
-                                                <Checkbox
-                                                    checked={basemapType === BasemapType.TERRAIN}
-                                                    onChange={() => setBasemapType(BasemapType.TERRAIN)}
-                                                    label="Terrain"
-                                                />
+                                                {/* Display all BasemapType options from the enum with formatted labels */}
+                                                {Object.values(BasemapType).map((type) => {
+                                                    // Format the label to be more user-friendly
+                                                    let formattedLabel: string = type;
+                                                    
+                                                    // Convert enum values to more readable format
+                                                    switch(type) {
+                                                        case BasemapType.DEFAULT:
+                                                            formattedLabel = "Default";
+                                                            break;
+                                                        case BasemapType.SATELLITE:
+                                                            formattedLabel = "Satellite";
+                                                            break;
+                                                        case BasemapType.SATELLITE_HYBRID:
+                                                            formattedLabel = "Satellite Hybrid";
+                                                            break;
+                                                        case BasemapType.OPEN_STREET_MAP:
+                                                            formattedLabel = "OpenStreetMap";
+                                                            break;
+                                                    }
+                                                    
+                                                    return (
+                                                        <Checkbox
+                                                            key={type}
+                                                            checked={basemapType === type}
+                                                            onChange={() => setBasemapType(type)}
+                                                            label={formattedLabel}
+                                                        />
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     </div>
@@ -742,16 +771,33 @@ export default function RoadtripSettings() {
                                         flexDirection: "column",
                                         gap: "10px"
                                     }}>
-                                        <Checkbox
-                                            checked={decisionProcess === DecisionProcess.MAJORITY}
-                                            onChange={() => setDecisionProcess(DecisionProcess.MAJORITY)}
-                                            label="Majority Vote"
-                                        />
-                                        <Checkbox
-                                            checked={decisionProcess === DecisionProcess.OWNER}
-                                            onChange={() => setDecisionProcess(DecisionProcess.OWNER)}
-                                            label="Decision by Owner"
-                                        />
+                                        {/* Display all DecisionProcess options from the enum with formatted labels */}
+                                        {Object.values(DecisionProcess).map((process) => {
+                                            // Format the label to be more user-friendly
+                                            let formattedLabel: string = process;
+                                            
+                                            // Convert enum values to more readable format
+                                            switch(process) {
+                                                case DecisionProcess.DEFAULT:
+                                                    formattedLabel = "Default";
+                                                    break;
+                                                case DecisionProcess.MAJORITY:
+                                                    formattedLabel = "Majority Vote";
+                                                    break;
+                                                case DecisionProcess.OWNER_DECISION:
+                                                    formattedLabel = "Decision by Owner";
+                                                    break;
+                                            }
+                                            
+                                            return (
+                                                <Checkbox
+                                                    key={process}
+                                                    checked={decisionProcess === process}
+                                                    onChange={() => setDecisionProcess(process)}
+                                                    label={formattedLabel}
+                                                />
+                                            );
+                                        })}
                                     </div>
                                 </div>
                                 

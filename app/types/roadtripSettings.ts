@@ -1,14 +1,16 @@
 import type { GeoJSON } from 'geojson';
 
 export enum BasemapType {
-  STANDARD = "STANDARD",
+  DEFAULT = "DEFAULT",
   SATELLITE = "SATELLITE",
-  TERRAIN = "TERRAIN"
+  SATELLITE_HYBRID = "SATELLITE_HYBRID",
+  OPEN_STREET_MAP = "OPEN_STREET_MAP"
 }
 
 export enum DecisionProcess {
+  DEFAULT = "DEFAULT",
   MAJORITY = "MAJORITY",
-  OWNER = "OWNER"
+  OWNER_DECISION = "OWNER_DECISION"
 }
 
 export interface RoadtripSettings {
@@ -19,4 +21,5 @@ export interface RoadtripSettings {
   boundingBox?: GeoJSON; // Optional to handle null cases
   startDate?: string; // Using string for ISO date format
   endDate?: string;
+  spotifyPlaylistUrl?: string; // Optional Spotify playlist URL
 }
