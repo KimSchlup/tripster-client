@@ -69,7 +69,7 @@ export default function RoadtripSettings() {
                         // Set basemap type from settings or DEFAULT if not set
                         if (settingsData.basemapType) {
                             // Check if the basemapType is "STANDARD" (invalid value)
-                            if (settingsData.basemapType === "STANDARD" as any) {
+                            if (settingsData.basemapType === "STANDARD" as BasemapType) {
                                 console.warn(`Found invalid basemapType "STANDARD" in settings. Using DEFAULT instead.`);
                                 setBasemapType(BasemapType.DEFAULT);
                             } else {
@@ -212,7 +212,7 @@ export default function RoadtripSettings() {
                 let validBasemapType = basemapType;
                 
                 // Explicitly check for "STANDARD" value which is causing the error
-                if (basemapType === "STANDARD" as any) {
+                if (basemapType === "STANDARD" as BasemapType) {
                     console.warn(`Found invalid basemapType "STANDARD". Replacing with DEFAULT.`);
                     validBasemapType = BasemapType.DEFAULT;
                 }
