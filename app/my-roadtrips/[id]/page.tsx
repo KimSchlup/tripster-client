@@ -117,9 +117,9 @@ export default function RoadtripPage() {
         sidebarTop={sidebarTop}
         onWayfinder={() => console.log("klick on Wayfinder")}
         onPOIList={() => setShowPOIList((prev) => !prev)}
-        onChecklist={() => console.log("klick on Checklist")}
+        onChecklist={() => router.push(`/my-roadtrips/${id}/checklist`)}
         onLayerManager={() => console.log("klick on LayerManager")}
-      onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
+        onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
       />
       {showPOIList && <POIList pois={pois} />}
       {newPoi && (
