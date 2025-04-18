@@ -1,6 +1,6 @@
 import Draggable from "react-draggable";
 import { useRef } from "react";
-import { PointOfInterest } from "../types/poi";
+import { PointOfInterest } from "../../types/poi";
 
 interface POIListProps {
     pois: PointOfInterest[];
