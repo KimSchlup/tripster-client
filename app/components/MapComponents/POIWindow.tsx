@@ -288,7 +288,9 @@ export default function POIWindow(
           border: "1px solid #E4E4E4",
           padding: "15px"
         }}>
-          <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Comments</div>
+          <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>
+              Comments
+          </div>
           <textarea style={{
             width: "100%",
             height: "120px",

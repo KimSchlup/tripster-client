@@ -6,10 +6,10 @@ import Image from "next/image";
 import {useEffect, useState} from "react";
 import {useParams, useRouter} from "next/navigation";
 import type {LeafletMouseEvent} from "leaflet";
-import {Icon} from "leaflet";
-import POIWindow from "@/components/POIWindow";
-import VerticalSidebar from "@/components/VerticalSidebar";
-import POIList from "@/components/POIList";
+import {ColoredMarker} from "@/components/MapComponents/coloredMarker";
+import POIWindow from "@/components/MapComponents/POIWindow";
+import VerticalSidebar from "@/components/MapComponents/VerticalSidebar";
+import POIList from "@/components/MapComponents/POIList";
 import "leaflet/dist/leaflet.css";
 import {Marker, useMapEvent} from "react-leaflet";
 import {ApiService} from "@/api/apiService";
@@ -24,20 +24,6 @@ const TileLayer = dynamic(
   { ssr: false },
 );
 
-function createColoredMarker(color: string): Icon {
-    const svgString = `
-    <svg width="35" height="35" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.01639 21.8641L17.125 34.5L27.2337 21.8641C29.1862 19.4235 30.25 16.3909 30.25 13.2652V12.625C30.25 5.37626 24.3737 -0.5 17.125 -0.5C9.87626 -0.5 4 5.37626 4 12.625V13.2652C4 16.3909 5.06378 19.4235 7.01639 21.8641ZM17.125 17C19.5412 17 21.5 15.0412 21.5 12.625C21.5 10.2088 19.5412 8.25 17.125 8.25C14.7088 8.25 12.75 10.2088 12.75 12.625C12.75 15.0412 14.7088 17 17.125 17Z" fill="${color}"/>
-    </svg>
-  `;
-    const svgUrl = `data:image/svg+xml;base64,${btoa(svgString)}`;
-
-    return new Icon({
-        iconUrl: svgUrl,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-    });
-}
 
 export default function RoadtripPage() {
   const params = useParams();
@@ -52,6 +38,8 @@ export default function RoadtripPage() {
   const [contextMenuScreenPosition, setContextMenuScreenPosition] = useState<{ x: number, y: number } | null>(null);
   const [showPOIList, setShowPOIList] = useState(false);
 
+  // Dynamically resize VerticalSidebar Position, if Browser Window is shortened
+    // Checks, that SideBar slides upwards, but doesn't cover Logo
   useEffect(() => {
     const handleResize = () => {
       const logoBottom = 30 + 60 + 20; // logo top + logo height + Abstand
@@ -92,6 +80,7 @@ export default function RoadtripPage() {
 
   return (
     <div style={{ height: "100vh", width: "100%", marginTop: "-144px"}}>
+        {/* ------------- Logo ------------- */}
       <Link
         href="/"
         style={{
@@ -113,7 +102,8 @@ export default function RoadtripPage() {
           style={{ borderRadius: "10%" }}
         />
       </Link>
-      <VerticalSidebar
+        {/* ------------- SideBar ------------- */}
+        <VerticalSidebar
         sidebarTop={sidebarTop}
         onWayfinder={() => console.log("klick on Wayfinder")}
         onPOIList={() => setShowPOIList((prev) => !prev)}
@@ -153,16 +143,17 @@ export default function RoadtripPage() {
           onDelete={() => {
             if (!newPoi) return;
             setPois((prevPois) => prevPois.filter((poi) => poi.poiId !== newPoi.poiId));
-            const apiService = new ApiService();
+            /*const apiService = new ApiService();
             apiService.delete(`/roadtrips/${id}/pois/${newPoi.poiId}`).catch((error) => {
               console.error("Failed to delete POI:", error);
-            });
+            });*/
+              // TODO: Delete "new POI" könnte vereinfacht werden, ein API DELETE braucht es vermutlich nicht
             setNewPoi(null);
             setContextMenuLatLng(null);
             setContextMenuScreenPosition(null);
           }}
           onUpvote={() => {}}
-          onDownvote={() => {}}
+          onDownvote={ () => {}}
           onClose={() => {
             setNewPoi(null);
             setContextMenuLatLng(null);
@@ -212,8 +203,30 @@ export default function RoadtripPage() {
             }
             setSelectedPoi(null);
           }}
-          onUpvote={() => {}}
-          onDownvote={() => {}}
+          onUpvote={async () => {
+              if (!selectedPoi) return;
+              try {
+                  const apiService = new ApiService();
+                  await apiService.put(`/roadtrips/${id}/pois/${selectedPoi.poiId}/votes`, {
+                      vote: "upvote",
+                  });
+                  console.log("Upvote erfolgreich");
+              } catch (error) {
+                  console.error("Fehler beim Upvoten:", error);
+              }
+          }}
+          onDownvote={async () => {
+              if (!selectedPoi) return;
+              try {
+                  const apiService = new ApiService();
+                  await apiService.put(`/roadtrips/${id}/pois/${selectedPoi.poiId}/votes`, {
+                      vote: "downvote",
+                  });
+                  console.log("Downvote erfolgreich");
+              } catch (error) {
+                  console.error("Fehler beim Downvoten:", error);
+              }
+          }}
           onClose={() => setSelectedPoi(null)}
           isNew={false}
         />
@@ -237,7 +250,7 @@ export default function RoadtripPage() {
           borderWidth: "0px"}}
                   onClick={() => {
             const newPoint: PointOfInterest = {
-              poiId: Date.now(), // temporär eindeutige ID
+              poiId: Date.now(), // TODO: Anpassen?
               name: "",
               coordinate: {
                 type: "Point",
@@ -277,7 +290,7 @@ export default function RoadtripPage() {
             <Marker
               key={poi.poiId}
               position={[poi.coordinate.coordinates[1], poi.coordinate.coordinates[0]]}
-              icon={createColoredMarker(color)}
+              icon={ColoredMarker(color)}
               eventHandlers={{
                 click: () => setSelectedPoi(poi),
               }}
