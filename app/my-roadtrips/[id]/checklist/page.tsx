@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ChecklistItem, ChecklistItemCategory, ChecklistItemPriority } from "@/types/checklistItem";
 import ChecklistItemWindow from "@/components/ChecklistItemWindow";
 import Checkbox from "@/components/Checkbox";
+import { ApplicationError } from "@/types/error";
 
 export default function ChecklistPage() {
   const params = useParams();
@@ -88,7 +89,7 @@ export default function ChecklistPage() {
           
           // Check if it's an ApplicationError with status
           if ('status' in err) {
-            status = (err as any).status;
+            status = (err as ApplicationError).status;
             console.error("Error status:", status);
           }
         }
@@ -307,11 +308,12 @@ export default function ChecklistPage() {
     // Process each item to ensure unique IDs
     return processed.map(item => {
       // Check if the item has a checklistElementId from the server
-      if ((item as any).checklistElementId) {
+      const itemWithPossibleElementId = item as unknown as { checklistElementId?: number };
+      if (itemWithPossibleElementId.checklistElementId) {
         // Use the server's ID as the checklistItemId
         const serverItem = {
           ...item,
-          checklistItemId: (item as any).checklistElementId
+          checklistItemId: itemWithPossibleElementId.checklistElementId
         };
         
         // If this ID is already seen, generate a new one

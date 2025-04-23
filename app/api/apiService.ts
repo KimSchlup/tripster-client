@@ -50,7 +50,7 @@ export class ApiService {
       // Based on the provided ChecklistGetDTO structure, the endpoint returns an object with:
       // - roadtripId: Long
       // - checklistElements: List<ChecklistElementGetDTO>
-      const response = await this.get<any>(endpoint);
+      const response = await this.get<Record<string, unknown>>(endpoint);
       
       console.log("Checklist response received successfully");
       console.log("Checklist response type:", typeof response);
@@ -135,16 +135,16 @@ export class ApiService {
     
     // Create a proper ChecklistElementPostDTO object without the roadtripId
     // The backend expects: name, isCompleted, assignedUser, priority, category
-    const checklistElementData: any = {
-      name: (checklistElement as any).name || "",
-      isCompleted: (checklistElement as any).isCompleted === true,
-      priority: (checklistElement as any).priority || "MEDIUM",
-      category: (checklistElement as any).category || "ITEM"
+    const checklistElementData: Record<string, unknown> = {
+      name: (checklistElement as Record<string, unknown>).name || "",
+      isCompleted: (checklistElement as Record<string, unknown>).isCompleted === true,
+      priority: (checklistElement as Record<string, unknown>).priority || "MEDIUM",
+      category: (checklistElement as Record<string, unknown>).category || "ITEM"
     };
     
     // Only include assignedUser if it's not null or empty
-    if ((checklistElement as any).assignedUser) {
-      checklistElementData.assignedUser = (checklistElement as any).assignedUser;
+    if ((checklistElement as Record<string, unknown>).assignedUser) {
+      checklistElementData.assignedUser = (checklistElement as Record<string, unknown>).assignedUser;
     }
     
     // Map the category if it's "TODO" to "TASK" to match backend enum
@@ -246,7 +246,7 @@ export class ApiService {
             // Try to parse as JSON anyway
             responseData = JSON.parse(textResponse);
             console.log("Parsed text as JSON:", responseData);
-          } catch (e) {
+          } catch {
             console.log("Could not parse text as JSON, using default response");
             // Create a default response with the data we sent
             responseData = {
@@ -354,11 +354,11 @@ export class ApiService {
         console.error("Error stack:", error.stack);
         
         if ('status' in error) {
-          console.error("Error status:", (error as any).status);
+          console.error("Error status:", (error as ApplicationError).status);
         }
         
         if ('info' in error) {
-          console.error("Error info:", (error as any).info);
+          console.error("Error info:", (error as ApplicationError).info);
         }
         
         // If it's a network error, provide more context
@@ -389,11 +389,11 @@ export class ApiService {
     // Create a proper ChecklistElementPostDTO object without the roadtripId and checklistItemId
     // The backend expects: name, isCompleted, assignedUser, priority, category
     const checklistElementData = {
-      name: (checklistElement as any).name,
-      isCompleted: (checklistElement as any).isCompleted,
-      assignedUser: (checklistElement as any).assignedUser,
-      priority: (checklistElement as any).priority,
-      category: (checklistElement as any).category
+      name: (checklistElement as Record<string, unknown>).name,
+      isCompleted: (checklistElement as Record<string, unknown>).isCompleted,
+      assignedUser: (checklistElement as Record<string, unknown>).assignedUser,
+      priority: (checklistElement as Record<string, unknown>).priority,
+      category: (checklistElement as Record<string, unknown>).category
     };
     
     // Map the category if it's "TODO" to "TASK" to match backend enum
@@ -423,11 +423,11 @@ export class ApiService {
         console.error("Error stack:", error.stack);
         
         if ('status' in error) {
-          console.error("Error status:", (error as any).status);
+          console.error("Error status:", (error as ApplicationError).status);
         }
         
         if ('info' in error) {
-          console.error("Error info:", (error as any).info);
+          console.error("Error info:", (error as ApplicationError).info);
         }
       }
       
@@ -466,11 +466,11 @@ export class ApiService {
         console.error("Error stack:", error.stack);
         
         if ('status' in error) {
-          console.error("Error status:", (error as any).status);
+          console.error("Error status:", (error as ApplicationError).status);
         }
         
         if ('info' in error) {
-          console.error("Error info:", (error as any).info);
+          console.error("Error info:", (error as ApplicationError).info);
         }
       }
       
