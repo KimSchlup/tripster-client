@@ -48,7 +48,7 @@ export default function ChecklistItemWindow({
         ref={nodeRef}
         style={{
           width: 465,
-          height: 550,
+          height: 650, // Increased height to accommodate all content
           position: "absolute",
           top: "100px",
           left: "100px",
@@ -58,6 +58,7 @@ export default function ChecklistItemWindow({
           border: "1px solid #DDDDDD",
           backdropFilter: "blur(5px)",
           zIndex: 2000,
+          overflow: "hidden", // Prevent window from scrolling
         }}
       >
         <div className="handle" style={{ position: "absolute", width: "100%", height: "60px", top: "0px", left: "0px" }}>
@@ -138,9 +139,13 @@ export default function ChecklistItemWindow({
           width: 428,
           top: 105,
           left: 19,
+          bottom: 100, // Leave space for the action buttons
+          overflowY: "auto", // Make only the form content scrollable
           display: "flex",
           flexDirection: "column",
-          gap: "20px"
+          gap: "20px",
+          paddingRight: "10px", // Add some padding for the scrollbar
+          paddingBottom: "20px" // Add padding at the bottom for better spacing
         }}>
           {/* Name Field */}
           <div style={{
@@ -197,7 +202,7 @@ export default function ChecklistItemWindow({
                 >
                   {Object.values(ChecklistItemCategory).map((cat) => (
                     <option key={cat} value={cat}>
-                      {cat}
+                      {cat === "TASK" ? "TASK" : "ITEM"}
                     </option>
                   ))}
                 </select>

@@ -38,21 +38,19 @@ const Login: React.FC = () => {
         console.log("Received token:", response.token);
         console.log("Received userId:", response.userId);
         
-        // Store token directly in localStorage for debugging
-        localStorage.setItem("token", response.token);
-        console.log("Token stored directly:", localStorage.getItem("token"));
-        
-        // Then use the login function
+        // Use the login function from useAuth to store the token
+        // This will handle storing in both React state and localStorage
         login(response.token, response.userId);
         
         // Verify token was stored
         console.log("Token after login:", localStorage.getItem("token"));
         
-        // Add a small delay before navigation to ensure token is stored
+        // Add a longer delay before navigation to ensure token is properly stored and available
         setTimeout(() => {
           // Navigate to roadtrips page
+          console.log("Navigating to roadtrips page with token:", localStorage.getItem("token"));
           router.push("/my-roadtrips");
-        }, 500);
+        }, 1000);
       } else {
         throw new Error("Invalid response from server: missing token or userId");
       }

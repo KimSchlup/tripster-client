@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@/hooks/useAuth";
 import { ChecklistItem, ChecklistItemCategory, ChecklistItemPriority } from "@/types/checklistItem";
 import ChecklistItemWindow from "@/components/ChecklistItemWindow";
 import Checkbox from "@/components/Checkbox";
@@ -22,56 +23,103 @@ export default function ChecklistPage() {
   const [filterPriority, setFilterPriority] = useState<string | null>(null);
   const [filterCompleted, setFilterCompleted] = useState<boolean | null>(null);
 
+  const router = useRouter();
+  const { isLoggedIn } = useAuth();
+
+  // Function to refresh the checklist from the server
+  const refreshChecklist = async () => {
+    try {
+      console.log("Refreshing checklist data from server");
+      const data = await apiService.getChecklist<ChecklistItem[]>(id);
+      console.log("Refreshed checklist data:", data);
+      setChecklist(Array.isArray(data) ? data : []);
+      return true;
+    } catch (err) {
+      console.error("Error refreshing checklist:", err);
+      return false;
+    }
+  };
+
   // Fetch checklist items
   useEffect(() => {
     const fetchChecklist = async () => {
       try {
         setLoading(true);
-        const data = await apiService.get<ChecklistItem[]>(`/roadtrips/${id}/checklist`);
-        setChecklist(data);
+        
+        // Check if user is logged in
+        if (!isLoggedIn) {
+          console.error("User is not logged in, redirecting to login page");
+          router.push('/login');
+          return;
+        }
+        
+        // Validate roadtrip ID
+        if (!id) {
+          throw new Error("Invalid roadtrip ID: ID is missing");
+        }
+        
+        console.log("Attempting to fetch checklist for roadtrip ID:", id);
+        console.log("Roadtrip ID type:", typeof id);
+        
+        // Try to fetch the checklist from the API
+        console.log("Calling apiService.getChecklist with ID:", id);
+        const data = await apiService.getChecklist<ChecklistItem[]>(id);
+        console.log(data)
+        
+        console.log("API response received for checklist:", data);
+        
+        // Set the checklist data
+        console.log("Successfully fetched checklist data:", data);
+        setChecklist(Array.isArray(data) ? data : []);
         setError(null);
       } catch (err) {
         console.error("Error fetching checklist:", err);
-        setError("Failed to load checklist. Please try again later.");
-        // If the API is not implemented yet, use sample data
-        setChecklist([
-          {
-            checklistItemId: 1,
-            name: "Book hotel in Zurich",
-            isCompleted: true,
-            assignedUser: "John",
-            priority: ChecklistItemPriority.HIGH,
-            category: ChecklistItemCategory.TODO,
-            roadtripId: parseInt(id)
-          },
-          {
-            checklistItemId: 2,
-            name: "Pack hiking boots",
-            isCompleted: false,
-            assignedUser: "Sarah",
-            priority: ChecklistItemPriority.MEDIUM,
-            category: ChecklistItemCategory.ITEM,
-            roadtripId: parseInt(id)
-          },
-          {
-            checklistItemId: 3,
-            name: "Rent car",
-            isCompleted: false,
-            assignedUser: null,
-            priority: ChecklistItemPriority.HIGH,
-            category: ChecklistItemCategory.TODO,
-            roadtripId: parseInt(id)
+        console.error("Full error object:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
+        
+        // Show a more detailed error message
+        let errorMessage = "Unknown error";
+        let status = 0;
+        
+        if (err instanceof Error) {
+          errorMessage = err.message;
+          console.error("Error name:", err.name);
+          console.error("Error message:", err.message);
+          console.error("Error stack:", err.stack);
+          
+          // Check if it's an ApplicationError with status
+          if ('status' in err) {
+            status = (err as any).status;
+            console.error("Error status:", status);
           }
-        ]);
+        }
+        
+        // Handle 401 Unauthorized errors
+        if (status === 401 || errorMessage.includes("Invalid or expired token")) {
+          console.error("Authentication error detected, redirecting to login page");
+          setError("Your session has expired. Please log in again.");
+          
+          // Redirect to login page after a short delay
+          setTimeout(() => {
+            router.push('/login');
+          }, 2000);
+          
+          return;
+        }
+        
+        setError(`Failed to load checklist: ${errorMessage}`);
+        setChecklist([]);
       } finally {
         setLoading(false);
       }
     };
 
     if (id) {
+      console.log("Initiating checklist fetch for roadtrip ID:", id);
       fetchChecklist();
+    } else {
+      console.error("Cannot fetch checklist: No roadtrip ID provided");
     }
-  }, [apiService, id]);
+  }, [apiService, id, router, isLoggedIn]);
 
   // Handle adding a new checklist item
   const handleAddItem = async (item: { 
@@ -82,34 +130,78 @@ export default function ChecklistPage() {
     priority: string 
   }) => {
     try {
+      console.log("Adding new checklist item:", item);
+      
+      // Validate required fields
+      if (!item.name || item.name.trim() === "") {
+        throw new Error("Checklist item name is required");
+      }
+      
       const newItem: Omit<ChecklistItem, "checklistItemId"> = {
-        name: item.name,
+        name: item.name.trim(),
         isCompleted: item.isCompleted,
-        assignedUser: item.assignedUser,
+        assignedUser: item.assignedUser && item.assignedUser.trim() !== "" ? item.assignedUser.trim() : null,
         priority: item.priority as ChecklistItemPriority,
         category: item.category as ChecklistItemCategory,
         roadtripId: parseInt(id)
       };
 
+      console.log("Formatted new item for API:", newItem);
+
       // Call API to create the item
-      const createdItem = await apiService.post<ChecklistItem>(`/roadtrips/${id}/checklist`, newItem);
+      const createdItem = await apiService.addChecklistElement<ChecklistItem>(id, newItem);
       
-      // Update local state
-      setChecklist(prev => [...prev, createdItem]);
-      setShowAddItemWindow(false);
+      console.log("API response for created item:", createdItem);
+      
+      if (createdItem && typeof createdItem === 'object') {
+        console.log("Successfully created checklist item:", createdItem);
+        
+        // Refresh the checklist from the server to ensure UI is in sync
+        await refreshChecklist();
+        
+        setShowAddItemWindow(false);
+        
+        // Show success message
+        setError(null);
+      } else {
+        console.error("Invalid response format from API:", createdItem);
+        throw new Error("Invalid response from API when creating checklist item");
+      }
     } catch (err) {
       console.error("Error adding checklist item:", err);
-      // If the API is not implemented yet, create a mock item
-      const mockItem: ChecklistItem = {
-        ...item,
-        checklistItemId: Date.now(),
-        priority: item.priority as ChecklistItemPriority,
-        category: item.category as ChecklistItemCategory,
-        roadtripId: parseInt(id)
-      } as ChecklistItem;
       
-      setChecklist(prev => [...prev, mockItem]);
-      setShowAddItemWindow(false);
+      // Show error message to user
+      let errorMessage = "Unknown error";
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        console.error("Error details:", {
+          name: err.name,
+          message: err.message,
+          stack: err.stack
+        });
+        
+        // Check for specific error types
+        if (err.message.includes("network") || err.message.includes("fetch")) {
+          errorMessage = "Network error. Please check your internet connection.";
+        } else if (err.message.includes("401") || err.message.includes("unauthorized")) {
+          errorMessage = "Authentication error. Please log in again.";
+          // Redirect to login after a delay
+          setTimeout(() => {
+            router.push('/login');
+          }, 3000);
+        }
+      }
+      
+      setError(`Failed to add checklist item: ${errorMessage}`);
+      
+      // Don't close the window if it's a validation error
+      if (!(err instanceof Error) || !err.message.includes("required")) {
+        setShowAddItemWindow(false);
+      }
+      
+      // Clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
     }
   };
 
@@ -134,29 +226,20 @@ export default function ChecklistPage() {
       };
 
       // Call API to update the item
-      await apiService.put<void>(`/roadtrips/${id}/checklist/${selectedItem.checklistItemId}`, updatedItem);
+      await apiService.updateChecklistElement<ChecklistItem>(id, selectedItem.checklistItemId, updatedItem);
       
-      // Update local state
-      setChecklist(prev => 
-        prev.map(i => i.checklistItemId === selectedItem.checklistItemId ? updatedItem : i)
-      );
+      // Refresh the checklist from the server to ensure UI is in sync
+      await refreshChecklist();
+      
       setSelectedItem(null);
     } catch (err) {
       console.error("Error updating checklist item:", err);
-      // If the API is not implemented yet, update the mock item
-      const updatedItem: ChecklistItem = {
-        ...selectedItem,
-        name: item.name,
-        isCompleted: item.isCompleted,
-        assignedUser: item.assignedUser,
-        priority: item.priority as ChecklistItemPriority,
-        category: item.category as ChecklistItemCategory
-      };
-      
-      setChecklist(prev => 
-        prev.map(i => i.checklistItemId === selectedItem.checklistItemId ? updatedItem : i)
-      );
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(`Failed to update checklist item: ${errorMessage}`);
       setSelectedItem(null);
+      
+      // Clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
     }
   };
 
@@ -164,50 +247,99 @@ export default function ChecklistPage() {
   const handleDeleteItem = async (itemId: number) => {
     try {
       // Call API to delete the item
-      await apiService.delete<void>(`/roadtrips/${id}/checklist/${itemId}`);
+      await apiService.deleteChecklistElement(id, itemId);
       
-      // Update local state
-      setChecklist(prev => prev.filter(i => i.checklistItemId !== itemId));
+      // Refresh the checklist from the server to ensure UI is in sync
+      await refreshChecklist();
+      
       setSelectedItem(null);
     } catch (err) {
       console.error("Error deleting checklist item:", err);
-      // If the API is not implemented yet, delete the mock item
-      setChecklist(prev => prev.filter(i => i.checklistItemId !== itemId));
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(`Failed to delete checklist item: ${errorMessage}`);
       setSelectedItem(null);
+      
+      // Clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
     }
   };
 
   // Handle toggling completion status
   const handleToggleCompletion = async (item: ChecklistItem) => {
     try {
+      // Create a new updated item with toggled isCompleted status
       const updatedItem: ChecklistItem = {
         ...item,
         isCompleted: !item.isCompleted
       };
 
-      // Call API to update the item
-      await apiService.put<void>(`/roadtrips/${id}/checklist/${item.checklistItemId}`, updatedItem);
-      
-      // Update local state
+      console.log(`Toggling item ${item.name} from ${item.isCompleted} to ${updatedItem.isCompleted}`);
+
+      // Update local state immediately for better user experience
       setChecklist(prev => 
         prev.map(i => i.checklistItemId === item.checklistItemId ? updatedItem : i)
       );
+
+      // Call API to update the item
+      await apiService.updateChecklistElement<ChecklistItem>(id, item.checklistItemId, updatedItem);
+      
+      // Refresh the checklist from the server to ensure UI is in sync
+      await refreshChecklist();
     } catch (err) {
       console.error("Error updating checklist item:", err);
-      // If the API is not implemented yet, update the mock item
-      const updatedItem: ChecklistItem = {
-        ...item,
-        isCompleted: !item.isCompleted
-      };
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(`Failed to toggle checklist item: ${errorMessage}`);
       
-      setChecklist(prev => 
-        prev.map(i => i.checklistItemId === item.checklistItemId ? updatedItem : i)
-      );
+      // Revert the local state change if the API call fails
+      setChecklist(prev => [...prev]);
+      
+      // Clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
     }
   };
 
+  // Ensure each checklist item has a unique ID
+  const processedChecklist = useMemo(() => {
+    // Create a copy of the checklist to avoid modifying the original
+    const processed = [...checklist];
+    const seenIds = new Set<number>();
+    
+    // Process each item to ensure unique IDs
+    return processed.map(item => {
+      // Check if the item has a checklistElementId from the server
+      if ((item as any).checklistElementId) {
+        // Use the server's ID as the checklistItemId
+        const serverItem = {
+          ...item,
+          checklistItemId: (item as any).checklistElementId
+        };
+        
+        // If this ID is already seen, generate a new one
+        if (seenIds.has(serverItem.checklistItemId)) {
+          const newId = Date.now() + Math.floor(Math.random() * 10000);
+          return { ...serverItem, checklistItemId: newId };
+        }
+        
+        // Otherwise, mark this ID as seen and return the item with the server's ID
+        seenIds.add(serverItem.checklistItemId);
+        return serverItem;
+      }
+      
+      // If item doesn't have an ID or ID is already seen, generate a new one
+      if (!item.checklistItemId || seenIds.has(item.checklistItemId)) {
+        // Generate a unique ID based on timestamp and a random number
+        const newId = Date.now() + Math.floor(Math.random() * 10000);
+        return { ...item, checklistItemId: newId };
+      }
+      
+      // Otherwise, mark this ID as seen and return the item as is
+      seenIds.add(item.checklistItemId);
+      return item;
+    });
+  }, [checklist]);
+
   // Filter checklist items
-  const filteredChecklist = checklist.filter(item => {
+  const filteredChecklist = processedChecklist.filter(item => {
     if (filterCategory && item.category !== filterCategory) return false;
     if (filterPriority && item.priority !== filterPriority) return false;
     if (filterCompleted !== null && item.isCompleted !== filterCompleted) return false;
@@ -491,6 +623,19 @@ export default function ChecklistPage() {
                           alignItems: "center",
                           gap: "15px"
                         }}>
+                          {/* Category Badge */}
+                          <span style={{
+                            fontSize: "14px",
+                            fontWeight: 700,
+                            color: "#3F51B5", // Blue color for category
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            background: "rgba(63, 81, 181, 0.1)"
+                          }}>
+                            {item.category}
+                          </span>
+                          
+                          {/* Priority Badge */}
                           <span style={{
                             fontSize: "14px",
                             fontWeight: 700,
@@ -538,7 +683,7 @@ export default function ChecklistPage() {
                     fontSize: "18px",
                     color: "#666"
                   }}>
-                    No checklist items found. Click &quot;Add Item&quot; to create one.
+                    No Checklist Items available yet. Click &quot;Add Item&quot; to create one.
                   </p>
                 </div>
               )}

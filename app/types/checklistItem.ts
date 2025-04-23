@@ -17,5 +17,5 @@ export enum ChecklistItemPriority {
 
 export enum ChecklistItemCategory {
   ITEM = "ITEM",
-  TODO = "TODO"
+  TASK = "TASK"
 }

@@ -42,8 +42,12 @@ export default function MyRoadtrips() {
                 setLoading(true);
                 console.log("Fetching roadtrips with token:", token);
                 
-                // Add a small delay to ensure token is properly set in headers
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Add a longer delay to ensure token is properly set in headers
+                console.log("Waiting for token to be properly set...");
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                console.log("Delay completed, proceeding with API request");
+                console.log("Token before request:", localStorage.getItem("token"));
+                
                 const data = await apiService.get<Roadtrip[]>("/roadtrips");
                 console.log("API response:", data);
                 
