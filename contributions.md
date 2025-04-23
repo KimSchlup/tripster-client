@@ -62,10 +62,29 @@ reason).
 | **[@RicoCamenzind]** | [08.04.2025]   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/a35fb739195a9e723f39bfdbc333f4e6e5afa989) | Implementation of POI's, atleast the first iteration of them. Test cases are still missing and some more methods are also required for future features, more to come next week. | Poi's are essential for our application to make it possible to generate routes and for the front end to be able to render different locations on our map. |
 |                    | [04.04.2025]   | [Commit 4](https://github.com/KimSchlup/tripster-server/commit/e8707a8661217a8a8bdb6a9bad4f6fdf6536cd80) [Commit 3](https://github.com/KimSchlup/tripster-server/commit/199e8c47381d3bf9bc04423c8932ed4ef54bed18) [Commit 2](https://github.com/KimSchlup/tripster-server/commit/8c84e87b81f53ade4dcc4939bc2fca357c1a2c7e) [Commit 1](https://github.com/KimSchlup/tripster-server/commit/0321f0e3005511ce42afcbd43143ac7a93514389) | fixed User creation and DTOMapper for such by mainly removing unnecessary attributes and correcting code. | Since the entire project relies on being able to create user's, eing able to actually create them in the backend is pretty userful. |
 | **[@P4P5T123]** | [02.04.2025]   | [Commit 1](https://github.com/KimSchlup/tripster-client/commit/f963680168fab9656cf06b23f76e4cf8c3f3c5ff) [Commit 2](https://github.com/KimSchlup/tripster-server/commit/4d32414687fe1ea48d2eae328ced90bc54b36e2a) [Commit 3](https://github.com/KimSchlup/tripster-server/commit/6e59c6e510d5dd3d0e5a0a62b5007543a89df292) |  |  |
-|                    | [03.04.2025]   | [Commit 1](https://github.com/KimSchlup/tripster-client/compare/f963680168fab9656cf06b23f76e4cf8c3f3c5ff...6a25a0b4c9631e55673c302a5aaf9d7fa08b1845, https://github.com/KimSchlup/tripster-client/commit/f963680168fab9656cf06b23f76e4cf8c3f3c5ff) [Commit 2](https://github.com/KimSchlup/tripster-client/compare/4d19a5969c16ef6e5ac78560e2ffa074f0adeae6...66c004b8a6a6beea33c5b4ca492594a9a76283fb)  | Added sidebar, added myroadtrips page and roadtrips settings page | Users can navigate the menu a lot better can create and edit roadtrips|
+|                    | [03.04.2025]   | [Commit 1](https://github.com/KimSchlup/tripster-client/commit/f963680168fab9656cf06b23f76e4cf8c3f3c5ff) [Commit 2](https://github.com/KimSchlup/tripster-client/compare/4d19a5969c16ef6e5ac78560e2ffa074f0adeae6...66c004b8a6a6beea33c5b4ca492594a9a76283fb)  | Added sidebar, added myroadtrips page and roadtrips settings page | Users can navigate the menu a lot better can create and edit roadtrips|
 ---
 
 ## Contributions Week 3 - 09.04.2025 to 16.04.2025
+
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[KimSchlup]** | 09.04.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/75fc5b693b88425b8c190c2d8caca3776d25776b) [Commit 2](https://github.com/KimSchlup/tripster-server/commit/f4d64171e908d02db630d0c4915c64b69fa8ce9d) [Commit 3](https://github.com/KimSchlup/tripster-server/commit/306e1a9289e1ae74df54a12c89ad9a6ed72c1676) [Commit 4](https://github.com/KimSchlup/tripster-server/commit/8223c002d9df03de8fb3e631f131baafe52261a2) [Commit 5](https://github.com/KimSchlup/tripster-server/commit/6ffbe83cd14356c1753a1eca3b04bbd718757936)| Issue 34: Finished PUT and DELETE endpoints for /users | Users need to be able to update and or delete their user information |
+|                    | 14.04.2025  | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/b238513926ca9534a7b6f47c9dbd47bc70f6f286) [Commit 2](https://github.com/KimSchlup/tripster-server/commit/315803ea14d84719bcf3d0bedb3badd0a7e9c60e) [Commit 3](https://github.com/KimSchlup/tripster-server/commit/39ce89d27a45e8846da90d67e59d815798646b57) | Issue 83. Created entities and DTO mappers for the roadtrip checklist | The checklist is an important aspect of our app |
+|                    | 14.04.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/4c7c370fd6d9e603f6ffbd7ac11f314c7c37f894) | Issue 84: Added first draft of a Post enpoint for checklist. Logic is not working yet. | Users need to be able to add items to the checklist of their roadtrip |
+| **@AdrianHauser** | 12.04.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/fc48a0a559baea757b6efe5b515349d40bd845cb)   [Commit 2](https://github.com/KimSchlup/tripster-server/commit/09736f25860c9b1423c015c4a0e7548ad8dd30c1)  [Commit 3](https://github.com/KimSchlup/tripster-server/commit/fd5d3d8d1704dca2f07c923cfc72243c5b1730c5)  [Commit 4](https://github.com/KimSchlup/tripster-server/commit/6dc1d2efeb5e9a6b93e112a9d6aac396f8bac2f1) | [Issue 130](https://github.com/KimSchlup/tripster-server/issues/130) </br> Added endpoint for roadtrip settings. Implemented the process to map from GeoJson to jts.Geometries to Well Known Binary in PostGIS and back | The voting system needs the roadtrip settings to define the voting mode. We need a way to handle geometries in POI's and Routes |
+|                    | 09.04.2025  15.04.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/pull/129/commits/e8731fefff9178009c55120fee8087aa1815fbcb)  [Commit 2](https://github.com/KimSchlup/tripster-server/pull/146/commits/eeaa1eef95984bc67ad5e84eafed9745d7410d9c)   [Commit 3](https://github.com/KimSchlup/tripster-server/pull/146/commits/087afe2357b7c797b66499244f1818a1a82e6b3f)| [Issue 128](https://github.com/KimSchlup/tripster-server/issues/128) </br> Fixed roadtrip endpoint to return correct fields </br> [Issue 49](https://github.com/KimSchlup/tripster-server/issues/49) </br> RoadtripMember PUT Endpoint  </br> [Issue 132](https://github.com/KimSchlup/tripster-server/issues/132) </br> Set up Database Credential in Google Secrets Manager. | Fixed roadtrip endpoint. RoadtripMember PUT is needed to accept/decline invitations. We need Secrets Manager to access the VM Database. |
+| **@P4P5T123** | 16.04.25   | [Commit 1](https://github.com/KimSchlup/tripster-client/pull/74/commits/00ecda30ae9371a00a26eef46f2a24a67fde25cb) | Set up Checklist Page | Big Step towards solving issue 34 |
+|                    | [date]   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/099ee761d0294095ed9f0366bb8ec6560a78b519), [Commit 2](https://github.com/KimSchlup/tripster-server/commit/b5136b9355d249ff056bde560be62e18ddc78fec), [Commit 3](https://github.com/KimSchlup/tripster-client/commit/5e74b7942c5653ea8e9f8c622cb9a5b89addb721), [Commit 4](https://github.com/KimSchlup/tripster-client/commit/b119cc3c07efd3d6611ec2b723a1db764b3a4e99) | Debugged, Tested Roadtrip Settings, also did some debugging in the backend and added functions | Roadtrip Settings Page is really important to set options. |
+| **[@RicoCamenzind]** | [15.04.2025] | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/4e367e6660a135c4f97ed1efb082ea1d7f2cd8e8) | added functionality to cast votes. Tests are yet to be implemennted. | Votes are used to to determine which POI are used for the roadtrips. |
+|                    | [14.04.2025] | [Commit 3](https://github.com/KimSchlup/tripster-server/commit/8868caceac330b3c46a7a9802e93a831f8cc7a58) [Commit 2](https://github.com/KimSchlup/tripster-server/commit/64fd62e7efb47fd63d42dd63122b9a86083a1dcb) [Commit 1](https://github.com/KimSchlup/tripster-server/commit/06f6947a23e1fac082e919f377eeea74814b8fa8) | Implemented the POI class including all needed services, endpoints and controller. | We need to be able to create and manage POIs in order to create our route and thus they are crucial for our project. |
+| **[@segmue]** | [15.04.2025] | [Commit 1](https://github.com/KimSchlup/tripster-client/commit/10b398c1effcb44a1f8241f2e1731aa668c7c324) | ISSUE-23: Add Priority to POIWindow. Besides that, the ApprovalStatus is colorcoded subtitle | With this all necessary information for a POI is clearly visible to a user. |
+|                    | [14.04.2025] | [Commit 1](https://github.com/KimSchlup/tripster-client/commit/97d96be4349736812bf028b883f0242c79a28dcf) | I did some general work this week, the only thing code-wise was collaborating with the backend team to define the Request Bodys for spatial data type (GeoJSOON) and adapt the changes in the frontend code, to work now with the responsive backend. | This almost closes User Story 6, as now POIs can be added, edited and deleted. |
+
+
+---
+
+## Contributions Week 4 - [Begin Date] to [End Date]
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -78,20 +97,35 @@ reason).
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
----
-
-## Contributions Week 4 - [Begin Date] to [End Date]
-
-_Continue with the same table format as above._
 
 ---
 
 ## Contributions Week 5 - [Begin Date] to [End Date]
 
-_Continue with the same table format as above._
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
 
 ---
 
 ## Contributions Week 6 - [Begin Date] to [End Date]
 
-_Continue with the same table format as above._
+| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
+| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
+| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+
