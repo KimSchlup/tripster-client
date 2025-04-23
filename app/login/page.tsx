@@ -25,14 +25,37 @@ const Login: React.FC = () => {
     e.preventDefault();
     try {
       const values: FormFieldProps = { username, password };
+      console.log("Login attempt with:", username);
+      
+      // Clear any existing token before login
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      
       const response = await apiService.post<User>("/auth/login", values);
+      console.log("Login response:", response);
 
       if (response.token && response.userId) {
+        console.log("Received token:", response.token);
+        console.log("Received userId:", response.userId);
+        
+        // Use the login function from useAuth to store the token
+        // This will handle storing in both React state and localStorage
         login(response.token, response.userId);
+        
+        // Verify token was stored
+        console.log("Token after login:", localStorage.getItem("token"));
+        
+        // Add a longer delay before navigation to ensure token is properly stored and available
+        setTimeout(() => {
+          // Navigate to roadtrips page
+          console.log("Navigating to roadtrips page with token:", localStorage.getItem("token"));
+          router.push("/my-roadtrips");
+        }, 1000);
+      } else {
+        throw new Error("Invalid response from server: missing token or userId");
       }
-
-      router.push("/my-roadtrips");
     } catch (error) {
+      console.error("Login error:", error);
       if (error instanceof Error) {
         alert(`Something went wrong during the login:\n${error.message}`);
       } else {

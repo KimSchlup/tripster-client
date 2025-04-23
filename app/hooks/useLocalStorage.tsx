@@ -32,8 +32,23 @@ export default function useLocalStorage<T>(
     if (typeof window === "undefined") return; // SSR safeguard
     try {
       const stored = globalThis.localStorage.getItem(key);
+      console.log(`Reading from localStorage (${key}):`, stored);
+      
       if (stored) {
-        setValue(JSON.parse(stored) as T);
+        try {
+          // For token, we want to avoid parsing
+          if (key === "token") {
+            console.log(`Setting ${key} directly:`, stored);
+            setValue(stored as unknown as T);
+          } else {
+            // For other values, parse as usual
+            setValue(JSON.parse(stored) as T);
+          }
+        } catch (parseError) {
+          console.error(`Error parsing localStorage value for "${key}":`, parseError);
+          // If parsing fails, try to use the value directly
+          setValue(stored as unknown as T);
+        }
       }
     } catch (error) {
       console.error(`Error reading localStorage key "${key}":`, error);
@@ -42,9 +57,25 @@ export default function useLocalStorage<T>(
 
   // Simple setter that updates both state and localStorage
   const set = (newVal: T) => {
+    console.log(`Setting ${key} to:`, newVal);
     setValue(newVal);
+    
     if (typeof window !== "undefined") {
-      globalThis.localStorage.setItem(key, JSON.stringify(newVal));
+      try {
+        // For token, store directly without JSON.stringify
+        if (key === "token" && typeof newVal === "string") {
+          console.log(`Storing ${key} directly:`, newVal);
+          globalThis.localStorage.setItem(key, newVal);
+        } else {
+          // For other values, stringify as usual
+          globalThis.localStorage.setItem(key, JSON.stringify(newVal));
+        }
+        
+        // Verify storage
+        console.log(`Verified ${key} in localStorage:`, globalThis.localStorage.getItem(key));
+      } catch (error) {
+        console.error(`Error setting localStorage key "${key}":`, error);
+      }
     }
   };
 

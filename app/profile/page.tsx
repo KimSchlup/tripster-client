@@ -38,8 +38,9 @@ const ProfilePage: React.FC = () => {
 
     const { userId } = useAuth();
 
-    useEffect(() => {
-        const fetchUser = async () => {
+useEffect(() => {
+    if (!userId) return;
+    const fetchUser = async () => {
             try {
                 console.log("Fetching user with ID:", userId);
                 const response = await apiService.get<User>("/users/" + userId);
@@ -107,13 +108,13 @@ const ProfilePage: React.FC = () => {
                         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "24px" }}>
                             <Button  onClick={async () => {
                                 if (isEditing) {
-                                    await apiService.put("/users/" + user?.userId, {
+                                    await apiService.put("/users/" + user.userId, {
                                         username: editedUsername,
                                         firstName: editedFirstName,
                                         lastName: editedLastName,
-                                        email: editedEmail,
+                                        mail: editedEmail,
                                         phoneNumber: editedPhone,
-                                        recieveNotifications: editedNotifications,
+                                        receiveNotifications: editedNotifications,
                                         emergencyContact: {
                                             firstName: editedEmergencyFirstName,
                                             lastName: editedEmergencyLastName,

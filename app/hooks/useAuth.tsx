@@ -23,11 +23,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Check if user is logged in based on token presence
   useEffect(() => {
-    setIsLoggedIn(!!token);
+    // Check if token exists and is not empty
+    console.log("Token in useAuth:", token);
+    setIsLoggedIn(!!token && token !== "");
   }, [token]);
 
-  // Login function
+  // Login function - store token as is
   const login = (newToken: string, newUserId: string) => {
+    console.log("Storing token:", newToken);
+    // Store the token exactly as received from the backend
     setToken(newToken);
     setUserId(newUserId);
     setIsLoggedIn(true);
@@ -36,13 +40,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Logout function - makes API request to logout endpoint
   const logout = async () => {
     try {
-      // Send POST request to logout endpoint
-      await apiService.post('/logout', {});
+      // Get the current token before we clear it
+      const currentToken = token;
+      
+      if (currentToken) {
+        // Send POST request to logout endpoint with the token explicitly in headers
+        await apiService.post('/auth/logout', {}, {
+          headers: {
+            'Authorization': currentToken
+          }
+        });
+        console.log('Logout request sent with token in headers:', currentToken);
+      } else {
+        console.warn('No token available for logout request');
+      }
     } catch (error) {
       console.error('Logout API call failed:', error);
       // Continue with logout process even if API call fails
     } finally {
-      // Clear authentication data
+      // Clear authentication data after the request is complete
       clearToken();
       clearUserId();
       setIsLoggedIn(false);

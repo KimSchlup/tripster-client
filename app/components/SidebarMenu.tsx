@@ -24,6 +24,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
       try {
         await logout();
         onClose();
+
       } catch (error) {
         console.error('Logout failed:', error);
         onClose();
