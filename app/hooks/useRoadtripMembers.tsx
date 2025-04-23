@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useApi } from "./useApi";
 import { RoadtripMemberService } from "@/services/roadtripMemberService";
 import { User } from "@/types/user";
 import { RoadtripMember, InvitationStatus } from "@/types/roadtripMember";
+
+// Extended User type that includes invitation status
+interface UserWithInvitationStatus extends User {
+  invitationStatus?: InvitationStatus;
+}
 
 interface UseRoadtripMembersProps {
   roadtripId: string | number;
@@ -25,7 +30,8 @@ interface UseRoadtripMembersReturn {
  */
 export function useRoadtripMembers({ roadtripId }: UseRoadtripMembersProps): UseRoadtripMembersReturn {
   const apiService = useApi();
-  const memberService = new RoadtripMemberService(apiService);
+  // Wrap memberService in useMemo to prevent it from being recreated on every render
+  const memberService = useMemo(() => new RoadtripMemberService(apiService), [apiService]);
   
   const [members, setMembers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -48,8 +54,9 @@ export function useRoadtripMembers({ roadtripId }: UseRoadtripMembersProps): Use
         // Enhance the user objects with invitation status if not already present
         // In a real implementation, this would come from the API
         const enhancedMembers = fetchedMembers.map(member => {
+          const userWithStatus = member as UserWithInvitationStatus;
           // If the member already has an invitationStatus, use it
-          if ((member as any).invitationStatus) {
+          if (userWithStatus.invitationStatus) {
             return member;
           }
           
@@ -150,8 +157,9 @@ export function useRoadtripMembers({ roadtripId }: UseRoadtripMembersProps): Use
         // Enhance the user objects with invitation status if not already present
         // In a real implementation, this would come from the API
         const enhancedMembers = fetchedMembers.map(member => {
+          const userWithStatus = member as UserWithInvitationStatus;
           // If the member already has an invitationStatus, use it
-          if ((member as any).invitationStatus) {
+          if (userWithStatus.invitationStatus) {
             return member;
           }
           

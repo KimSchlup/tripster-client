@@ -132,7 +132,7 @@ export default function MyRoadtrips() {
         };
 
         fetchRoadtrips();
-    }, [apiService, isLoggedIn, router]);
+    }, [apiService, isLoggedIn, router, userId]);
 
     const handleRoadtripClick = (roadtrip: Roadtrip) => {
         if (roadtrip.roadtripId === undefined) {

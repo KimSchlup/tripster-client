@@ -4,6 +4,11 @@ import { useState } from "react";
 import { useRoadtripMembers } from "@/hooks/useRoadtripMembers";
 import { User } from "@/types/user";
 import { InvitationStatus } from "@/types/roadtripMember";
+
+// Extended User type that includes invitation status
+interface UserWithInvitationStatus extends User {
+  invitationStatus?: InvitationStatus;
+}
 import { useAuth } from "@/hooks/useAuth";
 
 interface RoadtripMemberManagementProps {
@@ -94,9 +99,9 @@ export default function RoadtripMemberManagement({ roadtripId, isOwner }: Roadtr
     
     // For other users, we'll use the invitationStatus property if it exists
     // or simulate it with a random status for demonstration
-    if ((user as any).invitationStatus) {
-      const status = (user as any).invitationStatus;
-      switch (status) {
+    const userWithStatus = user as UserWithInvitationStatus;
+    if (userWithStatus.invitationStatus) {
+      switch (userWithStatus.invitationStatus) {
         case InvitationStatus.PENDING:
           return "Pending";
         case InvitationStatus.ACCEPTED:

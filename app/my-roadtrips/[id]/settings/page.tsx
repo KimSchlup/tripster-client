@@ -8,8 +8,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Roadtrip } from "@/types/roadtrip";
 import type { RoadtripSettings } from "@/types/roadtripSettings";
 import { BasemapType, DecisionProcess } from "@/types/roadtripSettings";
-import { RoadtripMember } from "@/types/roadtripMember";
-import { User } from "@/types/user";
 import type { GeoJSON } from 'geojson';
 import Checkbox from "@/components/Checkbox";
 import RoadtripMemberManagement from "@/components/RoadtripMemberManagement";
@@ -130,7 +128,7 @@ export default function RoadtripSettings() {
         if (id) {
             fetchRoadtripAndSettings();
         }
-    }, [apiService, id]);
+    }, [apiService, id, currentUserId]);
 
     // Member management is now handled by the RoadtripMemberManagement component
 
