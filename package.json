@@ -12,6 +12,7 @@
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.2",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
+    "@stomp/stompjs": "^7.1.1",
     "leaflet": "^1.9.4",
     "next": "^15.2.0",
     "node-localstorage": "^3.0.5",
@@ -19,7 +20,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-draggable": "^4.4.6",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "sockjs": "^0.3.24",
+    "sockjs-client": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",
