@@ -9,6 +9,7 @@ import { ChecklistItem, ChecklistItemCategory, ChecklistItemPriority } from "@/t
 import ChecklistItemWindow from "@/components/ChecklistItemWindow";
 import Checkbox from "@/components/Checkbox";
 import { ApplicationError } from "@/types/error";
+import BackToMapButton from "@/components/BackToMapButton";
 
 export default function ChecklistPage() {
   const params = useParams();
@@ -363,8 +364,13 @@ export default function ChecklistPage() {
       <div className="container" style={{ 
         padding: "16px", 
         margin: "16px auto 0", 
-        maxWidth: "1400px"
+        maxWidth: "1400px",
+        position: "relative"
       }}>
+        <BackToMapButton roadtripId={id} />
+        
+        {/* Add spacing div to prevent overlap with the button */}
+        <div style={{ height: "50px" }}></div>
         {loading && <p>Loading checklist...</p>}
         {error && <p style={{ color: "red" }}>{error}</p>}
         
