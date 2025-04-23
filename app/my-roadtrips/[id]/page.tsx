@@ -19,6 +19,7 @@ import {
   PointOfInterest,
   PoiPriority,
 } from "@/types/poi";
+import { getApiDomain } from "@/utils/domain";
 
 import { Client, IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
@@ -33,6 +34,7 @@ const TileLayer = dynamic(
 );
 
 export default function RoadtripPage() {
+  const domain = getApiDomain();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -99,10 +101,7 @@ export default function RoadtripPage() {
   useEffect(() => {
     const client = new Client({
       webSocketFactory: () =>
-        // append your token in the WS URL
-        new SockJS(
-          `http://localhost:8080/ws?token=${encodeURIComponent(token)}`
-        ),
+        new SockJS(`${domain}/ws?token=${encodeURIComponent(token)}`),
       reconnectDelay: 5000,
       debug: (str) => console.log(str),
       onConnect: () => {
