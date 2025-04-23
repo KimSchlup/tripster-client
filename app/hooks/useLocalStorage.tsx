@@ -36,16 +36,10 @@ export default function useLocalStorage<T>(
       
       if (stored) {
         try {
-          // For token, we want to avoid double-parsing
+          // For token, we want to avoid parsing
           if (key === "token") {
-            // If it's already a string, just use it directly
-            if (typeof stored === "string") {
-              console.log(`Setting ${key} directly:`, stored);
-              setValue(stored as unknown as T);
-            } else {
-              // Otherwise parse it
-              setValue(JSON.parse(stored) as T);
-            }
+            console.log(`Setting ${key} directly:`, stored);
+            setValue(stored as unknown as T);
           } else {
             // For other values, parse as usual
             setValue(JSON.parse(stored) as T);

@@ -50,11 +50,13 @@ export default function Checkbox({
   const checkboxStyle: React.CSSProperties = {
     width: 16,
     height: 16,
-    background: "#2C2C2C",
+    background: checked ? "#4CAF50" : "#2C2C2C", // Green background when checked
     borderRadius: 4,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    transition: "background-color 0.2s ease",
+    border: "1px solid #F5F5F5",
   };
 
 
