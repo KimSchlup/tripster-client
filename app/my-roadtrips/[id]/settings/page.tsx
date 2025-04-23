@@ -12,12 +12,13 @@ import { RoadtripMember } from "@/types/roadtripMember";
 import { User } from "@/types/user";
 import type { GeoJSON } from 'geojson';
 import Checkbox from "@/components/Checkbox";
+import RoadtripMemberManagement from "@/components/RoadtripMemberManagement";
+import BackToMapButton from "@/components/BackToMapButton";
 
 export default function RoadtripSettings() {
     const params = useParams();
     const id = params.id as string;
     const [roadtrip, setRoadtrip] = useState<Roadtrip | null>(null);
-    const [roadtripMembers, setRoadtripMembers] = useState<{ id: string; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [name, setRoadtripName] = useState("");
@@ -33,11 +34,7 @@ export default function RoadtripSettings() {
     const [hasSpotifyPlaylist, setHasSpotifyPlaylist] = useState(false);
     const [spotifyPlaylistUrl, setSpotifyPlaylistUrl] = useState("");
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const [showAddMemberPopup, setShowAddMemberPopup] = useState(false);
-    const [newMemberUsername, setNewMemberUsername] = useState("");
-    const [addMemberError, setAddMemberError] = useState<string | null>(null);
-    const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-    const [isOwner, setIsOwner] = useState<boolean>(true); // For now, assume the user is the owner
+    const [isOwner, setIsOwner] = useState<boolean>(false); // Default to false until we confirm ownership
     const apiService = useApi();
     const router = useRouter();
     const { userId: currentUserId } = useAuth();
@@ -57,6 +54,16 @@ export default function RoadtripSettings() {
                     setRoadtrip(roadtripData);
                     setRoadtripName(roadtripData.name);
                     setRoadtripDescription(roadtripData.description || roadtripData.roadtripDescription || "");
+                    
+                    // Check if the current user is the owner of the roadtrip
+                    if (roadtripData.ownerId && currentUserId) {
+                        const isUserOwner = roadtripData.ownerId.toString() === currentUserId.toString();
+                        console.log(`Current user (${currentUserId}) is ${isUserOwner ? '' : 'not '}the owner (${roadtripData.ownerId})`);
+                        setIsOwner(isUserOwner);
+                    } else {
+                        console.log("Could not determine ownership: ownerId or currentUserId is missing");
+                        setIsOwner(false);
+                    }
                     
                     // Then fetch the settings
                     try {
@@ -125,65 +132,7 @@ export default function RoadtripSettings() {
         }
     }, [apiService, id]);
 
-    // Fetch roadtrip members separately
-    // Close member selection when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            // Check if the click was outside of any member
-            const memberElements = document.querySelectorAll('.roadtrip-member');
-            let clickedOnMember = false;
-            
-            memberElements.forEach(element => {
-                if (element.contains(event.target as Node)) {
-                    clickedOnMember = true;
-                }
-            });
-            
-            if (!clickedOnMember && selectedMemberId) {
-                setSelectedMemberId(null);
-            }
-        };
-        
-        document.addEventListener('mousedown', handleClickOutside);
-        
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [selectedMemberId]);
-
-    useEffect(() => {
-        const fetchRoadtripMembers = async () => {
-            if (!id) return;
-            
-            try {
-                // GET /roadtrips/{roadtripId}/members - Returns List<User>
-                const members = await apiService.get<User[]>(`/roadtrips/${id}/members`);
-                console.log("Fetched roadtrip members:", members);
-                
-                // Convert User[] to the format expected by the UI
-                const formattedMembers = members.map(user => ({
-                    id: user.userId?.toString() || "unknown",
-                    name: user.username || "Unknown User"
-                }));
-                
-                setRoadtripMembers(formattedMembers);
-                
-                // Also update the roadtrip object with the members if it exists
-                if (roadtrip) {
-                    setRoadtrip({
-                        ...roadtrip,
-                        roadtripMembers: formattedMembers
-                    });
-                }
-            } catch (err) {
-                console.error("Error fetching roadtrip members:", err);
-                // Don't set an error state here, as we still want to show the roadtrip settings
-                // even if we can't fetch the members
-            }
-        };
-
-        fetchRoadtripMembers();
-    }, [apiService, id, roadtrip]);
+    // Member management is now handled by the RoadtripMemberManagement component
 
     const handleSave = async () => {
         if (!roadtrip) return;
@@ -275,92 +224,7 @@ export default function RoadtripSettings() {
         }
     };
 
-    const handleRemoveUser = async (userId: string) => {
-        if (!roadtrip) return;
-        
-        try {
-            console.log(`Removing user ${userId} from roadtrip ${id}`);
-            
-            // Call the API to remove the user
-            // DELETE /roadtrips/{roadtripId}/members/{userId}
-            await apiService.delete<void>(`/roadtrips/${id}/members/${userId}`);
-            
-            // Update both state variables
-            const updatedMembers = (roadtrip.roadtripMembers || []).filter(member => member.id !== userId);
-            setRoadtripMembers(updatedMembers);
-            
-            // Also update the roadtrip object if it exists
-            setRoadtrip({
-                ...roadtrip,
-                roadtripMembers: updatedMembers
-            });
-        } catch (err) {
-            console.error("Error removing member:", err);
-            setError("Failed to remove member. Please try again later.");
-        }
-    };
-
-    const handleAddUser = () => {
-        setShowAddMemberPopup(true);
-        setNewMemberUsername("");
-        setAddMemberError(null);
-    };
-
-    const handleAddMemberSubmit = async () => {
-        if (!newMemberUsername.trim()) {
-            setAddMemberError("Please enter a username");
-            return;
-        }
-
-        try {
-            setAddMemberError(null);
-            
-            // First, we need to find the user ID for the given username
-            // This would typically be done through a user search API
-            // For now, we'll simulate it with a fixed user ID
-            const userId = "123"; // In a real implementation, this would come from a user search
-            
-            // Call the API to add the member
-            // POST /roadtrips/{roadtripId}/members with userId in the body
-            const requestBody = {
-                userId: userId
-            };
-            
-            // Make the API call
-            const response = await apiService.post<RoadtripMember>(`/roadtrips/${id}/members`, requestBody);
-            console.log("Added member:", response);
-            
-            // Refresh the member list
-            const members = await apiService.get<User[]>(`/roadtrips/${id}/members`);
-            
-            // Convert User[] to the format expected by the UI
-            const formattedMembers = members.map(user => ({
-                id: user.userId?.toString() || "unknown",
-                name: user.username || "Unknown User"
-            }));
-            
-            // Update both state variables
-            setRoadtripMembers(formattedMembers);
-            
-            if (roadtrip) {
-                setRoadtrip({
-                    ...roadtrip,
-                    roadtripMembers: formattedMembers
-                });
-            }
-            
-            // Close the popup
-            setShowAddMemberPopup(false);
-        } catch (err) {
-            console.error("Error adding member:", err);
-            setAddMemberError("Failed to add member. Please try again.");
-        }
-    };
-
-    const handleInviteGuest = () => {
-        // In a real implementation, this would open a modal to invite a guest via email
-        console.log("Invite guest clicked");
-    };
+    // Member management functions are now handled by the RoadtripMemberManagement component
 
     const handleAddLink = () => {
         // In a real implementation, this would open a modal to add a link
@@ -381,8 +245,11 @@ export default function RoadtripSettings() {
         }
 
         try {
-            // Remove the current user from the roadtrip
-            await apiService.delete<void>(`/roadtrips/${id}/members/${currentUserId}`);
+            // Instead of removing the member, set their invitation status to DECLINED
+            console.log(`Setting invitation status to DECLINED for user ${currentUserId} in roadtrip ${id}`);
+            await apiService.put<void>(`/roadtrips/${id}/members/${currentUserId}`, {
+                invitationStatus: "DECLINED"
+            });
             
             // Navigate back to the roadtrips list
             router.push("/my-roadtrips");
@@ -398,8 +265,13 @@ export default function RoadtripSettings() {
             <div className="container" style={{ 
                 padding: "16px", 
                 margin: "16px auto 0", 
-                maxWidth: "1400px"
+                maxWidth: "1400px",
+                position: "relative"
             }}>
+                <BackToMapButton roadtripId={id} />
+                
+                {/* Add spacing div to prevent overlap with the button */}
+                <div style={{ height: "50px" }}></div>
                 {loading && <p>Loading roadtrip settings...</p>}
                 {error && <p style={{ color: "red" }}>{error}</p>}
                 
@@ -472,9 +344,16 @@ export default function RoadtripSettings() {
                                             <input
                                                 type="text"
                                                 value={name}
-                                                onChange={(e) => setRoadtripName(e.target.value)}
+                                                onChange={(e) => isOwner && setRoadtripName(e.target.value)}
                                                 className="form-input"
                                                 required
+                                                readOnly={!isOwner}
+                                                style={{
+                                                    ...((!isOwner) && { 
+                                                        backgroundColor: "#f5f5f5",
+                                                        cursor: "not-allowed"
+                                                    })
+                                                }}
                                             />
                                         </div>
                                         <div className="form-input-container" style={{ width: "100%", height: "75px" }} data-clicked={roadtripDescription ? "Clicked" : "Default"} data-state="Default">
@@ -485,13 +364,18 @@ export default function RoadtripSettings() {
                                             )}
                                             <textarea
                                                 value={roadtripDescription}
-                                                onChange={(e) => setRoadtripDescription(e.target.value)}
+                                                onChange={(e) => isOwner && setRoadtripDescription(e.target.value)}
                                                 className="form-input"
+                                                readOnly={!isOwner}
                                                 style={{
                                                     height: "100%",
                                                     paddingTop: "10px",
                                                     paddingBottom: "10px",
-                                                    resize: "none"
+                                                    resize: "none",
+                                                    ...((!isOwner) && { 
+                                                        backgroundColor: "#f5f5f5",
+                                                        cursor: "not-allowed"
+                                                    })
                                                 }}
                                             />
                                         </div>
@@ -499,111 +383,9 @@ export default function RoadtripSettings() {
                                 </div>
                                 
                                 {/* Users Section */}
-                                <div style={{
-                                    width: "100%",
-                                    background: "white",
-                                    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
-                                    borderRadius: 10,
-                                    padding: "20px"
-                                }}>
-                                    <div style={{
-                                        color: "black",
-                                        fontSize: 24,
-                                        fontFamily: "Manrope",
-                                        fontWeight: 700,
-                                        marginBottom: "20px"
-                                    }}>
-                                        Users
-                                    </div>
-                                    
-                                    <div style={{
-                                        display: "flex",
-                                        flexWrap: "wrap",
-                                        gap: "10px",
-                                        marginBottom: "20px"
-                                    }}>
-                                        {(roadtrip?.roadtripMembers || roadtripMembers).map((member) => (
-                                            <div 
-                                                key={member.id}
-                                                className="roadtrip-member"
-                                                onClick={() => isOwner && setSelectedMemberId(selectedMemberId === member.id ? null : member.id)}
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    background: "rgba(128, 128, 128, 0.55)",
-                                                    borderRadius: 10,
-                                                    padding: "5px 10px",
-                                                    position: "relative",
-                                                    cursor: "pointer"
-                                                }}
-                                            >
-                                                <div style={{
-                                                    color: "white",
-                                                    fontSize: 16,
-                                                    fontFamily: "Manrope",
-                                                    fontWeight: 700,
-                                                    marginRight: "10px"
-                                                }}>
-                                                    {member.name}
-                                                </div>
-                                                {selectedMemberId === member.id && member.id !== currentUserId && (
-                                                    <div style={{
-                                                        position: "absolute",
-                                                        top: "100%",
-                                                        left: 0,
-                                                        zIndex: 10,
-                                                        marginTop: "5px",
-                                                        background: "white",
-                                                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                                                        borderRadius: "5px",
-                                                        padding: "5px"
-                                                    }}>
-                                                        <button 
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleRemoveUser(member.id);
-                                                                setSelectedMemberId(null);
-                                                            }}
-                                                            style={{
-                                                                background: "#E74C3C",
-                                                                color: "white",
-                                                                border: "none",
-                                                                borderRadius: "3px",
-                                                                padding: "5px 10px",
-                                                                fontSize: "12px",
-                                                                cursor: "pointer",
-                                                                whiteSpace: "nowrap"
-                                                            }}
-                                                        >
-                                                            Remove Member
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div style={{
-                                        display: "flex",
-                                        gap: "20px"
-                                    }}>
-                                        <button 
-                                            onClick={handleAddUser}
-                                            className="form-button"
-                                            style={{ width: "auto" }}
-                                        >
-                                            <span className="form-button-text">Add user</span>
-                                        </button>
-                                        <button 
-                                            onClick={handleInviteGuest}
-                                            className="form-button"
-                                            style={{ width: "auto" }}
-                                        >
-                                            <span className="form-button-text">Invite Guest</span>
-                                        </button>
-                                    </div>
-                                </div>
+                                <RoadtripMemberManagement roadtripId={id} isOwner={isOwner} />
                                 
-                                {/* Map Settings Section */}
+                                {/* Basemap Type Section */}
                                 <div style={{
                                     width: "100%",
                                     background: "white",
@@ -618,7 +400,7 @@ export default function RoadtripSettings() {
                                         fontWeight: 700,
                                         marginBottom: "20px"
                                     }}>
-                                        Map Settings
+                                        Basemap Type
                                     </div>
                                     
                                     <div style={{
@@ -628,29 +410,17 @@ export default function RoadtripSettings() {
                                     }}>
                                         <div>
                                             <div style={{
-                                                color: "black",
-                                                fontSize: 18,
-                                                fontFamily: "Manrope",
-                                                fontWeight: 700,
-                                                marginBottom: "10px"
-                                            }}>
-                                                Basemap Type
-                                            </div>
-                                            <div style={{
                                                 display: "flex",
                                                 flexDirection: "column",
                                                 gap: "10px"
                                             }}>
-                                                {/* Display all BasemapType options from the enum with formatted labels */}
-                                                {Object.values(BasemapType).map((type) => {
+                                                {/* Display BasemapType options from the enum with formatted labels (excluding DEFAULT) */}
+                                                {Object.values(BasemapType).filter(type => type !== BasemapType.DEFAULT).map((type) => {
                                                     // Format the label to be more user-friendly
                                                     let formattedLabel: string = type;
                                                     
                                                     // Convert enum values to more readable format
                                                     switch(type) {
-                                                        case BasemapType.DEFAULT:
-                                                            formattedLabel = "Default";
-                                                            break;
                                                         case BasemapType.SATELLITE:
                                                             formattedLabel = "Satellite";
                                                             break;
@@ -666,8 +436,9 @@ export default function RoadtripSettings() {
                                                         <Checkbox
                                                             key={type}
                                                             checked={basemapType === type}
-                                                            onChange={() => setBasemapType(type)}
+                                                            onChange={() => isOwner && setBasemapType(type)}
                                                             label={formattedLabel}
+                                                            disabled={!isOwner}
                                                         />
                                                     );
                                                 })}
@@ -712,13 +483,18 @@ export default function RoadtripSettings() {
                                             <input
                                                 type="date"
                                                 value={startDate || ""}
-                                                onChange={(e) => setStartDate(e.target.value)}
+                                                onChange={(e) => isOwner && setStartDate(e.target.value)}
+                                                readOnly={!isOwner}
                                                 style={{
                                                     width: "100%",
                                                     padding: "10px",
                                                     border: "1px solid #ccc",
                                                     borderRadius: 5,
-                                                    fontSize: 16
+                                                    fontSize: 16,
+                                                    ...((!isOwner) && { 
+                                                        backgroundColor: "#f5f5f5",
+                                                        cursor: "not-allowed"
+                                                    })
                                                 }}
                                             />
                                         </div>
@@ -735,13 +511,18 @@ export default function RoadtripSettings() {
                                             <input
                                                 type="date"
                                                 value={endDate || ""}
-                                                onChange={(e) => setEndDate(e.target.value)}
+                                                onChange={(e) => isOwner && setEndDate(e.target.value)}
+                                                readOnly={!isOwner}
                                                 style={{
                                                     width: "100%",
                                                     padding: "10px",
                                                     border: "1px solid #ccc",
                                                     borderRadius: 5,
-                                                    fontSize: 16
+                                                    fontSize: 16,
+                                                    ...((!isOwner) && { 
+                                                        backgroundColor: "#f5f5f5",
+                                                        cursor: "not-allowed"
+                                                    })
                                                 }}
                                             />
                                         </div>
@@ -771,16 +552,13 @@ export default function RoadtripSettings() {
                                         flexDirection: "column",
                                         gap: "10px"
                                     }}>
-                                        {/* Display all DecisionProcess options from the enum with formatted labels */}
-                                        {Object.values(DecisionProcess).map((process) => {
+                                        {/* Display DecisionProcess options from the enum with formatted labels (excluding DEFAULT) */}
+                                        {Object.values(DecisionProcess).filter(process => process !== DecisionProcess.DEFAULT).map((process) => {
                                             // Format the label to be more user-friendly
                                             let formattedLabel: string = process;
                                             
                                             // Convert enum values to more readable format
                                             switch(process) {
-                                                case DecisionProcess.DEFAULT:
-                                                    formattedLabel = "Default";
-                                                    break;
                                                 case DecisionProcess.MAJORITY:
                                                     formattedLabel = "Majority Vote";
                                                     break;
@@ -793,8 +571,9 @@ export default function RoadtripSettings() {
                                                 <Checkbox
                                                     key={process}
                                                     checked={decisionProcess === process}
-                                                    onChange={() => setDecisionProcess(process)}
+                                                    onChange={() => isOwner && setDecisionProcess(process)}
                                                     label={formattedLabel}
+                                                    disabled={!isOwner}
                                                 />
                                             );
                                         })}
@@ -827,23 +606,29 @@ export default function RoadtripSettings() {
                                         <div>
                                             <Checkbox
                                                 checked={hasSpotifyPlaylist}
-                                                onChange={handleToggleSpotifyPlaylist}
+                                                onChange={() => isOwner && handleToggleSpotifyPlaylist()}
                                                 label="Spotify Playlist"
                                                 variant="external-link"
+                                                disabled={!isOwner}
                                             />
                                             {hasSpotifyPlaylist && (
                                                 <div style={{ marginTop: "10px", marginLeft: "26px" }}>
                                                     <input
                                                         type="text"
                                                         value={spotifyPlaylistUrl}
-                                                        onChange={handleSpotifyUrlChange}
+                                                        onChange={(e) => isOwner && handleSpotifyUrlChange(e)}
                                                         placeholder="Enter Spotify playlist URL"
+                                                        readOnly={!isOwner}
                                                         style={{
                                                             width: "100%",
                                                             padding: "8px",
                                                             border: "1px solid #ccc",
                                                             borderRadius: "4px",
-                                                            fontSize: "14px"
+                                                            fontSize: "14px",
+                                                            ...((!isOwner) && { 
+                                                                backgroundColor: "#f5f5f5",
+                                                                cursor: "not-allowed"
+                                                            })
                                                         }}
                                                     />
                                                 </div>
@@ -851,9 +636,10 @@ export default function RoadtripSettings() {
                                         </div>
                                         <Checkbox
                                             variant="add"
-                                            onChange={handleAddLink}
+                                            onChange={() => isOwner && handleAddLink()}
                                             label="Add Link"
                                             style={{ marginTop: "10px" }}
+                                            disabled={!isOwner}
                                         />
                                     </div>
                                 </div>
@@ -893,13 +679,15 @@ export default function RoadtripSettings() {
                                             <span className="form-button-text">Delete Roadtrip</span>
                                         </button>
                                     )}
-                                    <button 
-                                        onClick={handleSave}
-                                        className="form-button"
-                                        style={{ width: "auto" }}
-                                    >
-                                        <span className="form-button-text">Update Settings</span>
-                                    </button>
+                                    {isOwner && (
+                                        <button 
+                                            onClick={handleSave}
+                                            className="form-button"
+                                            style={{ width: "auto" }}
+                                        >
+                                            <span className="form-button-text">Update Settings</span>
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             
@@ -915,110 +703,12 @@ export default function RoadtripSettings() {
                                     Settings updated successfully!
                                 </div>
                             )}
-                            
-                            {/* Test button to toggle owner status - for development only */}
-                            <div style={{ marginTop: "20px", textAlign: "center" }}>
-                                <button 
-                                    onClick={() => setIsOwner(!isOwner)}
-                                    style={{
-                                        padding: "5px 10px",
-                                        background: "#888",
-                                        color: "white",
-                                        border: "none",
-                                        borderRadius: "3px",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    Toggle Owner Status (Current: {isOwner ? "Owner" : "Member"})
-                                </button>
-                            </div>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Add Member Popup */}
-            {showAddMemberPopup && (
-                <div style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    background: "rgba(0, 0, 0, 0.5)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        width: "400px",
-                        background: "white",
-                        borderRadius: 10,
-                        padding: "20px",
-                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)"
-                    }}>
-                        <div style={{
-                            color: "black",
-                            fontSize: 24,
-                            fontFamily: "Manrope",
-                            fontWeight: 700,
-                            marginBottom: "20px"
-                        }}>
-                            Add Member
-                        </div>
-                        
-                        <div style={{
-                            marginBottom: "20px"
-                        }}>
-                            <div className="form-input-container" data-clicked={newMemberUsername ? "Clicked" : "Default"} data-state="Default">
-                                {!newMemberUsername && (
-                                    <div className="form-input-placeholder">
-                                        <div>Username</div>
-                                    </div>
-                                )}
-                                <input
-                                    type="text"
-                                    value={newMemberUsername}
-                                    onChange={(e) => setNewMemberUsername(e.target.value)}
-                                    className="form-input"
-                                    required
-                                />
-                            </div>
-                            {addMemberError && (
-                                <div style={{
-                                    color: "red",
-                                    fontSize: 14,
-                                    marginTop: "5px"
-                                }}>
-                                    {addMemberError}
-                                </div>
-                            )}
-                        </div>
-                        
-                        <div style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            gap: "10px"
-                        }}>
-                            <button
-                                onClick={() => setShowAddMemberPopup(false)}
-                                className="form-button"
-                                style={{ background: "#ccc", width: "auto" }}
-                            >
-                                <span className="form-button-text">Cancel</span>
-                            </button>
-                            <button
-                                onClick={handleAddMemberSubmit}
-                                className="form-button"
-                                style={{ width: "auto" }}
-                            >
-                                <span className="form-button-text">Add</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Member management UI is now handled by the RoadtripMemberManagement component */}
         </>
     );
 }
