@@ -8,6 +8,7 @@ export interface PointOfInterest {
     category: PoiCategory;
     priority: PoiPriority;
     creatorId: number;
+    creatorUserName?: string; // optional, bis du es vom Backend bekommst
     status: PoiAcceptanceStatus;
     upvotes: number; // temporary solution, not sure if a list of user_ids is needed here...
     downvotes: number;
@@ -17,8 +18,7 @@ export interface PointOfInterest {
 export enum PoiCategory {
     SIGHTSEEING = "SIGHTSEEING",
     FOOD = "FOOD",
-    ACCOMMODATION = "ACCOMMODATION",
-    ACTIVITY = "ACTIVITY",
+    ACCOMMODATION = "ACCOMODATION",
     OTHER = "OTHER"
 }
 
@@ -31,6 +31,14 @@ export enum PoiPriority {
 
 export enum PoiAcceptanceStatus {
     PENDING = "PENDING",
-    APPROVED = "APPROVED",
-    REJECTED = "REJECTED"
+    ACCEPTED = "ACCEPTED",
+    DECLINED = "DECLINED"
+}
+
+export interface Comment {
+    commentId: number;
+    authorId: number;
+    authorUserName?: string; // optional, bis du es vom Backend bekommst
+    comment: string;
+    creationDate: string; // ISO format, z.B. "2025-04-24"
 }

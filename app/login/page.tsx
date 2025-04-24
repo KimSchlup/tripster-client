@@ -1,43 +1,60 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useApi } from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
-import { User } from "@/types/user";
+import { LoginCredentials } from "@/types/auth";
 import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
-
-interface FormFieldProps {
-  username: string;
-  password: string;
-}
+import { useToast } from "@/hooks/useToast";
 
 const Login: React.FC = () => {
   const router = useRouter();
-  const apiService = useApi();
-  const { login } = useAuth();
+  const { authState, login, clearError } = useAuth();
+  const { showToast } = useToast();
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Clear any previous auth errors when component mounts or when inputs change
+  useState(() => {
+    if (authState.error) {
+      clearError();
+    }
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return;
+    
     try {
-      const values: FormFieldProps = { username, password };
-      const response = await apiService.post<User>("/auth/login", values);
-
-      if (response.token && response.userId) {
-        login(response.token, response.userId);
+      setIsSubmitting(true);
+      
+      // Validate inputs
+      if (!username.trim()) {
+        showToast("Username is required", "error");
+        return;
       }
-
+      
+      if (!password.trim()) {
+        showToast("Password is required", "error");
+        return;
+      }
+      
+      const credentials: LoginCredentials = { username, password };
+      
+      // Call login from auth context
+      await login(credentials);
+      
+      // Navigate to roadtrips page on success
       router.push("/my-roadtrips");
     } catch (error) {
-      if (error instanceof Error) {
-        alert(`Something went wrong during the login:\n${error.message}`);
-      } else {
-        console.error("An unknown error occurred during login.");
-      }
+      console.error("Login error:", error);
+      // Error handling is done in the auth context
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -51,6 +68,20 @@ const Login: React.FC = () => {
         {/* Login Form */}
         <div style={{width: 346, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-end', gap: 13, display: 'inline-flex'}}>
         <form onSubmit={handleLogin} style={{width: '100%'}}>
+          {/* Display auth error if present */}
+          {authState.error && (
+            <div style={{
+              padding: '10px',
+              marginBottom: '15px',
+              backgroundColor: '#ffebee',
+              color: '#d32f2f',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}>
+              {authState.error}
+            </div>
+          )}
+          
           <div className="form-input-container" data-clicked={username ? "Clicked" : "Default"} data-state="Default">
             {!username && (
               <div className="form-input-placeholder">
@@ -60,9 +91,13 @@ const Login: React.FC = () => {
             <input 
               type="text" 
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                if (authState.error) clearError();
+              }}
               required
               className="form-input"
+              disabled={isSubmitting}
             />
           </div>
           
@@ -75,30 +110,38 @@ const Login: React.FC = () => {
             <input 
               type="password" 
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (authState.error) clearError();
+              }}
               required
               className="form-input"
+              disabled={isSubmitting}
             />
           </div>
           
           <button 
             type="submit"
+            disabled={isSubmitting}
             style={{
               zIndex: 9999,
-              pointerEvents: "auto",
+              pointerEvents: isSubmitting ? "none" : "auto",
               position: "relative",
               width: "100%",
               padding: "10px",
-              backgroundColor: "black",
+              backgroundColor: isSubmitting ? "#cccccc" : "black",
               color: "white",
               border: "none",
               borderRadius: "4px",
               fontSize: "16px",
               fontWeight: "bold",
-              cursor: "pointer"
+              cursor: isSubmitting ? "default" : "pointer",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center"
             }}
           >
-            Login
+            {isSubmitting ? "Logging in..." : "Login"}
           </button>
         </form>
         

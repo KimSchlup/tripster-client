@@ -1,92 +1,207 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@/hooks/useAuth";
 import { Roadtrip } from "@/types/roadtrip";
-
+import { InvitationStatus } from "@/types/roadtripMember";
+import InvitationPopup from "@/components/InvitationPopup";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useToast } from "@/hooks/useToast";
 
 interface newRoadtripProps {
     name: string;
     roadtripMembers: [];
     roadtripDescription: string;
-  }
+}
 
-export default function MyRoadtrips() {
+function RoadtripsContent() {
     const [roadtrips, setRoadtrips] = useState<Roadtrip[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedRoadtrip, setSelectedRoadtrip] = useState<Roadtrip | null>(null);
+    const [showInvitationPopup, setShowInvitationPopup] = useState(false);
     const apiService = useApi();
     const router = useRouter();
+    const { authState } = useAuth();
+    const { showToast } = useToast();
+    const userId = authState.userId;
 
-    useEffect(() => {
-        const fetchRoadtrips = async () => {
-            try {
-                setLoading(true);
-                const data = await apiService.get<Roadtrip[]>("/roadtrips");
-                console.log("API response:", data);
-                
-                // Log roadtrips without ID for debugging
-                data.forEach(roadtrip => {
-                    if (roadtrip.id === undefined) {
+    // Function to fetch roadtrips
+    const fetchRoadtrips = useCallback(async () => {
+        // Check token directly from localStorage for debugging
+        const token = localStorage.getItem("token");
+        console.log("Token in my-roadtrips page:", token);
+        
+        // If user is not logged in, don't try to fetch roadtrips
+        if (!authState.isLoggedIn || !token) {
+            console.log("User not logged in or no token found");
+            setError("Please login first in order to access your roadtrips.");
+            setLoading(false);
+            showToast("Please login to access your roadtrips", "warning");
+            return;
+        }
+        
+        try {
+            setLoading(true);
+            console.log("Fetching roadtrips with token:", token);
+            
+            const data = await apiService.get<Roadtrip[]>("/roadtrips");
+            console.log("API response:", data);
+            
+            // Process roadtrips to determine invitation status
+            if (Array.isArray(data)) {
+                // Process each roadtrip to determine the current user's invitation status
+                const processedRoadtrips = data.map(roadtrip => {
+                    if (roadtrip.roadtripId === undefined) {
                         console.warn("Roadtrip without ID:", roadtrip);
                     }
+                    
+                    // Check if the current user is the owner of the roadtrip
+                    const isOwner = roadtrip.ownerId && userId && roadtrip.ownerId.toString() === userId.toString();
+                    
+                    // If the user is the owner, always set invitation status to ACCEPTED
+                    if (isOwner) {
+                        console.log(`User is the owner of roadtrip ${roadtrip.roadtripId}, setting status to ACCEPTED`);
+                        return {
+                            ...roadtrip,
+                            invitationStatus: InvitationStatus.ACCEPTED
+                        };
+                    }
+                    
+                    // Make sure roadtripMembers exists before trying to find a member
+                    const roadtripMembers = roadtrip.roadtripMembers || [];
+                    const currentUserMember = roadtripMembers.find(
+                        member => member.id === userId
+                    );
+                    
+                    // If the user is a member, check their invitation status
+                    if (currentUserMember && currentUserMember.invitationStatus) {
+                        console.log(`User is a member of roadtrip ${roadtrip.roadtripId} with status: ${currentUserMember.invitationStatus}`);
+                        return {
+                            ...roadtrip,
+                            invitationStatus: currentUserMember.invitationStatus
+                        };
+                    }
+                    
+                    // If the roadtrip has an invitationStatus from the API, use that
+                    if (roadtrip.invitationStatus) {
+                        console.log(`Using API-provided invitation status for roadtrip ${roadtrip.roadtripId}: ${roadtrip.invitationStatus}`);
+                        return roadtrip;
+                    }
+                    
+                    // Default to ACCEPTED for existing roadtrips
+                    console.log(`No invitation status found for roadtrip ${roadtrip.roadtripId}, defaulting to ACCEPTED`);
+                    return {
+                        ...roadtrip,
+                        invitationStatus: InvitationStatus.ACCEPTED
+                    };
                 });
                 
-                console.log("All roadtrips:", data);
-                setRoadtrips(data);
+                setRoadtrips(processedRoadtrips);
                 setError(null);
-            } catch (err) {
-                console.error("Error fetching roadtrips:", err);
-                
-                // Check if it's a 401 error (not authenticated)
-                const error = err as { status?: number };
-                if (error && error.status === 401) {
-                    setError("Please login first in order to access your roadtrips.");
-                } else {
-                    setError("Failed to load roadtrips. Please try again later.");
-                }
-            } finally {
-                setLoading(false);
+            } else {
+                console.error("Unexpected response format:", data);
+                setError("Received invalid data format from server.");
+                showToast("Error loading roadtrips: Invalid data format", "error");
             }
-        };
+        } catch (err) {
+            console.error("Error fetching roadtrips:", err);
+            
+            // Check if it's a 401 error (not authenticated)
+            const error = err as { status?: number };
+            if (error && error.status === 401) {
+                console.log("Authentication error (401)");
+                // Clear token and redirect to login
+                localStorage.removeItem("token");
+                localStorage.removeItem("userId");
+                setError("Your session has expired. Please login again.");
+                showToast("Your session has expired. Please login again.", "error");
+                // Redirect to login page
+                router.push('/login');
+            } else {
+                setError("Failed to load roadtrips. Please try again later.");
+                showToast("Failed to load roadtrips. Please try again later.", "error");
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, [apiService, authState.isLoggedIn, router, userId, showToast]);
 
+    useEffect(() => {
         fetchRoadtrips();
-    }, [apiService]);
+    }, [fetchRoadtrips]);
 
-    const handleRoadtripClick = (id: number | undefined) => {
-        if (id === undefined) {
+    const handleRoadtripClick = (roadtrip: Roadtrip) => {
+        if (roadtrip.roadtripId === undefined) {
             console.error("Roadtrip ID is undefined");
             return;
         }
-        router.push(`/my-roadtrips/${id}`);
+        
+        // Check if this is a pending invitation
+        if (roadtrip.invitationStatus === InvitationStatus.PENDING) {
+            // Show invitation popup
+            setSelectedRoadtrip(roadtrip);
+            setShowInvitationPopup(true);
+        } else {
+            // Navigate to the roadtrip page
+            router.push(`/my-roadtrips/${roadtrip.roadtripId}`);
+        }
     };
+    
+    // Handle invitation status change
+    const handleInvitationStatusChange = () => {
+        // Refresh the roadtrips list
+        fetchRoadtrips();
+    };
+    
 
     const handleNewRoadtripClick = async () => {
         try {
-            // Create a new empty roadtrip without Id
+            // Create a new empty roadtrip
             const newRoadtrip: newRoadtripProps = {
-                name: "",
+                name: "New Roadtrip",
                 roadtripMembers: [],
                 roadtripDescription: ""
             };
-        
+            
+            console.log("Creating new roadtrip...");
             
             // Post the new roadtrip to the API
             const createdRoadtrip = await apiService.post<Roadtrip>("/roadtrips", newRoadtrip);
+            console.log("Created roadtrip:", createdRoadtrip);
+            
+            // Show success toast
+            showToast("New roadtrip created successfully!", "success");
             
             // Redirect to the settings page for the new roadtrip
-            // Use id (from backend) or fallback to roadtripId (for backward compatibility)
-            const roadtripId = createdRoadtrip.id || createdRoadtrip.roadtripId;
+            // Use roadtripId from backend
+            const roadtripId = createdRoadtrip.roadtripId;
+            
+            if (roadtripId === undefined) {
+                throw new Error("Created roadtrip has no ID");
+            }
+            
             router.push(`/my-roadtrips/${roadtripId}/settings`);
         } catch (err) {
             console.error("Error creating new roadtrip:", err);
-            setError("Failed to create new roadtrip. Please try again later.");
+            
+            // Check if it's an authentication error
+            const error = err as { status?: number };
+            if (error && error.status === 401) {
+                setError("Please login first in order to create a roadtrip.");
+                showToast("Authentication required to create a roadtrip", "error");
+            } else {
+                setError("Failed to create new roadtrip. Please try again later.");
+                showToast("Failed to create new roadtrip", "error");
+            }
         }
     };
 
-    const formatMembersList = (members: { id: string; name: string }[]) => {
+    const formatMembersList = (members?: { id: string; name: string }[]) => {
+        // Handle undefined or empty members array
         if (!members || members.length === 0) return "No members";
         if (members.length === 1) return members[0].name;
         
@@ -101,6 +216,15 @@ export default function MyRoadtrips() {
     return (
         <>
             <Header />
+            
+            {/* Invitation Popup */}
+            {showInvitationPopup && selectedRoadtrip && (
+                <InvitationPopup
+                    roadtrip={selectedRoadtrip}
+                    onClose={() => setShowInvitationPopup(false)}
+                    onStatusChange={handleInvitationStatusChange}
+                />
+            )}
             <div style={{ padding: "32px", maxWidth: "1500px", margin: "0 auto" }}>
                 <h1 style={{ fontSize: "32px", marginBottom: "8px", textAlign: "left", marginLeft: "40px" }}>My Roadtrips</h1>
                 <hr style={{ border: "none", borderBottom: "1px solid #ccc", width: "100%", marginBottom: "32px" }} />
@@ -113,7 +237,7 @@ export default function MyRoadtrips() {
                         {/* Display existing roadtrips */}
                         {roadtrips.map((roadtrip, index) => (
                             <div 
-                                key={`roadtrip-${roadtrip.id || index}`}
+                                key={`roadtrip-${roadtrip.roadtripId || index}`}
                                 style={{
                                     width: 328, 
                                     boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)', 
@@ -121,23 +245,56 @@ export default function MyRoadtrips() {
                                     justifyContent: 'flex-start', 
                                     alignItems: 'flex-start', 
                                     display: 'flex',
-                                    cursor: roadtrip.id ? 'pointer' : 'not-allowed'
+                                    cursor: roadtrip.roadtripId ? 'pointer' : 'not-allowed'
                                 }}
                                 onClick={() => {
-                                    console.log("Clicked roadtrip with ID:", roadtrip.id);
-                                    handleRoadtripClick(roadtrip.id);
+                                    console.log("Clicked roadtrip with ID:", roadtrip.roadtripId);
+                                    handleRoadtripClick(roadtrip);
                                 }}
                             >
-                                <div style={{width: 328, height: 100, background: '#D9D9D9', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                                <div style={{
+                                    width: 328, 
+                                    height: 100, 
+                                    background: roadtrip.invitationStatus === InvitationStatus.PENDING ? '#FFA500' : '#D9D9D9', 
+                                    display: 'flex', 
+                                    justifyContent: 'center', 
+                                    alignItems: 'center',
+                                    position: 'relative'
+                                }}>
                                     <div style={{color: 'white', fontSize: 24, fontFamily: 'Manrope', fontWeight: '700'}}>
                                         {roadtrip.name.charAt(0).toUpperCase()}
                                     </div>
+                                    
+                                    {/* Pending invitation badge */}
+                                    {roadtrip.invitationStatus === InvitationStatus.PENDING && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: 10,
+                                            right: 10,
+                                            background: 'white',
+                                            color: '#FFA500',
+                                            borderRadius: '50%',
+                                            width: 24,
+                                            height: 24,
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            fontSize: 16,
+                                            fontWeight: 'bold'
+                                        }}>
+                                            !
+                                        </div>
+                                    )}
                                 </div>
                                 <div style={{width: 328, height: 100, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'black', fontSize: 32, fontFamily: 'Manrope', fontWeight: '700', wordWrap: 'break-word'}}>
                                     {roadtrip.name}
                                 </div>
                                 <div style={{width: 328, height: 40, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'black', fontSize: 14, fontFamily: 'Manrope', fontWeight: '700', wordWrap: 'break-word'}}>
-                                    {formatMembersList(roadtrip.roadtripMembers)}
+                                    {roadtrip.invitationStatus === InvitationStatus.PENDING ? (
+                                        <span style={{ color: '#FFA500' }}>Pending Invitation</span>
+                                    ) : (
+                                        formatMembersList(roadtrip.roadtripMembers)
+                                    )}
                                 </div>
                                 {(roadtrip.description || roadtrip.roadtripDescription) && (
                                     <div style={{width: '100%', justifyContent: 'flex-start', alignItems: 'center', display: 'flex'}}>
@@ -176,5 +333,14 @@ export default function MyRoadtrips() {
                 )}
             </div>
         </>
+    );
+}
+
+// Wrap the content with ProtectedRoute
+export default function MyRoadtrips() {
+    return (
+        <ProtectedRoute>
+            <RoadtripsContent />
+        </ProtectedRoute>
     );
 }

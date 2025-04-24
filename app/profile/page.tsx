@@ -9,6 +9,7 @@ import { User } from "@/types/user";
 import { Switch, Input, Button } from "antd";
 import Image from "next/image";
 import Header from "@/components/Header";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div style={{
@@ -22,7 +23,7 @@ const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) =>
     </div>
 );
 
-const ProfilePage: React.FC = () => {
+const ProfileContent: React.FC = () => {
     const apiService = useApi();
     const [user, setUser] = useState<User | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -36,10 +37,12 @@ const ProfilePage: React.FC = () => {
     const [editedEmergencyLastName, setEditedEmergencyLastName] = useState("");
     const [editedEmergencyPhone, setEditedEmergencyPhone] = useState("");
 
-    const { userId } = useAuth();
+    const { authState } = useAuth();
+    const userId = authState.userId;
 
-    useEffect(() => {
-        const fetchUser = async () => {
+useEffect(() => {
+    if (!userId) return;
+    const fetchUser = async () => {
             try {
                 console.log("Fetching user with ID:", userId);
                 const response = await apiService.get<User>("/users/" + userId);
@@ -107,13 +110,13 @@ const ProfilePage: React.FC = () => {
                         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "24px" }}>
                             <Button  onClick={async () => {
                                 if (isEditing) {
-                                    await apiService.put("/users/" + user?.userId, {
+                                    await apiService.put("/users/" + user.userId, {
                                         username: editedUsername,
                                         firstName: editedFirstName,
                                         lastName: editedLastName,
-                                        email: editedEmail,
+                                        mail: editedEmail,
                                         phoneNumber: editedPhone,
-                                        recieveNotifications: editedNotifications,
+                                        receiveNotifications: editedNotifications,
                                         emergencyContact: {
                                             firstName: editedEmergencyFirstName,
                                             lastName: editedEmergencyLastName,
@@ -146,6 +149,14 @@ const ProfilePage: React.FC = () => {
             )}
             </div>
         </>
+    );
+};
+
+const ProfilePage: React.FC = () => {
+    return (
+        <ProtectedRoute>
+            <ProfileContent />
+        </ProtectedRoute>
     );
 };
 

@@ -3,36 +3,40 @@
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
-import { User } from "@/types/user";
-import { useState } from "react";
+import { LoginCredentials } from "@/types/auth";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
-
-interface RegisterFormProps {
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  password: string;
-}
+import { useToast } from "@/hooks/useToast";
+import { validatePassword, PasswordStrength, doPasswordsMatch } from "@/utils/passwordUtils";
 
 const Register: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
-  const { login } = useAuth();
-  
+  const { login, authState, clearError } = useAuth();
+  const { showToast } = useToast();
+
   const [firstName, setFirstName] = useState("");
   const [isFirstNameValid, setIsFirstNameValid] = useState(true);
   const [lastName, setLastName] = useState("");
   const [isLastNameValid, setIsLastNameValid] = useState(true);
   const [username, setUsername] = useState("");
   const [isUsernameValid, setIsUsernameValid] = useState(true);
-  const [isUsernameTaken, setIsUsernameTaken] = useState(false);
   const [email, setEmail] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [password, setPassword] = useState("");
-  const [isPasswordValid, setIsPasswordValid] = useState(true);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>(PasswordStrength.WEAK);
+  const [passwordMessage, setPasswordMessage] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Clear any previous auth errors when component mounts
+  useEffect(() => {
+    if (authState.error) {
+      clearError();
+    }
+  }, [authState.error, clearError]);
 
   // Email validation regex
   const validateEmail = (email: string): boolean => {
@@ -40,32 +44,41 @@ const Register: React.FC = () => {
     return emailRegex.test(email);
   };
 
-  // Check if username is already taken
-  const checkUsernameAvailability = async (username: string): Promise<boolean> => {
-    try {
-      if (!username.trim()) return true; // Skip check if username is empty
-      
-      // Get all users to check if username exists
-      const users = await apiService.get<User[]>("/users");
-      
-      // Check if any user has the same username (case insensitive)
-      const usernameTaken = users.some(user => 
-        user.username?.toLowerCase() === username.toLowerCase()
-      );
-      
-      setIsUsernameTaken(usernameTaken);
-      return !usernameTaken;
-    } catch (error) {
-      console.error("Error checking username availability:", error);
-      return true; // Assume username is available if check fails
+  // Check password strength when password changes
+  useEffect(() => {
+    if (password) {
+      const result = validatePassword(password);
+      setPasswordStrength(result.strength);
+      setPasswordMessage(result.message);
+    } else {
+      setPasswordStrength(PasswordStrength.WEAK);
+      setPasswordMessage("");
+    }
+  }, [password]);
+
+  // Get color based on password strength
+  const getPasswordStrengthColor = () => {
+    switch (passwordStrength) {
+      case PasswordStrength.STRONG:
+        return "#4CAF50"; // Green
+      case PasswordStrength.MEDIUM:
+        return "#FF9800"; // Orange
+      case PasswordStrength.WEAK:
+      default:
+        return "#F44336"; // Red
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return;
+    
     try {
+      setIsSubmitting(true);
+      setFormError(null);
       let isValid = true;
-      
+
       // Check if firstName is not empty
       if (!firstName.trim()) {
         setIsFirstNameValid(false);
@@ -83,11 +96,6 @@ const Register: React.FC = () => {
         setIsUsernameValid(false);
         isValid = false;
       }
-      
-      // Check if username is already taken
-      if (username.trim() && isUsernameTaken) {
-        isValid = false;
-      }
 
       // Check if email is valid
       if (!email.trim()) {
@@ -98,52 +106,54 @@ const Register: React.FC = () => {
         isValid = false;
       }
 
-      // Check if password is not empty
-      if (!password.trim()) {
-        setIsPasswordValid(false);
-        isValid = false;
-      }
-
-      // Check if confirm password is not empty
-      if (!confirmPassword.trim()) {
-        setIsConfirmPasswordValid(false);
+      // Check password strength
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        setFormError(passwordValidation.message);
         isValid = false;
       }
 
       // Check if passwords match
-      if (password !== confirmPassword) {
-        alert("Passwords do not match!");
+      if (!doPasswordsMatch(password, confirmPassword)) {
+        setIsConfirmPasswordValid(false);
+        setFormError("Passwords do not match");
         isValid = false;
       }
 
       if (!isValid) {
+        showToast("Please fix the errors in the form", "error");
         return;
       }
 
-      const registerData: RegisterFormProps = {
+      const registerData = {
         firstName,
         lastName,
         username,
-        email,
+        mail: email,
         password
       };
 
       // Call the API service
-      const response = await apiService.post<User>("/users", registerData);
+      await apiService.post("/users", registerData);
+      showToast("Registration successful!", "success");
 
-      // Store token and ID if available
-      if (response.token && response.userId) {
-        login(response.token, response.userId);
-      }
+      // Login with the new credentials
+      const loginData: LoginCredentials = { username, password };
+      await login(loginData);
 
       // Navigate to the user overview
       router.push("/my-roadtrips");
     } catch (error) {
-      if (error instanceof Error) {
-        alert(`Something went wrong during registration:\n${error.message}`);
-      } else {
-        console.error("An unknown error occurred during registration.");
-      }
+      console.error("Registration error:", error);
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "An unknown error occurred during registration";
+      
+      setFormError(errorMessage);
+      showToast(errorMessage, "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -157,6 +167,20 @@ const Register: React.FC = () => {
         {/* Registration Form */}
         <div style={{width: 345, display: 'flex', flexDirection: 'column', gap: 12}}>
         <form onSubmit={handleRegister} style={{width: '100%'}}>
+          {/* Form Error */}
+          {formError && (
+            <div style={{
+              padding: '10px',
+              marginBottom: '15px',
+              backgroundColor: '#ffebee',
+              color: '#d32f2f',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}>
+              {formError}
+            </div>
+          )}
+          
           {/* First Name */}
           <div className="form-input-container" data-clicked={firstName ? "Clicked" : "Default"} data-state={isFirstNameValid ? "Default" : "Error"}>
             {!firstName && (
@@ -164,14 +188,15 @@ const Register: React.FC = () => {
                 <div>Prename</div>
               </div>
             )}
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={firstName}
               onChange={(e) => {
                 const newFirstName = e.target.value;
                 setFirstName(newFirstName);
                 // Reset validation when user types
                 setIsFirstNameValid(true);
+                if (formError) setFormError(null);
               }}
               onBlur={() => {
                 // Validate on blur
@@ -179,6 +204,7 @@ const Register: React.FC = () => {
               }}
               required
               className="form-input"
+              disabled={isSubmitting}
             />
             {!isFirstNameValid && (
               <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
@@ -186,7 +212,7 @@ const Register: React.FC = () => {
               </div>
             )}
           </div>
-          
+
           {/* Last Name */}
           <div className="form-input-container" data-clicked={lastName ? "Clicked" : "Default"} data-state={isLastNameValid ? "Default" : "Error"}>
             {!lastName && (
@@ -194,14 +220,15 @@ const Register: React.FC = () => {
                 <div>Name</div>
               </div>
             )}
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={lastName}
               onChange={(e) => {
                 const newLastName = e.target.value;
                 setLastName(newLastName);
                 // Reset validation when user types
                 setIsLastNameValid(true);
+                if (formError) setFormError(null);
               }}
               onBlur={() => {
                 // Validate on blur
@@ -209,6 +236,7 @@ const Register: React.FC = () => {
               }}
               required
               className="form-input"
+              disabled={isSubmitting}
             />
             {!isLastNameValid && (
               <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
@@ -216,7 +244,7 @@ const Register: React.FC = () => {
               </div>
             )}
           </div>
-          
+
           {/* Username */}
           <div className="form-input-container" data-clicked={username ? "Clicked" : "Default"} data-state={isUsernameValid ? "Default" : "Error"}>
             {!username && (
@@ -224,37 +252,28 @@ const Register: React.FC = () => {
                 <div>Username</div>
               </div>
             )}
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={username}
               onChange={(e) => {
                 const newUsername = e.target.value;
                 setUsername(newUsername);
                 // Reset validation when user types
                 setIsUsernameValid(true);
-                setIsUsernameTaken(false);
+                if (formError) setFormError(null);
               }}
-              onBlur={async () => {
+              onBlur={() => {
                 // Validate on blur
                 const isEmpty = !username.trim();
                 setIsUsernameValid(!isEmpty);
-                
-                // Check username availability if not empty
-                if (!isEmpty) {
-                  await checkUsernameAvailability(username);
-                }
               }}
               required
               className="form-input"
+              disabled={isSubmitting}
             />
             {!isUsernameValid && (
               <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
                 Username cannot be empty
-              </div>
-            )}
-            {isUsernameTaken && (
-              <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
-                This username is already taken. Please choose another one.
               </div>
             )}
           </div>
@@ -278,9 +297,11 @@ const Register: React.FC = () => {
                 } else {
                   setIsEmailValid(true); // Reset validation when empty
                 }
+                if (formError) setFormError(null);
               }}
               required
               className="form-input"
+              disabled={isSubmitting}
             />
             {!isEmailValid && email && (
               <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
@@ -290,7 +311,7 @@ const Register: React.FC = () => {
           </div>
           
           {/* Password */}
-          <div className="form-input-container" data-clicked={password ? "Clicked" : "Default"} data-state={isPasswordValid ? "Default" : "Error"}>
+          <div className="form-input-container" data-clicked={password ? "Clicked" : "Default"} data-state={password && passwordStrength === PasswordStrength.WEAK ? "Error" : "Default"}>
             {!password && (
               <div className="form-input-placeholder">
                 <div>Password</div>
@@ -302,19 +323,27 @@ const Register: React.FC = () => {
               onChange={(e) => {
                 const newPassword = e.target.value;
                 setPassword(newPassword);
-                // Reset validation when user types
-                setIsPasswordValid(true);
-              }}
-              onBlur={() => {
-                // Validate on blur
-                setIsPasswordValid(!!password.trim());
+                if (formError) setFormError(null);
               }}
               required
               className="form-input"
+              disabled={isSubmitting}
             />
-            {!isPasswordValid && (
-              <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
-                Password cannot be empty
+            {password && (
+              <div style={{ 
+                fontSize: '12px', 
+                marginTop: '4px',
+                color: getPasswordStrengthColor()
+              }}>
+                {passwordMessage}
+                <div style={{
+                  height: '4px',
+                  backgroundColor: getPasswordStrengthColor(),
+                  width: passwordStrength === PasswordStrength.STRONG ? '100%' : 
+                         passwordStrength === PasswordStrength.MEDIUM ? '66%' : '33%',
+                  marginTop: '4px',
+                  borderRadius: '2px'
+                }} />
               </div>
             )}
           </div>
@@ -334,17 +363,21 @@ const Register: React.FC = () => {
                 setConfirmPassword(newConfirmPassword);
                 // Reset validation when user types
                 setIsConfirmPasswordValid(true);
+                if (formError) setFormError(null);
               }}
               onBlur={() => {
                 // Validate on blur
-                setIsConfirmPasswordValid(!!confirmPassword.trim());
+                if (password && confirmPassword) {
+                  setIsConfirmPasswordValid(doPasswordsMatch(password, confirmPassword));
+                }
               }}
               required
               className="form-input"
+              disabled={isSubmitting}
             />
             {!isConfirmPasswordValid && (
               <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
-                Confirm password cannot be empty
+                Passwords do not match
               </div>
             )}
           </div>
@@ -355,9 +388,14 @@ const Register: React.FC = () => {
               type="submit"
               className="form-button"
               data-clicked="Clicked" 
-              data-state="Default" 
+              data-state="Default"
+              disabled={isSubmitting}
+              style={{
+                opacity: isSubmitting ? 0.7 : 1,
+                cursor: isSubmitting ? 'default' : 'pointer'
+              }}
             >
-              <div className="form-button-text">Register</div>
+              <div className="form-button-text">{isSubmitting ? "Registering..." : "Register"}</div>
             </button>
           </div>
         </form>
