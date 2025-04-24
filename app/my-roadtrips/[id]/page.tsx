@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import {useEffect, useState} from "react";
+import { useCallback } from "react";
 import {useParams, useRouter} from "next/navigation";
 import type {LeafletMouseEvent} from "leaflet";
 import {ColoredMarker} from "@/components/MapComponents/coloredMarker";
@@ -16,6 +17,7 @@ import {useApi} from "@/hooks/useApi";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import {PoiAcceptanceStatus, PoiCategory, PointOfInterest, PoiPriority, Comment} from "@/types/poi"; // Assuming PoiCategory is defined in the same file
 import { RoadtripMember} from "@/types/roadtripMember";
+import { useAuth } from "@/hooks/useAuth";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -34,18 +36,43 @@ function RoadtripContent() {
   const apiService = useApi();
 
   const [sidebarTop, setSidebarTop] = useState("30%");
-  const [basemapType, setBasemapType] = useState<"SATELLITE" | "SATELLITE_HYBRID" | "OPEN_STREET_MAP">("OPEN_STREET_MAP");
+  const [basemapType, setBasemapType] = useState<"SATELLITE" | "OPEN_STREET_MAP">("OPEN_STREET_MAP");
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const settings = await apiService.get<{ basemapType: string }>(`/roadtrips/${id}/settings`);
-        setBasemapType(settings.basemapType as any);
+        setBasemapType(settings.basemapType as "SATELLITE" | "OPEN_STREET_MAP");
       } catch (error) {
         console.error("Failed to fetch roadtrip settings", error);
       }
     };
     fetchSettings();
   }, [id, apiService]);
+
+  const [ownerId, setOwnerId] = useState<number | null>(null);
+  const [decisionProcess, setDecisionProcess] = useState<"MAJORITY" | "OWNER_DECISION">("MAJORITY");
+  const { authState } = useAuth();
+  const userId = authState.userId;
+
+  // Debug logs for decisionProcess, userId, ownerId, and showVotingButtons
+  console.log("userId:", userId, "ownerId:", ownerId);
+  console.log("showVotingButtons:", decisionProcess === "MAJORITY" || Number(userId) === ownerId);
+
+  useEffect(() => {
+    const fetchRoadtrip = async () => {
+      try {
+        const roadtrip = await apiService.get<{ ownerId: number; decisionProcess: "MAJORITY" | "OWNER_DECISION" }>(`/roadtrips/${id}`);
+        setOwnerId(roadtrip.ownerId);
+        setDecisionProcess(roadtrip.decisionProcess);
+        console.log("decisionProcess:", decisionProcess);
+
+      } catch (error) {
+        console.error("Failed to fetch roadtrip info", error);
+      }
+    };
+    fetchRoadtrip();
+  }, [id, apiService, decisionProcess]);
+
   const [pois, setPois] = useState<PointOfInterest[]>([]);
   const [newPoi, setNewPoi] = useState<PointOfInterest | null>(null);
   const [selectedPoiId, setSelectedPoiId] = useState<number | null>(null);
@@ -75,7 +102,7 @@ function RoadtripContent() {
   }, []);
 
   // Fetch POIs helper
-  const fetchPois = async () => {
+  const fetchPois = useCallback(async () => {
     try {
       const data = await apiService.get<PointOfInterest[]>(`/roadtrips/${id}/pois`);
       const enriched = data.map(poi => ({
@@ -86,20 +113,20 @@ function RoadtripContent() {
     } catch (error) {
       console.error("Failed to fetch POIs:", error);
     }
-  };
+  }, [apiService, id, members]);
 
   // Initial fetchPois call
   useEffect(() => {
     fetchPois();
-  }, [id, apiService, members]);
+  }, [fetchPois]);
 
-  // Polling fetchPois every 10 seconds
+  // Polling fetchPois every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       fetchPois();
     }, 5000); // alle 5 Sekunden
     return () => clearInterval(interval);
-  }, [id, apiService, members]);
+  }, [fetchPois]);
 
   useEffect(() => {
     apiService.get<RoadtripMember[]>(`/roadtrips/${id}/members`)
@@ -213,6 +240,7 @@ function RoadtripContent() {
             setContextMenuScreenPosition(null);
           }}
           isNew={true}
+          showVotingButtons={decisionProcess === "MAJORITY" || Number(userId) === ownerId}
         />
       )}
       {selectedPoi && (
@@ -295,6 +323,7 @@ function RoadtripContent() {
           }}
           onClose={() => setSelectedPoiId(null)}
           isNew={false}
+          showVotingButtons={decisionProcess === "MAJORITY" || Number(userId) === ownerId}
         />
       )}
       {contextMenuLatLng && contextMenuScreenPosition && (
@@ -346,11 +375,6 @@ function RoadtripContent() {
         <MapClickHandler />
         {basemapType === "SATELLITE" && (
           <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-        )}
-        {basemapType === "SATELLITE_HYBRID" && (
-          <>
-            <TileLayer url="https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-          </>
         )}
         {basemapType === "OPEN_STREET_MAP" && (
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
