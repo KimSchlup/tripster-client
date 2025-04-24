@@ -187,7 +187,7 @@ function RoadtripContent() {
   // Toggle between POI and Route mode
   const toggleMapMode = () => {
     setMapMode(prevMode => prevMode === MapMode.POI ? MapMode.ROUTE : MapMode.POI);
-    setSelectedPoi(null);
+    setSelectedPoiId(null);
     setSelectedRoute(null);
     setShowPOIList(false);
     setShowRouteList(false);
@@ -547,7 +547,7 @@ function RoadtripContent() {
                 position={[poi.coordinate.coordinates[1], poi.coordinate.coordinates[0]]}
                 icon={ColoredMarker("#000000")}
                 eventHandlers={{
-                  click: () => setSelectedPoi(poi),
+                  click: () => setSelectedPoiId(poi.poiId),
                 }}
               />
             ))}
