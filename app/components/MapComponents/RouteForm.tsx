@@ -5,6 +5,7 @@ import Image from "next/image";
 import Draggable from "react-draggable";
 import { useRef } from "react";
 
+
 interface RouteFormProps {
   pois: PointOfInterest[];
   onCreateRoute: (routeData: RouteCreateRequest) => void;
