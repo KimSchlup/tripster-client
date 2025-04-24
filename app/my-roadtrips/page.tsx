@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
-import { Roadtrip } from "@/types/roadtrip";
+import { Roadtrip, RoadtripMemberDisplay } from "@/types/roadtrip";
 import { InvitationStatus } from "@/types/roadtripMember";
 import InvitationPopup from "@/components/InvitationPopup";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/useToast";
 
 interface newRoadtripProps {
     name: string;
-    roadtripMembers: [];
+    roadtripMembers: RoadtripMemberDisplay[];
     roadtripDescription: string;
 }
 
@@ -200,7 +200,7 @@ function RoadtripsContent() {
         }
     };
 
-    const formatMembersList = (members?: { id: string; name: string }[]) => {
+    const formatMembersList = (members?: RoadtripMemberDisplay[]) => {
         // Handle undefined or empty members array
         if (!members || members.length === 0) return "No members";
         if (members.length === 1) return members[0].name;
