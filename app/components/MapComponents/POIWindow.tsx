@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import Draggable from "react-draggable";
-import { PoiCategory, PoiPriority } from "@/types/poi";
+import { PoiCategory, PoiPriority, Comment } from "@/types/poi";
 
 interface POIWindowProps {
   title: string;
@@ -15,16 +15,19 @@ interface POIWindowProps {
   onUpvote?: () => void;
   onDownvote?: () => void;
   isNew?: boolean;
+  comments?: Comment[];
+  onSendComment?: (message: string) => void;
 }
 
 export default function POIWindow(
-  { title, description, category, priority, status, onClose, onSave, onDelete, onUpvote, onDownvote, isNew }: POIWindowProps,
+  { title, description, category, priority, status, onClose, onSave, onDelete, onUpvote, onDownvote, isNew, comments, onSendComment }: POIWindowProps,
 ) {
   const [isEditing, setIsEditing] = useState(isNew || false);
   const [editableTitle, setEditableTitle] = useState(title || "");
   const [editableDescription, setEditableDescription] = useState(description || "");
   const [editableCategory, setEditableCategory] = useState(category || "");
   const [editablePriority, setEditablePriority] = useState(priority || "");
+  const [newComment, setNewComment] = useState("");
 
   const nodeRef = useRef<HTMLDivElement>(null!);
 
@@ -150,9 +153,9 @@ export default function POIWindow(
               fontSize: "14px",
               fontWeight: 700,
               color:
-                status === "APPROVED"
+                status === "ACCEPTED"
                   ? "#79A44D"
-                  : status === "REJECTED"
+                  : status === "DECLINED"
                   ? "#FF0000"
                   : status === "PENDING"
                   ? "#FFD700"
@@ -288,27 +291,61 @@ export default function POIWindow(
           border: "1px solid #E4E4E4",
           padding: "15px"
         }}>
-          <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>
+          <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "3px", color: "black" }}>
               Comments
           </div>
-          <textarea style={{
-            width: "100%",
-            height: "120px",
-            borderRadius: "5px",
-            border: "1px solid #E4E4E4",
-            background: "rgba(228, 228, 228, 0.24)",
-            padding: "10px",
-            color: "black",
-            overflowY: "auto",
-            resize: "none"
-          }} />
+          <div style={{ height: "95px", overflowY: "auto", marginBottom: "7px" }}>
+            {comments?.map((comment) => (
+              <div key={comment.commentId} style={{ marginBottom: "10px" }}>
+                <div style={{ fontWeight: 700, fontSize: "11px", color: "#555" }}>
+                  {comment.authorUserName || `User #${comment.authorId}`} – {new Date(comment.creationDate).toLocaleDateString()}
+                </div>
+                <div style={{ fontSize: "13px", color: "#000" }}>{comment.comment}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a comment..."
+              style={{
+                flex: 1,
+                borderRadius: "5px",
+                border: "1px solid #E4E4E4",
+                background: "rgba(228, 228, 228, 0.24)",
+                padding: "8px",
+                color: "black",
+              }}
+            />
+            <button
+              onClick={() => {
+                if (newComment.trim()) {
+                  onSendComment?.(newComment.trim());
+                  setNewComment("");
+                }
+              }}
+              style={{
+                background: "#007bff",
+                color: "white",
+                fontWeight: 700,
+                padding: "8px 12px",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer",
+              }}
+            >
+              Send
+            </button>
+          </div>
         </div>
 
         {/* === Action Buttons === */}
         {isEditing ? (
           <div style={{
             position: "absolute",
-            top: 620,
+            top: 630,
             left: 94,
             display: "flex",
             gap: "28px"
@@ -352,7 +389,7 @@ export default function POIWindow(
         ) : (
           <div style={{
             position: "absolute",
-            top: 620,
+            top: 630,
             left: 94,
             display: "flex",
             gap: "28px"

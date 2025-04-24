@@ -92,8 +92,7 @@ export default function POIList({ pois }: POIListProps) {
                         >
                             <div style={{ fontSize: 20, fontWeight: 700, color: "black", textAlign: "center" }}>{poi.name}</div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: "black", textAlign: "center", marginTop: "10px" }}>
-                                Added by: {poi.creatorId}
-                            </div>
+                                Added by: {poi.creatorUserName || `User #${poi.creatorId}`}                            </div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: "black", textAlign: "center" }}>
                                 Personal Priority:{" "}
                                 <span style={{ color: getPriorityColor(poi.priority) }}>
