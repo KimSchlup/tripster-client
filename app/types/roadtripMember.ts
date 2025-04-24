@@ -11,5 +11,6 @@ export enum InvitationStatus {
 export interface RoadtripMember {
   userId: number;
   roadtripId: number;
+  username: string;
   invitationStatus: InvitationStatus;
 }
