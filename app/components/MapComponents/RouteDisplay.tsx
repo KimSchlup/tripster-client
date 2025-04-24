@@ -1,4 +1,4 @@
-import { Route, RouteAcceptanceStatus, TravelMode } from "@/types/route";
+import { Route, RouteAcceptanceStatus, TravelMode } from "@/types/routeTypes";
 import { Polyline } from "react-leaflet";
 
 interface RouteDisplayProps {

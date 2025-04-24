@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PointOfInterest } from "@/types/poi";
-import { TravelMode, RouteCreateRequest } from "@/types/route";
+import { TravelMode, RouteCreateRequest } from "@/types/routeTypes";
 import Image from "next/image";
 import Draggable from "react-draggable";
 import { useRef } from "react";
@@ -15,13 +15,6 @@ export default function RouteForm({ pois, onCreateRoute, onCancel }: RouteFormPr
   const [startId, setStartId] = useState<number | null>(null);
   const [endId, setEndId] = useState<number | null>(null);
   const [travelMode, setTravelMode] = useState<TravelMode>(TravelMode.DRIVING_CAR);
-  
-  // Get POI names for display (used internally)
-  const getPoiName = (id: number | null): string => {
-    if (id === null) return "None selected";
-    const poi = pois.find(p => p.poiId === id);
-    return poi ? poi.name : "Unknown POI";
-  };
   
   const nodeRef = useRef<HTMLDivElement>(null!);
 

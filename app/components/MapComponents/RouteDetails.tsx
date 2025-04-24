@@ -1,4 +1,4 @@
-import { Route, TravelMode } from "@/types/route";
+import { Route, TravelMode } from "@/types/routeTypes";
 import { PointOfInterest } from "@/types/poi";
 import Image from "next/image";
 import Draggable from "react-draggable";

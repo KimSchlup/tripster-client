@@ -19,7 +19,7 @@ import {Marker, useMapEvent} from "react-leaflet";
 import {useApi} from "@/hooks/useApi";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import {PoiAcceptanceStatus, PoiCategory, PointOfInterest, PoiPriority} from "@/types/poi";
-import {Route, RouteAcceptanceStatus, RouteCreateRequest, TravelMode} from "@/types/route";
+import {Route, RouteCreateRequest} from "@/types/routeTypes";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),

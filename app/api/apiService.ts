@@ -1,6 +1,6 @@
 import { getApiDomain } from "@/utils/domain";
 import { ApplicationError } from "@/types/error";
-import { RouteCreateRequest } from "@/types/route";
+import { RouteCreateRequest } from "@/types/routeTypes";
 import { retrieveToken } from "@/utils/tokenUtils";
 
 export class ApiService {
