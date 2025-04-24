@@ -4,6 +4,10 @@ export enum InvitationStatus {
   DECLINED = "DECLINED"
 }
 
+/**
+ * Represents a roadtrip member in the backend data model
+ * Used for API operations and data management
+ */
 export interface RoadtripMember {
   userId: number;
   roadtripId: number;
