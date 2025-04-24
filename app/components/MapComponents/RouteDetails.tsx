@@ -49,8 +49,6 @@ export default function RouteDetails({ route, pois, onClose, onDelete }: RouteDe
         return "🚶";
       case TravelMode.CYCLING_REGULAR:
         return "🚲";
-      case TravelMode.PUBLIC_TRANSPORT:
-        return "🚌";
       default:
         return "🚗";
     }

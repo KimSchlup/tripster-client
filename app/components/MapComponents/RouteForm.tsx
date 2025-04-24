@@ -193,11 +193,19 @@ export default function RouteForm({ pois, onCreateRoute, onCancel }: RouteFormPr
                 color: "black",
               }}
             >
-              {Object.values(TravelMode).map((mode) => (
-                <option key={mode} value={mode}>
-                  {mode}
-                </option>
-              ))}
+              {Object.values(TravelMode).map((mode) => {
+                // Get emoji for travel mode
+                let emoji = "🚗"; // Default
+                if (mode === TravelMode.DRIVING_CAR) emoji = "🚗";
+                else if (mode === TravelMode.CYCLING_REGULAR) emoji = "🚲";
+                else if (mode === TravelMode.FOOT_WALKING) emoji = "🚶";
+                
+                return (
+                  <option key={mode} value={mode}>
+                    {emoji} {mode}
+                  </option>
+                );
+              })}
             </select>
           </div>
 

@@ -95,6 +95,15 @@ function RoadtripContent() {
       async function fetchRoutes() {
         try {
           const data = await apiService.get<Route[]>(`/roadtrips/${id}/routes`);
+          console.log("Fetched Routes Structure:", JSON.stringify(data, null, 2));
+          console.log("Route data type:", typeof data);
+          if (data && data.length > 0) {
+            console.log("First route properties:", Object.keys(data[0]));
+            console.log("Route.route type:", data[0].route ? typeof data[0].route : "undefined");
+            if (data[0].route) {
+              console.log("Route.route properties:", Object.keys(data[0].route));
+            }
+          }
           setRoutes(data);
           console.log("Fetched Routes:", data);
         } catch (error) {

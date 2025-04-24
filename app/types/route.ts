@@ -1,10 +1,9 @@
 import type { LineString } from "geojson";
 
 export enum TravelMode {
-    DRIVING_CAR = "DRIVING_CAR",
-    CYCLING_REGULAR = "CYCLING_REGULAR",
-    FOOT_WALKING = "FOOT_WALKING",
-    PUBLIC_TRANSPORT = "PUBLIC_TRANSPORT"
+    DRIVING_CAR = "Car Drive",
+    CYCLING_REGULAR = "Cycling",
+    FOOT_WALKING = "Walk by foot"
 }
 
 export enum RouteAcceptanceStatus {

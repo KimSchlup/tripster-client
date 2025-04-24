@@ -43,8 +43,6 @@ export default function RouteList({ routes, pois, onRouteSelect }: RouteListProp
         return "🚶";
       case TravelMode.CYCLING_REGULAR:
         return "🚲";
-      case TravelMode.PUBLIC_TRANSPORT:
-        return "🚌";
       default:
         return "🚗";
     }
@@ -150,7 +148,7 @@ export default function RouteList({ routes, pois, onRouteSelect }: RouteListProp
                       color: "black" 
                     }}>
                       <span style={{ marginRight: "10px" }}>{getTravelModeIcon(route.travelMode)}</span>
-                      {startPoi?.name || "Unknown"} → {endPoi?.name || "Unknown"}
+                      <span>{route.travelMode}</span>
                     </div>
                     <div style={{ 
                       fontSize: 14, 
@@ -162,6 +160,15 @@ export default function RouteList({ routes, pois, onRouteSelect }: RouteListProp
                     }}>
                       {route.status}
                     </div>
+                  </div>
+                  
+                  <div style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: "black",
+                    marginBottom: "10px"
+                  }}>
+                    {startPoi?.name || "Unknown"} → {endPoi?.name || "Unknown"}
                   </div>
                   
                   <div style={{ 
