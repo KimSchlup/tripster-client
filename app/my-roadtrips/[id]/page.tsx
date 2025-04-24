@@ -31,9 +31,21 @@ function RoadtripContent() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const apiService = useApi();
 
   const [sidebarTop, setSidebarTop] = useState("30%");
-  const apiService = useApi();
+  const [basemapType, setBasemapType] = useState<"SATELLITE" | "SATELLITE_HYBRID" | "OPEN_STREET_MAP">("OPEN_STREET_MAP");
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const settings = await apiService.get<{ basemapType: string }>(`/roadtrips/${id}/settings`);
+        setBasemapType(settings.basemapType as any);
+      } catch (error) {
+        console.error("Failed to fetch roadtrip settings", error);
+      }
+    };
+    fetchSettings();
+  }, [id, apiService]);
   const [pois, setPois] = useState<PointOfInterest[]>([]);
   const [newPoi, setNewPoi] = useState<PointOfInterest | null>(null);
   const [selectedPoiId, setSelectedPoiId] = useState<number | null>(null);
@@ -332,7 +344,17 @@ function RoadtripContent() {
         zoomControl={false}
       >
         <MapClickHandler />
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        {basemapType === "SATELLITE" && (
+          <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
+        )}
+        {basemapType === "SATELLITE_HYBRID" && (
+          <>
+            <TileLayer url="https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
+          </>
+        )}
+        {basemapType === "OPEN_STREET_MAP" && (
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        )}
         {pois.map((poi) => {
           console.log("Rendering POI:", poi);
           let color = "#000000"; // Default
