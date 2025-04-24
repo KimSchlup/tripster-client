@@ -12,7 +12,7 @@ type HeaderProps = {
 };
 
 export default function Header({ isLoginPage = false }: HeaderProps) {
-  const { isLoggedIn } = useAuth();
+  const { authState } = useAuth();
 
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -21,7 +21,7 @@ export default function Header({ isLoginPage = false }: HeaderProps) {
   const getHeaderVariant = () => {
     if (isLoginPage) {
       return "Login & Register Header";
-    } else if (!isLoggedIn) {
+    } else if (!authState.isLoggedIn) {
       return "NotLoggedIn";
     }
     return "Default";

@@ -17,7 +17,8 @@ interface RoadtripMemberManagementProps {
 }
 
 export default function RoadtripMemberManagement({ roadtripId, isOwner }: RoadtripMemberManagementProps) {
-  const { userId: currentUserId } = useAuth();
+  const { authState } = useAuth();
+  const currentUserId = authState.userId;
   const { 
     members, 
     loading, 

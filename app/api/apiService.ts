@@ -1,5 +1,6 @@
 import { getApiDomain } from "@/utils/domain";
 import { ApplicationError } from "@/types/error";
+import { retrieveToken } from "@/utils/tokenUtils";
 
 export class ApiService {
   private baseURL: string;
@@ -33,7 +34,7 @@ export class ApiService {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Log the token before making the request
-    console.log("Token before checklist request:", localStorage.getItem("token"));
+    console.log("Token before checklist request:", retrieveToken("token") ? "Found" : "Not found");
     
     // Construct the endpoint according to the backend controller mapping
     // Controller is mapped to "/roadtrips" and the endpoint is "/{roadtripId}/checklist"
@@ -122,8 +123,8 @@ export class ApiService {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Log the token before making the request
-    const token = localStorage.getItem("token");
-    console.log("Token before checklist element creation:", token);
+    const token = retrieveToken("token");
+    console.log("Token before checklist element creation:", token ? "Found" : "Not found");
     
     if (!token) {
       console.error("No token found for authorization");
@@ -485,24 +486,16 @@ export class ApiService {
     };
     
     try {
-      // Get token from localStorage directly
-      const token = localStorage.getItem("token");
-      console.log("Raw token from localStorage:", token);
-      console.log("Token type:", typeof token);
+      // Get token using the retrieveToken utility
+      const token = retrieveToken("token");
+      console.log("Token retrieved from storage:", token ? "Found" : "Not found");
       
       // Only add Authorization header if token exists and is not empty
       if (token && token !== "" && token !== "null" && token !== "undefined") {
-        // Remove any quotes that might be wrapping the token
-        let cleanToken = token;
-        if (typeof cleanToken === 'string' && cleanToken.startsWith('"') && cleanToken.endsWith('"')) {
-          cleanToken = cleanToken.slice(1, -1);
-        }
-        
-        console.log("Clean token being used in header:", cleanToken);
+        console.log("Using token in Authorization header");
         
         // Use the token as is without adding any prefix
-        headers["Authorization"] = cleanToken;
-        console.log("Using token as is in Authorization header:", cleanToken);
+        headers["Authorization"] = token;
       } else {
         console.warn("No valid token found for Authorization header");
       }

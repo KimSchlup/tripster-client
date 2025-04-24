@@ -17,7 +17,8 @@ export default function InvitationPopup({ roadtrip, onClose, onStatusChange }: I
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const apiService = useApi();
-  const { userId } = useAuth();
+  const { authState } = useAuth();
+  const userId = authState.userId;
 
   const handleAccept = async () => {
     if (!roadtrip.roadtripId || !userId) return;
