@@ -1,5 +1,6 @@
 import { getApiDomain } from "@/utils/domain";
 import { ApplicationError } from "@/types/error";
+import { RouteCreateRequest } from "@/types/routeTypes";
 import { retrieveToken } from "@/utils/tokenUtils";
 
 export class ApiService {
@@ -727,5 +728,182 @@ export class ApiService {
         res,
         "An error occurred while deleting the data.\n",
     );
+  }
+
+  /**
+   * Get all routes for a roadtrip.
+   * @param roadtripId - The ID of the roadtrip.
+   * @returns The routes.
+   */
+  public async getRoutes<T>(roadtripId: string | number): Promise<T> {
+    console.log(`Getting routes for roadtrip ID: ${roadtripId}`);
+    
+    // Ensure roadtripId is properly formatted
+    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
+    
+    const endpoint = `/roadtrips/${formattedRoadtripId}/routes`;
+    console.log(`Get routes endpoint: ${endpoint}`);
+    
+    try {
+      const response = await this.get<T>(endpoint);
+      console.log("Routes response:", response);
+      return response;
+    } catch (error) {
+      console.error(`Error in getRoutes for roadtrip ID ${formattedRoadtripId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add a new route to a roadtrip.
+   * @param roadtripId - The ID of the roadtrip.
+   * @param routeData - The route data to add.
+   * @returns The created route.
+   */
+  public async addRoute<T>(roadtripId: string | number, routeData: RouteCreateRequest): Promise<T> {
+    console.log(`Adding route to roadtrip ID: ${roadtripId}`);
+    console.log("Original route data:", routeData);
+    
+    // Ensure roadtripId is properly formatted
+    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
+    
+    // Ensure startId and endId are numbers
+    const formattedRouteData = {
+      startId: Number(routeData.startId),
+      endId: Number(routeData.endId),
+      travelMode: routeData.travelMode
+    };
+    
+    console.log("Formatted route data:", formattedRouteData);
+    
+    const endpoint = `/roadtrips/${formattedRoadtripId}/routes`;
+    console.log(`Add route endpoint: ${endpoint}`);
+    console.log(`Full URL: ${this.baseURL}${endpoint}`);
+    
+    try {
+      // Get token
+      const token = retrieveToken("token");
+      console.log("Token for route creation:", token ? "Found" : "Not found");
+      
+      if (!token) {
+        console.error("No token found for authorization");
+        throw new Error("Authentication required. Please log in again.");
+      }
+      
+      // Make the API request with explicit headers
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": token
+      };
+      
+      console.log("Request headers:", headers);
+      console.log("Request payload:", JSON.stringify(formattedRouteData, null, 2));
+      
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(formattedRouteData)
+      });
+      
+      console.log(`Response status: ${response.status} ${response.statusText}`);
+      
+      if (!response.ok) {
+        let errorDetail = response.statusText;
+        try {
+          const contentType = response.headers.get("Content-Type") || "";
+          console.log("Error response content type:", contentType);
+          
+          // Log the raw response for debugging
+          const rawResponse = await response.text();
+          console.log("Raw error response:", rawResponse);
+          
+          // Try to parse as JSON if appropriate
+          if (contentType.includes("application/json")) {
+            try {
+              const errorInfo = JSON.parse(rawResponse);
+              console.log("Parsed error info:", errorInfo);
+              if (errorInfo?.message) {
+                errorDetail = errorInfo.message;
+              } else {
+                errorDetail = JSON.stringify(errorInfo);
+              }
+            } catch (parseError) {
+              console.error("Error parsing JSON response:", parseError);
+              errorDetail = rawResponse;
+            }
+          } else {
+            errorDetail = rawResponse;
+          }
+        } catch (error) {
+          console.error("Error processing response:", error);
+        }
+        
+        const detailedMessage = `Error creating route: ${response.status}: ${errorDetail}`;
+        console.error(detailedMessage);
+        throw new Error(detailedMessage);
+      }
+      
+      // Parse the response
+      let responseData;
+      if (response.headers.get("Content-Type")?.includes("application/json")) {
+        responseData = await response.json();
+        console.log("Route created successfully:", responseData);
+      } else {
+        // If no JSON response, create a default response
+        responseData = formattedRouteData;
+        console.log("No JSON response, using default:", responseData);
+      }
+      
+      return responseData as T;
+    } catch (error) {
+      console.error(`Error in addRoute for roadtrip ID ${formattedRoadtripId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all routes for a roadtrip.
+   * @param roadtripId - The ID of the roadtrip.
+   */
+  public async deleteAllRoutes(roadtripId: string | number): Promise<void> {
+    console.log(`Deleting all routes for roadtrip ID: ${roadtripId}`);
+    
+    // Ensure roadtripId is properly formatted
+    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
+    
+    const endpoint = `/roadtrips/${formattedRoadtripId}/routes`;
+    console.log(`Delete all routes endpoint: ${endpoint}`);
+    
+    try {
+      await this.delete<void>(endpoint);
+      console.log("All routes deleted successfully");
+    } catch (error) {
+      console.error(`Error in deleteAllRoutes for roadtrip ID ${formattedRoadtripId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a specific route.
+   * @param roadtripId - The ID of the roadtrip.
+   * @param startId - The start POI ID.
+   * @param endId - The end POI ID.
+   */
+  public async deleteRoute(roadtripId: string | number, startId: number, endId: number): Promise<void> {
+    console.log(`Deleting route from ${startId} to ${endId} for roadtrip ID: ${roadtripId}`);
+    
+    // Ensure roadtripId is properly formatted
+    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
+    
+    const endpoint = `/roadtrips/${formattedRoadtripId}/routes?startId=${startId}&endId=${endId}`;
+    console.log(`Delete route endpoint: ${endpoint}`);
+    
+    try {
+      await this.delete<void>(endpoint);
+      console.log("Route deleted successfully");
+    } catch (error) {
+      console.error(`Error in deleteRoute for roadtrip ID ${formattedRoadtripId}:`, error);
+      throw error;
+    }
   }
 }
