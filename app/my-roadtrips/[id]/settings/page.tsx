@@ -35,7 +35,8 @@ export default function RoadtripSettings() {
     const [isOwner, setIsOwner] = useState<boolean>(false); // Default to false until we confirm ownership
     const apiService = useApi();
     const router = useRouter();
-    const { userId: currentUserId } = useAuth();
+    const { authState } = useAuth();
+    const currentUserId = authState.userId;
 
     useEffect(() => {
         const fetchRoadtripAndSettings = async () => {

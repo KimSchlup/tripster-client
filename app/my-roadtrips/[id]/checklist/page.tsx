@@ -26,7 +26,7 @@ export default function ChecklistPage() {
   const [filterCompleted, setFilterCompleted] = useState<boolean | null>(null);
 
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
+  const { authState } = useAuth();
 
   // Function to refresh the checklist from the server
   const refreshChecklist = async () => {
@@ -49,7 +49,7 @@ export default function ChecklistPage() {
         setLoading(true);
         
         // Check if user is logged in
-        if (!isLoggedIn) {
+        if (!authState.isLoggedIn) {
           console.error("User is not logged in, redirecting to login page");
           router.push('/login');
           return;
@@ -121,7 +121,7 @@ export default function ChecklistPage() {
     } else {
       console.error("Cannot fetch checklist: No roadtrip ID provided");
     }
-  }, [apiService, id, router, isLoggedIn]);
+  }, [apiService, id, router, authState.isLoggedIn]);
 
   // Handle adding a new checklist item
   const handleAddItem = async (item: { 

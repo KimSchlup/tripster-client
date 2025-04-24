@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
@@ -8,15 +8,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { Roadtrip } from "@/types/roadtrip";
 import { InvitationStatus } from "@/types/roadtripMember";
 import InvitationPopup from "@/components/InvitationPopup";
-
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useToast } from "@/hooks/useToast";
 
 interface newRoadtripProps {
     name: string;
     roadtripMembers: [];
     roadtripDescription: string;
-  }
+}
 
-export default function MyRoadtrips() {
+function RoadtripsContent() {
     const [roadtrips, setRoadtrips] = useState<Roadtrip[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -24,164 +25,28 @@ export default function MyRoadtrips() {
     const [showInvitationPopup, setShowInvitationPopup] = useState(false);
     const apiService = useApi();
     const router = useRouter();
-    const { isLoggedIn, userId } = useAuth();
+    const { authState } = useAuth();
+    const { showToast } = useToast();
+    const userId = authState.userId;
 
-    useEffect(() => {
-        const fetchRoadtrips = async () => {
-            // Check token directly from localStorage for debugging
-            const token = localStorage.getItem("token");
-            console.log("Token in my-roadtrips page:", token);
-            
-            // If user is not logged in, don't try to fetch roadtrips
-            if (!isLoggedIn || !token) {
-                console.log("User not logged in or no token found");
-                setError("Please login first in order to access your roadtrips.");
-                setLoading(false);
-                // Redirect to login page
-                router.push('/login');
-                return;
-            }
-            
-            try {
-                setLoading(true);
-                console.log("Fetching roadtrips with token:", token);
-                
-                // Add a longer delay to ensure token is properly set in headers
-                console.log("Waiting for token to be properly set...");
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                console.log("Delay completed, proceeding with API request");
-                console.log("Token before request:", localStorage.getItem("token"));
-                
-                const data = await apiService.get<Roadtrip[]>("/roadtrips");
-                console.log("API response:", data);
-                
-                // Process roadtrips to determine invitation status
-                if (Array.isArray(data)) {
-                    // Process each roadtrip to determine the current user's invitation status
-                    const processedRoadtrips = data.map(roadtrip => {
-                        if (roadtrip.roadtripId === undefined) {
-                            console.warn("Roadtrip without ID:", roadtrip);
-                        }
-                        
-                        // Check if the current user is the owner of the roadtrip
-                        const isOwner = roadtrip.ownerId && userId && roadtrip.ownerId.toString() === userId.toString();
-                        
-                        // If the user is the owner, always set invitation status to ACCEPTED
-                        if (isOwner) {
-                            console.log(`User is the owner of roadtrip ${roadtrip.roadtripId}, setting status to ACCEPTED`);
-                            return {
-                                ...roadtrip,
-                                invitationStatus: InvitationStatus.ACCEPTED
-                            };
-                        }
-                        
-                        // Make sure roadtripMembers exists before trying to find a member
-                        const roadtripMembers = roadtrip.roadtripMembers || [];
-                        const currentUserMember = roadtripMembers.find(
-                            member => member.id === userId
-                        );
-                        
-                        // If the user is a member, check their invitation status
-                        if (currentUserMember && currentUserMember.invitationStatus) {
-                            console.log(`User is a member of roadtrip ${roadtrip.roadtripId} with status: ${currentUserMember.invitationStatus}`);
-                            return {
-                                ...roadtrip,
-                                invitationStatus: currentUserMember.invitationStatus
-                            };
-                        }
-                        
-                        // If the roadtrip has an invitationStatus from the API, use that
-                        if (roadtrip.invitationStatus) {
-                            console.log(`Using API-provided invitation status for roadtrip ${roadtrip.roadtripId}: ${roadtrip.invitationStatus}`);
-                            return roadtrip;
-                        }
-                        
-                        // Default to ACCEPTED for existing roadtrips
-                        console.log(`No invitation status found for roadtrip ${roadtrip.roadtripId}, defaulting to ACCEPTED`);
-                        return {
-                            ...roadtrip,
-                            invitationStatus: InvitationStatus.ACCEPTED
-                        };
-                    });
-                    
-                    setRoadtrips(processedRoadtrips);
-                    setError(null);
-                } else {
-                    console.error("Unexpected response format:", data);
-                    setError("Received invalid data format from server.");
-                }
-            } catch (err) {
-                console.error("Error fetching roadtrips:", err);
-                
-                // Check if it's a 401 error (not authenticated)
-                const error = err as { status?: number };
-                if (error && error.status === 401) {
-                    console.log("Authentication error (401)");
-                    // Clear token and redirect to login
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("userId");
-                    setError("Your session has expired. Please login again.");
-                    // Redirect to login page
-                    router.push('/login');
-                } else {
-                    setError("Failed to load roadtrips. Please try again later.");
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRoadtrips();
-    }, [apiService, isLoggedIn, router, userId]);
-
-    const handleRoadtripClick = (roadtrip: Roadtrip) => {
-        if (roadtrip.roadtripId === undefined) {
-            console.error("Roadtrip ID is undefined");
-            return;
-        }
-        
-        // Check if this is a pending invitation
-        if (roadtrip.invitationStatus === InvitationStatus.PENDING) {
-            // Show invitation popup
-            setSelectedRoadtrip(roadtrip);
-            setShowInvitationPopup(true);
-        } else {
-            // Navigate to the roadtrip page
-            router.push(`/my-roadtrips/${roadtrip.roadtripId}`);
-        }
-    };
-    
-    // Handle invitation status change
-    const handleInvitationStatusChange = () => {
-        // Refresh the roadtrips list
-        fetchRoadtrips();
-    };
-    
-    // Function to fetch roadtrips (extracted from useEffect)
-    const fetchRoadtrips = async () => {
+    // Function to fetch roadtrips
+    const fetchRoadtrips = useCallback(async () => {
         // Check token directly from localStorage for debugging
         const token = localStorage.getItem("token");
         console.log("Token in my-roadtrips page:", token);
         
         // If user is not logged in, don't try to fetch roadtrips
-        if (!isLoggedIn || !token) {
+        if (!authState.isLoggedIn || !token) {
             console.log("User not logged in or no token found");
             setError("Please login first in order to access your roadtrips.");
             setLoading(false);
-            // Redirect to login page
-            router.push('/login');
+            showToast("Please login to access your roadtrips", "warning");
             return;
         }
         
         try {
             setLoading(true);
             console.log("Fetching roadtrips with token:", token);
-            
-            // Add a longer delay to ensure token is properly set in headers
-            console.log("Waiting for token to be properly set...");
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            console.log("Delay completed, proceeding with API request");
-            console.log("Token before request:", localStorage.getItem("token"));
             
             const data = await apiService.get<Roadtrip[]>("/roadtrips");
             console.log("API response:", data);
@@ -240,6 +105,7 @@ export default function MyRoadtrips() {
             } else {
                 console.error("Unexpected response format:", data);
                 setError("Received invalid data format from server.");
+                showToast("Error loading roadtrips: Invalid data format", "error");
             }
         } catch (err) {
             console.error("Error fetching roadtrips:", err);
@@ -252,23 +118,47 @@ export default function MyRoadtrips() {
                 localStorage.removeItem("token");
                 localStorage.removeItem("userId");
                 setError("Your session has expired. Please login again.");
+                showToast("Your session has expired. Please login again.", "error");
                 // Redirect to login page
                 router.push('/login');
             } else {
                 setError("Failed to load roadtrips. Please try again later.");
+                showToast("Failed to load roadtrips. Please try again later.", "error");
             }
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiService, authState.isLoggedIn, router, userId, showToast]);
 
-    const handleNewRoadtripClick = async () => {
-        // If user is not logged in, redirect to login page
-        if (!isLoggedIn) {
-            router.push('/login');
+    useEffect(() => {
+        fetchRoadtrips();
+    }, [fetchRoadtrips]);
+
+    const handleRoadtripClick = (roadtrip: Roadtrip) => {
+        if (roadtrip.roadtripId === undefined) {
+            console.error("Roadtrip ID is undefined");
             return;
         }
         
+        // Check if this is a pending invitation
+        if (roadtrip.invitationStatus === InvitationStatus.PENDING) {
+            // Show invitation popup
+            setSelectedRoadtrip(roadtrip);
+            setShowInvitationPopup(true);
+        } else {
+            // Navigate to the roadtrip page
+            router.push(`/my-roadtrips/${roadtrip.roadtripId}`);
+        }
+    };
+    
+    // Handle invitation status change
+    const handleInvitationStatusChange = () => {
+        // Refresh the roadtrips list
+        fetchRoadtrips();
+    };
+    
+
+    const handleNewRoadtripClick = async () => {
         try {
             // Create a new empty roadtrip
             const newRoadtrip: newRoadtripProps = {
@@ -282,6 +172,9 @@ export default function MyRoadtrips() {
             // Post the new roadtrip to the API
             const createdRoadtrip = await apiService.post<Roadtrip>("/roadtrips", newRoadtrip);
             console.log("Created roadtrip:", createdRoadtrip);
+            
+            // Show success toast
+            showToast("New roadtrip created successfully!", "success");
             
             // Redirect to the settings page for the new roadtrip
             // Use roadtripId from backend
@@ -299,9 +192,10 @@ export default function MyRoadtrips() {
             const error = err as { status?: number };
             if (error && error.status === 401) {
                 setError("Please login first in order to create a roadtrip.");
-                router.push('/login');
+                showToast("Authentication required to create a roadtrip", "error");
             } else {
                 setError("Failed to create new roadtrip. Please try again later.");
+                showToast("Failed to create new roadtrip", "error");
             }
         }
     };
@@ -439,5 +333,14 @@ export default function MyRoadtrips() {
                 )}
             </div>
         </>
+    );
+}
+
+// Wrap the content with ProtectedRoute
+export default function MyRoadtrips() {
+    return (
+        <ProtectedRoute>
+            <RoadtripsContent />
+        </ProtectedRoute>
     );
 }

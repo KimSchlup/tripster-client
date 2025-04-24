@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { ConfigProvider, theme } from "antd";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ToastProvider } from "@/hooks/useToast";
 import "@/styles/globals.css";
 
 const geistSans = Geist({
@@ -71,9 +72,11 @@ export default function RootLayout({
           }}
         >
           <AntdRegistry>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
+            <ToastProvider>
+              <AuthProvider>
+                {children}
+              </AuthProvider>
+            </ToastProvider>
           </AntdRegistry>
         </ConfigProvider>
       </body>

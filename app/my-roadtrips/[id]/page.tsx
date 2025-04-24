@@ -12,7 +12,8 @@ import VerticalSidebar from "@/components/MapComponents/VerticalSidebar";
 import POIList from "@/components/MapComponents/POIList";
 import "leaflet/dist/leaflet.css";
 import {Marker, useMapEvent} from "react-leaflet";
-import {ApiService} from "@/api/apiService";
+import {useApi} from "@/hooks/useApi";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import {PoiAcceptanceStatus, PoiCategory, PointOfInterest, PoiPriority} from "@/types/poi"; // Assuming PoiCategory is defined in the same file
 
 const MapContainer = dynamic(
@@ -25,12 +26,13 @@ const TileLayer = dynamic(
 );
 
 
-export default function RoadtripPage() {
+function RoadtripContent() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
 
   const [sidebarTop, setSidebarTop] = useState("30%");
+  const apiService = useApi();
   const [pois, setPois] = useState<PointOfInterest[]>([]);
   const [newPoi, setNewPoi] = useState<PointOfInterest | null>(null);
   const [selectedPoi, setSelectedPoi] = useState<PointOfInterest | null>(null);
@@ -59,7 +61,6 @@ export default function RoadtripPage() {
   useEffect(() => {
     async function fetchPois() {
       try {
-        const apiService = new ApiService();
         const data = await apiService.get<PointOfInterest[]>(`/roadtrips/${id}/pois`);
         setPois(data);
         console.log("Fetched POIs:", data);
@@ -68,7 +69,7 @@ export default function RoadtripPage() {
       }
     }
     fetchPois();
-  }, [id]);
+  }, [id, apiService]);
 
   function MapClickHandler() {
     useMapEvent("contextmenu", (e: LeafletMouseEvent) => {
@@ -129,7 +130,6 @@ export default function RoadtripPage() {
               priority: priority as PoiPriority,
             };
             try {
-              const apiService = new ApiService();
               const createdPoi = await apiService.post<PointOfInterest>(`/roadtrips/${id}/pois`, updatedPoi);
               setPois((prevPois) => [...prevPois, createdPoi]);
               console.log("POI created successfully");
@@ -183,7 +183,6 @@ export default function RoadtripPage() {
               )
             );
             try {
-              const apiService = new ApiService();
               await apiService.put(`/roadtrips/${id}/pois/${selectedPoi?.poiId}`, updatedPoi);
               console.log("POI updated successfully");
             } catch (error) {
@@ -195,7 +194,6 @@ export default function RoadtripPage() {
             if (!selectedPoi) return;
             setPois((prevPois) => prevPois.filter((poi) => poi.poiId !== selectedPoi.poiId));
             try {
-              const apiService = new ApiService();
               await apiService.delete(`/roadtrips/${id}/pois/${selectedPoi.poiId}`);
               console.log("POI deleted successfully");
             } catch (error) {
@@ -206,7 +204,6 @@ export default function RoadtripPage() {
           onUpvote={async () => {
               if (!selectedPoi) return;
               try {
-                  const apiService = new ApiService();
                   await apiService.put(`/roadtrips/${id}/pois/${selectedPoi.poiId}/votes`, {
                       vote: "upvote",
                   });
@@ -218,7 +215,6 @@ export default function RoadtripPage() {
           onDownvote={async () => {
               if (!selectedPoi) return;
               try {
-                  const apiService = new ApiService();
                   await apiService.put(`/roadtrips/${id}/pois/${selectedPoi.poiId}/votes`, {
                       vote: "downvote",
                   });
@@ -299,5 +295,14 @@ export default function RoadtripPage() {
         })}
       </MapContainer>
     </div>
+  );
+}
+
+// Wrap the content with ProtectedRoute
+export default function RoadtripPage() {
+  return (
+    <ProtectedRoute>
+      <RoadtripContent />
+    </ProtectedRoute>
   );
 }

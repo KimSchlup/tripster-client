@@ -12,7 +12,7 @@ type SidebarMenuProps = {
 
 export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
   const router = useRouter();
-  const { isLoggedIn, logout } = useAuth();
+  const { authState, logout } = useAuth();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [clickedItem, setClickedItem] = useState<string | null>(null);
 
@@ -20,7 +20,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
     setClickedItem(itemName);
     
     // Handle logout separately
-    if (isLoggedIn && itemName === 'logout') {
+    if (authState.isLoggedIn && itemName === 'logout') {
       try {
         await logout();
         onClose();
@@ -269,20 +269,20 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
               cursor: 'pointer',
               transition: 'color 0.2s ease'
             }}
-            onClick={() => handleItemClick(isLoggedIn ? '/' : '/register', isLoggedIn ? 'logout' : 'register')}
-            onMouseEnter={() => setHoveredItem(isLoggedIn ? 'logout' : 'register')}
+            onClick={() => handleItemClick(authState.isLoggedIn ? '/' : '/register', authState.isLoggedIn ? 'logout' : 'register')}
+            onMouseEnter={() => setHoveredItem(authState.isLoggedIn ? 'logout' : 'register')}
             onMouseLeave={() => setHoveredItem(null)}
           >
-            <div data-color="Default" data-type={isLoggedIn ? "Logout" : "Sign Up"} style={{
+            <div data-color="Default" data-type={authState.isLoggedIn ? "Logout" : "Sign Up"} style={{
               width: 35, 
               height: 35, 
               position: 'relative', 
-              opacity: getIconOpacity(isLoggedIn ? 'logout' : 'register'),
+              opacity: getIconOpacity(authState.isLoggedIn ? 'logout' : 'register'),
               transition: 'opacity 0.2s ease'
             }}>
               <Image 
                 src="/icons8-vertragsarbeit-96.png" 
-                alt={isLoggedIn ? "Logout Icon" : "Register Icon"} 
+                alt={authState.isLoggedIn ? "Logout Icon" : "Register Icon"} 
                 width={33} 
                 height={33} 
                 style={{left: 1, top: 1.50, position: 'absolute'}} 
@@ -294,17 +294,17 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
               justifyContent: 'center', 
               display: 'flex', 
               flexDirection: 'column', 
-              color: getTextColor(isLoggedIn ? 'logout' : 'register'), 
+              color: getTextColor(authState.isLoggedIn ? 'logout' : 'register'), 
               fontSize: 20, 
               fontFamily: 'Manrope', 
               fontWeight: '700', 
               wordWrap: 'break-word',
               transition: 'color 0.2s ease'
-            }}>{isLoggedIn ? 'Logout' : 'Register'}</div>
+            }}>{authState.isLoggedIn ? 'Logout' : 'Register'}</div>
           </div>
 
           {/* Login - Only shown when not logged in */}
-          {!isLoggedIn && (
+          {!authState.isLoggedIn && (
             <div 
               data-property-1="Default" 
               style={{

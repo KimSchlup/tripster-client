@@ -9,6 +9,7 @@ import { User } from "@/types/user";
 import { Switch, Input, Button } from "antd";
 import Image from "next/image";
 import Header from "@/components/Header";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div style={{
@@ -22,7 +23,7 @@ const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) =>
     </div>
 );
 
-const ProfilePage: React.FC = () => {
+const ProfileContent: React.FC = () => {
     const apiService = useApi();
     const [user, setUser] = useState<User | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -36,7 +37,8 @@ const ProfilePage: React.FC = () => {
     const [editedEmergencyLastName, setEditedEmergencyLastName] = useState("");
     const [editedEmergencyPhone, setEditedEmergencyPhone] = useState("");
 
-    const { userId } = useAuth();
+    const { authState } = useAuth();
+    const userId = authState.userId;
 
 useEffect(() => {
     if (!userId) return;
@@ -147,6 +149,14 @@ useEffect(() => {
             )}
             </div>
         </>
+    );
+};
+
+const ProfilePage: React.FC = () => {
+    return (
+        <ProtectedRoute>
+            <ProfileContent />
+        </ProtectedRoute>
     );
 };
 
