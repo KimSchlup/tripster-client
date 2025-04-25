@@ -1,6 +1,6 @@
 import { getApiDomain } from "@/utils/domain";
 import { ApplicationError } from "@/types/error";
-import { RouteCreateRequest } from "@/types/routeTypes";
+import { RouteCreateRequest, TravelMode } from "@/types/routeTypes";
 import { retrieveToken } from "@/utils/tokenUtils";
 
 export class ApiService {
@@ -571,14 +571,26 @@ export class ApiService {
     // Ensure roadtripId is properly formatted
     const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
     
-    // Ensure startId and endId are numbers
+    // Extract the enum name directly from the TravelMode enum value
+    const getTravelModeEnumName = (travelMode: string): string => {
+      // Find the enum key by its value
+      for (const enumKey in TravelMode) {
+        if (TravelMode[enumKey as keyof typeof TravelMode] === travelMode) {
+          return enumKey;
+        }
+      }
+      return travelMode;
+    };
+    
+    // Create a clean payload with just the required fields
     const formattedRouteData = {
       startId: Number(routeData.startId),
       endId: Number(routeData.endId),
-      travelMode: routeData.travelMode
+      travelMode: getTravelModeEnumName(routeData.travelMode)
     };
     
     console.log("Formatted route data:", formattedRouteData);
+    console.log("JSON payload:", JSON.stringify(formattedRouteData, null, 2));
     
     const endpoint = `/roadtrips/${formattedRoadtripId}/routes`;
     console.log(`Add route endpoint: ${endpoint}`);
