@@ -9,9 +9,10 @@ interface RouteDetailsProps {
   pois: PointOfInterest[];
   onClose: () => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
-export default function RouteDetails({ route, pois, onClose, onDelete }: RouteDetailsProps) {
+export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }: RouteDetailsProps) {
   const nodeRef = useRef<HTMLDivElement>(null!);
   
   // Get start and end POI names
@@ -98,19 +99,28 @@ export default function RouteDetails({ route, pois, onClose, onDelete }: RouteDe
               }}
             />
           </button>
-          <Image
-            src="/map-elements/garbage_bin.svg"
-            alt="Delete"
-            width={25}
-            height={25}
-            onClick={onDelete}
-            style={{
-              position: "absolute",
-              top: "24px",
-              right: "24px",
-              cursor: "pointer"
-            }}
-          />
+          <div style={{ position: "absolute", top: "24px", right: "24px", display: "flex", gap: "15px" }}>
+            <Image
+              src="/map-elements/edit.svg"
+              alt="Edit"
+              width={25}
+              height={25}
+              onClick={onEdit}
+              style={{
+                cursor: "pointer"
+              }}
+            />
+            <Image
+              src="/map-elements/garbage_bin.svg"
+              alt="Delete"
+              width={25}
+              height={25}
+              onClick={onDelete}
+              style={{
+                cursor: "pointer"
+              }}
+            />
+          </div>
           <h2 style={{
             position: "absolute",
             top: "36px",
