@@ -383,32 +383,59 @@ export class ApiService {
       errorMessage: string,
   ): Promise<T> {
     if (!res.ok) {
-      let errorDetail = res.statusText;
+      // We'll store the raw response text to parse it
+      let rawResponse = "";
+      
       try {
-        const contentType = res.headers.get("Content-Type") || "";
-        // Log the raw response for debugging (removed console.log)
-        const rawResponse = await res.text();
-        // Try to parse as JSON if appropriate
-        if (contentType.includes("application/json")) {
-          try {
-            const errorInfo = JSON.parse(rawResponse);
-            if (errorInfo?.message) {
-              errorDetail = errorInfo.message;
-            } else {
-              errorDetail = JSON.stringify(errorInfo);
-            }
-          } catch (parseError) {
-            console.error("Error parsing JSON response:", parseError);
-            errorDetail = rawResponse;
+        // Get the raw response text first
+        rawResponse = await res.text();
+        
+        // Try to parse as JSON
+        let errorInfo;
+        try {
+          errorInfo = JSON.parse(rawResponse);
+          
+          // Special case for username conflict (409 status with specific detail)
+          if (res.status === 409 && 
+              errorInfo?.detail && 
+              errorInfo.detail.toLowerCase().includes("username already taken")) {
+            // Return just the detail message directly
+            const error = new Error(errorInfo.detail) as ApplicationError;
+            error.info = JSON.stringify(errorInfo, null, 2);
+            error.status = res.status;
+            throw error;
           }
-        } else {
-          errorDetail = rawResponse;
+          
+          // For other JSON errors, use the detail or message if available
+          if (errorInfo?.detail) {
+            const error = new Error(errorInfo.detail) as ApplicationError;
+            error.info = JSON.stringify(errorInfo, null, 2);
+            error.status = res.status;
+            throw error;
+          } else if (errorInfo?.message) {
+            const error = new Error(errorInfo.message) as ApplicationError;
+            error.info = JSON.stringify(errorInfo, null, 2);
+            error.status = res.status;
+            throw error;
+          }
+        } catch (parseError) {
+          // If it's not valid JSON or doesn't have the expected fields, continue with default handling
+          if (parseError instanceof Error && parseError.name !== "SyntaxError") {
+            throw parseError; // Re-throw if it's our custom error
+          }
+          console.error("Error parsing JSON response:", parseError);
         }
       } catch (error) {
+        // If we've already created a custom error with the detail message, re-throw it
+        if (error instanceof Error && 'status' in error) {
+          throw error;
+        }
         console.error("Error processing response:", error);
-        // Falls JSON-Parsing und Text-Fallback fehlschlagen, bleibt res.statusText.
       }
-      const detailedMessage = `${errorMessage} (${res.status}: ${errorDetail})`;
+      
+      // If we get here, use the default error handling
+      const detailedMessage = `${errorMessage} (${res.status}: ${rawResponse || res.statusText})`;
+
       // Create a custom error with additional properties
       const error = new Error(detailedMessage) as ApplicationError;
       error.info = JSON.stringify(

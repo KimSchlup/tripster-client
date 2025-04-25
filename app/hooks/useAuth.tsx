@@ -179,6 +179,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Logout function
   const logout = useCallback(async () => {
+    // Note: The actual navigation is now handled in SidebarMenu.tsx
+    // to ensure it happens before the auth state changes
+    
     try {
       // Get the current token before we clear it
       const currentToken = authState.token;
@@ -211,11 +214,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Show toast
       showToast("You have been logged out", "info");
-      
-      // Redirect to home page
-      router.push('/');
     }
-  }, [apiService, authState.token, router, showToast]);
+  }, [apiService, authState.token, showToast]);
 
   // Initialize auth state from localStorage
   useEffect(() => {
