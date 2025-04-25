@@ -13,6 +13,7 @@ import VerticalSidebar from "@/components/MapComponents/VerticalSidebar";
 import POIList from "@/components/MapComponents/POIList";
 import RouteDisplay from "@/components/MapComponents/RouteDisplay";
 import RouteForm from "@/components/MapComponents/RouteForm";
+import RouteEditForm from "@/components/MapComponents/RouteEditForm";
 import RouteDetails from "@/components/MapComponents/RouteDetails";
 import RouteList from "@/components/MapComponents/RouteList";
 import "leaflet/dist/leaflet.css";
@@ -23,7 +24,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import {PoiAcceptanceStatus, PoiCategory, PointOfInterest, PoiPriority, Comment} from "@/types/poi"; // Assuming PoiCategory is defined in the same file
 import { RoadtripMember} from "@/types/roadtripMember";
 import { useAuth } from "@/hooks/useAuth";
-import {Route, RouteCreateRequest} from "@/types/routeTypes";
+import {Route, RouteCreateRequest, TravelMode} from "@/types/routeTypes";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -104,6 +105,7 @@ function RoadtripContent() {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [showRouteForm, setShowRouteForm] = useState(false);
+  const [showRouteEditForm, setShowRouteEditForm] = useState(false);
   const [showRouteList, setShowRouteList] = useState(false);
 
   // Dynamically resize VerticalSidebar Position, if Browser Window is shortened
@@ -221,6 +223,50 @@ function RoadtripContent() {
       console.log("Route deleted successfully");
     } catch (error) {
       console.error("Failed to delete route:", error);
+    }
+  };
+
+  const handleEditRoute = async (routeId: number, routeData: RouteCreateRequest) => {
+    try {
+      console.log(`Editing route with ID ${routeId} with data:`, routeData);
+      
+      // Extract the enum name directly from the TravelMode enum value
+      const getTravelModeEnumName = (travelMode: string): string => {
+        // Find the enum key by its value
+        for (const enumKey in TravelMode) {
+          if (TravelMode[enumKey as keyof typeof TravelMode] === travelMode) {
+            return enumKey;
+          }
+        }
+        return travelMode;
+      };
+      
+      // Create a clean payload with just the required fields
+      const formattedRouteData = {
+        startId: Number(routeData.startId),
+        endId: Number(routeData.endId),
+        travelMode: getTravelModeEnumName(routeData.travelMode)
+      };
+      
+      // Use the put method directly
+      const endpoint = `/roadtrips/${id}/routes/${routeId}`;
+      const updatedRoute = await apiService.put<Route>(endpoint, formattedRouteData);
+      
+      // If the response is empty (204 No Content), create a default response
+      const finalUpdatedRoute = updatedRoute || {
+        ...selectedRoute!,
+        ...routeData,
+        routeId: routeId
+      };
+      
+      setRoutes(prevRoutes => prevRoutes.map(route => 
+        route.routeId === routeId ? finalUpdatedRoute : route
+      ));
+      setShowRouteEditForm(false);
+      setSelectedRoute(null);
+      console.log("Route updated successfully");
+    } catch (error) {
+      console.error("Failed to update route:", error);
     }
   };
 
@@ -473,7 +519,19 @@ function RoadtripContent() {
           route={selectedRoute} 
           pois={pois} 
           onClose={() => setSelectedRoute(null)} 
-          onDelete={() => handleDeleteRoute(selectedRoute.routeId!)} 
+          onDelete={() => handleDeleteRoute(selectedRoute.routeId!)}
+          onEdit={() => {
+            setShowRouteEditForm(true);
+          }}
+        />
+      )}
+
+      {showRouteEditForm && selectedRoute && (
+        <RouteEditForm
+          route={selectedRoute}
+          pois={pois}
+          onUpdateRoute={handleEditRoute}
+          onCancel={() => setShowRouteEditForm(false)}
         />
       )}
 

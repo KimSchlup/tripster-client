@@ -748,4 +748,125 @@ export class ApiService {
       throw error;
     }
   }
+
+  /**
+   * Update an existing route.
+   * @param roadtripId - The ID of the roadtrip.
+   * @param routeId - The ID of the route to update.
+   * @param routeData - The updated route data.
+   * @returns The updated route.
+   */
+  public async updateRoute<T>(roadtripId: string | number, routeId: number, routeData: RouteCreateRequest): Promise<T> {
+    console.log(`Updating route with ID ${routeId} for roadtrip ID: ${roadtripId}`);
+    console.log("Original route data:", routeData);
+    
+    // Ensure roadtripId is properly formatted
+    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
+    
+    // Extract the enum name directly from the TravelMode enum value
+    const getTravelModeEnumName = (travelMode: string): string => {
+      // Find the enum key by its value
+      for (const enumKey in TravelMode) {
+        if (TravelMode[enumKey as keyof typeof TravelMode] === travelMode) {
+          return enumKey;
+        }
+      }
+      return travelMode;
+    };
+    
+    // Create a clean payload with just the required fields
+    const formattedRouteData = {
+      startId: Number(routeData.startId),
+      endId: Number(routeData.endId),
+      travelMode: getTravelModeEnumName(routeData.travelMode)
+    };
+    
+    console.log("Formatted route data for update:", formattedRouteData);
+    
+    const endpoint = `/roadtrips/${formattedRoadtripId}/routes/${routeId}`;
+    console.log(`Update route endpoint: ${endpoint}`);
+    
+    try {
+      // Get token
+      const token = retrieveToken("token");
+      console.log("Token for route update:", token ? "Found" : "Not found");
+      
+      if (!token) {
+        console.error("No token found for authorization");
+        throw new Error("Authentication required. Please log in again.");
+      }
+      
+      // Make the API request with explicit headers
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": token
+      };
+      
+      console.log("Request headers:", headers);
+      console.log("Request payload:", JSON.stringify(formattedRouteData, null, 2));
+      
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: "PUT",
+        headers: headers,
+        body: JSON.stringify(formattedRouteData)
+      });
+      
+      console.log(`Response status: ${response.status} ${response.statusText}`);
+      
+      if (!response.ok) {
+        let errorDetail = response.statusText;
+        try {
+          const contentType = response.headers.get("Content-Type") || "";
+          console.log("Error response content type:", contentType);
+          
+          // Log the raw response for debugging
+          const rawResponse = await response.text();
+          console.log("Raw error response:", rawResponse);
+          
+          // Try to parse as JSON if appropriate
+          if (contentType.includes("application/json")) {
+            try {
+              const errorInfo = JSON.parse(rawResponse);
+              console.log("Parsed error info:", errorInfo);
+              if (errorInfo?.message) {
+                errorDetail = errorInfo.message;
+              } else {
+                errorDetail = JSON.stringify(errorInfo);
+              }
+            } catch (parseError) {
+              console.error("Error parsing JSON response:", parseError);
+              errorDetail = rawResponse;
+            }
+          } else {
+            errorDetail = rawResponse;
+          }
+        } catch (error) {
+          console.error("Error processing response:", error);
+        }
+        
+        const detailedMessage = `Error updating route: ${response.status}: ${errorDetail}`;
+        console.error(detailedMessage);
+        throw new Error(detailedMessage);
+      }
+      
+      // Parse the response
+      let responseData;
+      if (response.headers.get("Content-Type")?.includes("application/json")) {
+        responseData = await response.json();
+        console.log("Route updated successfully:", responseData);
+      } else {
+        // If no JSON response, create a default response
+        responseData = {
+          ...formattedRouteData,
+          routeId: routeId
+        };
+        console.log("No JSON response, using default:", responseData);
+      }
+      
+      return responseData as T;
+    } catch (error) {
+      console.error(`Error in updateRoute for roadtrip ID ${formattedRoadtripId}, route ID ${routeId}:`, error);
+      throw error;
+    }
+  }
 }
