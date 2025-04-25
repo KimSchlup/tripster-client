@@ -13,6 +13,7 @@ export enum RouteAcceptanceStatus {
 }
 
 export interface Route {
+    routeId?: number;  // Added routeId property
     startId: number;
     endId: number;
     route: LineString;
