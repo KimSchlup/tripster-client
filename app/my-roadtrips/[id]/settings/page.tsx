@@ -423,9 +423,6 @@ export default function RoadtripSettings() {
                                                         case BasemapType.SATELLITE:
                                                             formattedLabel = "Satellite";
                                                             break;
-                                                        case BasemapType.SATELLITE_HYBRID:
-                                                            formattedLabel = "Satellite Hybrid";
-                                                            break;
                                                         case BasemapType.OPEN_STREET_MAP:
                                                             formattedLabel = "OpenStreetMap";
                                                             break;
