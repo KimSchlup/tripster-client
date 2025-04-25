@@ -17,10 +17,11 @@ interface POIWindowProps {
   isNew?: boolean;
   comments?: Comment[];
   onSendComment?: (message: string) => void;
+  showVotingButtons?: boolean;
 }
 
 export default function POIWindow(
-  { title, description, category, priority, status, onClose, onSave, onDelete, onUpvote, onDownvote, isNew, comments, onSendComment }: POIWindowProps,
+  { title, description, category, priority, status, onClose, onSave, onDelete, onUpvote, onDownvote, isNew, comments, onSendComment, showVotingButtons }: POIWindowProps,
 ) {
   const [isEditing, setIsEditing] = useState(isNew || false);
   const [editableTitle, setEditableTitle] = useState(title || "");
@@ -32,6 +33,8 @@ export default function POIWindow(
   const nodeRef = useRef<HTMLDivElement>(null!);
 
   console.log("Status:", status);
+
+  console.log("POIWindow showVotingButtons:", showVotingButtons);
 
   return (
     <Draggable handle=".handle" nodeRef={nodeRef}>
@@ -386,7 +389,7 @@ export default function POIWindow(
               Close
             </button>
           </div>
-        ) : (
+        ) : showVotingButtons ? (
           <div style={{
             position: "absolute",
             top: 630,
@@ -427,7 +430,7 @@ export default function POIWindow(
               Downvote
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </Draggable>
   );
