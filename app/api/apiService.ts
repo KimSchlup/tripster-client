@@ -886,23 +886,22 @@ export class ApiService {
   /**
    * Delete a specific route.
    * @param roadtripId - The ID of the roadtrip.
-   * @param startId - The start POI ID.
-   * @param endId - The end POI ID.
+   * @param routeId - The ID of the route to delete.
    */
-  public async deleteRoute(roadtripId: string | number, startId: number, endId: number): Promise<void> {
-    console.log(`Deleting route from ${startId} to ${endId} for roadtrip ID: ${roadtripId}`);
+  public async deleteRoute(roadtripId: string | number, routeId: number): Promise<void> {
+    console.log(`Deleting route with ID ${routeId} for roadtrip ID: ${roadtripId}`);
     
     // Ensure roadtripId is properly formatted
     const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
     
-    const endpoint = `/roadtrips/${formattedRoadtripId}/routes?startId=${startId}&endId=${endId}`;
+    const endpoint = `/roadtrips/${formattedRoadtripId}/routes/${routeId}`;
     console.log(`Delete route endpoint: ${endpoint}`);
     
     try {
       await this.delete<void>(endpoint);
       console.log("Route deleted successfully");
     } catch (error) {
-      console.error(`Error in deleteRoute for roadtrip ID ${formattedRoadtripId}:`, error);
+      console.error(`Error in deleteRoute for roadtrip ID ${formattedRoadtripId}, route ID ${routeId}:`, error);
       throw error;
     }
   }

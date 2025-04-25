@@ -31,7 +31,8 @@ const Toast: React.FC<ToastProps> = ({
       element = document.createElement("div");
       element.id = "toast-portal";
       element.style.position = "fixed";
-      element.style.top = "20px";
+      element.style.top = "auto";
+      element.style.bottom = "20px";
       element.style.right = "20px";
       element.style.zIndex = "9999";
       document.body.appendChild(element);

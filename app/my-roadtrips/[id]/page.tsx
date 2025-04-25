@@ -170,13 +170,11 @@ function RoadtripContent() {
     }
   };
 
-  const handleDeleteRoute = async (startId: number, endId: number) => {
+  const handleDeleteRoute = async (routeId: number) => {
     try {
-      console.log(`Deleting route from ${startId} to ${endId}`);
-      await apiService.deleteRoute(id, startId, endId);
-      setRoutes(prevRoutes => prevRoutes.filter(
-        route => !(route.startId === startId && route.endId === endId)
-      ));
+      console.log(`Deleting route with ID ${routeId}`);
+      await apiService.deleteRoute(id, routeId);
+      setRoutes(prevRoutes => prevRoutes.filter(route => route.routeId !== routeId));
       setSelectedRoute(null);
       console.log("Route deleted successfully");
     } catch (error) {
@@ -431,7 +429,7 @@ function RoadtripContent() {
           route={selectedRoute} 
           pois={pois} 
           onClose={() => setSelectedRoute(null)} 
-          onDelete={() => handleDeleteRoute(selectedRoute.startId, selectedRoute.endId)} 
+          onDelete={() => handleDeleteRoute(selectedRoute.routeId!)} 
         />
       )}
 
