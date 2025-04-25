@@ -22,12 +22,22 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
     // Handle logout separately
     if (authState.isLoggedIn && itemName === 'logout') {
       try {
-        await logout();
+        // Close the sidebar first to prevent UI issues
         onClose();
-
+        
+        // Immediately redirect to the landing page before logout
+        // This prevents the protected route from showing toast messages
+        router.push('/');
+        
+        // Then perform the logout operation
+        // Small delay to ensure the navigation happens first
+        setTimeout(async () => {
+          await logout();
+        }, 100);
       } catch (error) {
         console.error('Logout failed:', error);
-        onClose();
+        // Ensure we're on the landing page even if logout fails
+        router.push('/');
       }
     } else {
       // Normal navigation for other menu items

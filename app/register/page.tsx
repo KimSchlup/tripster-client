@@ -79,49 +79,63 @@ const Register: React.FC = () => {
       setFormError(null);
       let isValid = true;
 
+      // Initialize error message
+      let errorMessage = "";
+      
       // Check if firstName is not empty
       if (!firstName.trim()) {
         setIsFirstNameValid(false);
         isValid = false;
+        errorMessage = "First name cannot be empty";
       }
 
       // Check if lastName is not empty
-      if (!lastName.trim()) {
+      if (!lastName.trim() && !errorMessage) {
         setIsLastNameValid(false);
         isValid = false;
+        errorMessage = "Last name cannot be empty";
       }
 
       // Check if username is not empty
-      if (!username.trim()) {
+      if (!username.trim() && !errorMessage) {
         setIsUsernameValid(false);
         isValid = false;
+        errorMessage = "Username cannot be empty";
       }
 
       // Check if email is valid
-      if (!email.trim()) {
+      if (!email.trim() && !errorMessage) {
         setIsEmailValid(false);
         isValid = false;
-      } else if (!validateEmail(email)) {
+        errorMessage = "Email cannot be empty";
+      } else if (!validateEmail(email) && !errorMessage) {
         setIsEmailValid(false);
         isValid = false;
+        errorMessage = "Invalid email address";
       }
 
       // Check password strength
       const passwordValidation = validatePassword(password);
-      if (!passwordValidation.isValid) {
+      if (!passwordValidation.isValid && !errorMessage) {
         setFormError(passwordValidation.message);
         isValid = false;
+        errorMessage = passwordValidation.message;
       }
 
       // Check if passwords match
-      if (!doPasswordsMatch(password, confirmPassword)) {
+      if (!doPasswordsMatch(password, confirmPassword) && !errorMessage) {
         setIsConfirmPasswordValid(false);
         setFormError("Passwords do not match");
         isValid = false;
+        errorMessage = "Passwords do not match";
       }
 
       if (!isValid) {
-        showToast("Please fix the errors in the form", "error");
+        // If no specific error message was set, use a generic one
+        if (!errorMessage) {
+          errorMessage = "Please fix the errors in the form";
+        }
+        showToast(errorMessage, "error");
         return;
       }
 
@@ -146,9 +160,37 @@ const Register: React.FC = () => {
     } catch (error) {
       console.error("Registration error:", error);
       
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "An unknown error occurred during registration";
+      // Extract the error message and make it more user-friendly
+      let errorMessage = "An unknown error occurred during registration";
+      
+      if (error instanceof Error) {
+        // Parse the error message to make it more user-friendly
+        const message = error.message;
+        
+        // Check for common registration errors and provide specific messages
+        if (message.toLowerCase() === "username already taken") {
+          // Direct message from the API for username conflict
+          setIsUsernameValid(false);
+          errorMessage = `Username "${username}" is already taken. Please try another username.`;
+        } else if (message.includes("username") && message.includes("already")) {
+          // Fallback for other username conflict messages
+          setIsUsernameValid(false);
+          errorMessage = `Username "${username}" is already taken. Please try another username.`;
+        } else if (message.includes("email") && message.includes("already")) {
+          errorMessage = "Email address already registered. Please use a different email.";
+        } else if (message.includes("invalid") && message.includes("email")) {
+          errorMessage = "Invalid email address format.";
+        } else if (message.includes("password") && message.includes("requirements")) {
+          errorMessage = "Password does not meet requirements.";
+        } else if (message.includes("network") || message.includes("connection")) {
+          errorMessage = "Network error. Please check your internet connection.";
+        } else if (message.includes("server")) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          // Use the original error message if it's not one of the common cases
+          errorMessage = message;
+        }
+      }
       
       setFormError(errorMessage);
       showToast(errorMessage, "error");

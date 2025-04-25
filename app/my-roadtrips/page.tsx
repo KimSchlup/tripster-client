@@ -29,6 +29,9 @@ function RoadtripsContent() {
     const { showToast } = useToast();
     const userId = authState.userId;
 
+    // Track if we've already shown the login toast
+    const [hasShownLoginToast, setHasShownLoginToast] = useState(false);
+    
     // Function to fetch roadtrips
     const fetchRoadtrips = useCallback(async () => {
         // Check token directly from localStorage for debugging
@@ -40,7 +43,12 @@ function RoadtripsContent() {
             console.log("User not logged in or no token found");
             setError("Please login first in order to access your roadtrips.");
             setLoading(false);
-            showToast("Please login to access your roadtrips", "warning");
+            
+            // Only show the toast once
+            if (!hasShownLoginToast) {
+                showToast("Please login to access your roadtrips", "warning");
+                setHasShownLoginToast(true);
+            }
             return;
         }
         
