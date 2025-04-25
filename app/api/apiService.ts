@@ -770,8 +770,12 @@ export class ApiService {
     // Extract the enum name directly from the TravelMode enum value
     const getTravelModeEnumName = (travelMode: string): string => {
       // Find the enum key by its value
-      const enumKey = Object.entries(TravelMode).find(([key, value]) => value === travelMode)?.[0];
-      return enumKey || travelMode;
+      for (const enumKey in TravelMode) {
+        if (TravelMode[enumKey as keyof typeof TravelMode] === travelMode) {
+          return enumKey;
+        }
+      }
+      return travelMode;
     };
     
     // Create a clean payload with just the required fields
