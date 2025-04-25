@@ -73,11 +73,15 @@ function RoadtripContent() {
   useEffect(() => {
     const fetchRoadtrip = async () => {
       try {
-        const roadtrip = await apiService.get<{ ownerId: number; decisionProcess: "MAJORITY" | "OWNER_DECISION" }>(`/roadtrips/${id}`);
+        const roadtrip = await apiService.get<{ ownerId: number; decisionProcess: string }>(`/roadtrips/${id}`);
         setOwnerId(roadtrip.ownerId);
-        setDecisionProcess(roadtrip.decisionProcess);
+        const raw = roadtrip.decisionProcess?.trim().toUpperCase();
+        if (raw === "MAJORITY" || raw === "OWNER_DECISION") {
+          setDecisionProcess(raw);
+        } else {
+          console.error("Unexpected decisionProcess value:", raw);
+        }
         console.log("decisionProcess:", decisionProcess);
-
       } catch (error) {
         console.error("Failed to fetch roadtrip info", error);
       }
