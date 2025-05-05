@@ -191,8 +191,8 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
               <div style={{ 
                 fontSize: "18px", 
                 fontWeight: 700, 
-                color: route.status === "APPROVED" ? "#79A44D" : 
-                       route.status === "REJECTED" ? "#FF0000" : "#FFD700" 
+                color: route.status === "ACCEPTED" ? "#79A44D" :
+                       route.status === "DECLINED" ? "#FF0000" : "#FFD700"
               }}>
                 {route.status}
               </div>
