@@ -66,7 +66,19 @@ useEffect(() => {
 
     const handleSave = async () => {
         if (isEditing && user) {
-            const updatedFields: any = {};
+            const updatedFields: Partial<{
+                username: string;
+                firstName: string;
+                lastName: string;
+                mail: string;
+                phoneNumber: string;
+                receiveNotifications: boolean;
+                emergencyContact: Partial<{
+                    firstName: string;
+                    lastName: string;
+                    phoneNumber: string;
+                }>;
+            }> = {};
 
             // Only add fields that have changed
             if (editedUsername !== user.username) updatedFields.username = editedUsername;
@@ -77,9 +89,15 @@ useEffect(() => {
             if (editedNotifications !== user.recieveNotifications) updatedFields.receiveNotifications = editedNotifications;
             
             // Emergency contact fields
-            if (editedEmergencyFirstName !== user.emergencyContact?.firstName) updatedFields.emergencyContact = { ...updatedFields.emergencyContact, firstName: editedEmergencyFirstName };
-            if (editedEmergencyLastName !== user.emergencyContact?.lastName) updatedFields.emergencyContact = { ...updatedFields.emergencyContact, lastName: editedEmergencyLastName };
-            if (editedEmergencyPhone !== user.emergencyContact?.phoneNumber) updatedFields.emergencyContact = { ...updatedFields.emergencyContact, phoneNumber: editedEmergencyPhone };
+            if (editedEmergencyFirstName !== user.emergencyContact?.firstName || 
+                editedEmergencyLastName !== user.emergencyContact?.lastName || 
+                editedEmergencyPhone !== user.emergencyContact?.phoneNumber) {
+                updatedFields.emergencyContact = {
+                    ...(editedEmergencyFirstName !== user.emergencyContact?.firstName && { firstName: editedEmergencyFirstName }),
+                    ...(editedEmergencyLastName !== user.emergencyContact?.lastName && { lastName: editedEmergencyLastName }),
+                    ...(editedEmergencyPhone !== user.emergencyContact?.phoneNumber && { phoneNumber: editedEmergencyPhone })
+                };
+            }
 
             // If there are any fields to update, send them
             if (Object.keys(updatedFields).length > 0) {
