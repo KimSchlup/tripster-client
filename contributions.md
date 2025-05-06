@@ -84,7 +84,7 @@ reason).
 
 ---
 
-## Contributions Week 4 - [Begin Date] to [End Date]
+## Contributions Week 4 - 16.04.2025 to 30.04.2025
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -100,7 +100,7 @@ reason).
 
 ---
 
-## Contributions Week 5 - [Begin Date] to [End Date]
+## Contributions Week 5 - 30.04.2025 to 07.05.2025
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
@@ -110,8 +110,8 @@ reason).
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@RicoCamenzind** | 05.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/7667cb82ef852e7c4f44ca7064a421f441628510) | Added flushing/ saving after casting a vote and cleaned up some code. | Before, the voting was not persistent and the status of a POI/ Route did not change even if a vote was cast. |
+|                    | 05.05.2025   | [Commit 2](https://github.com/KimSchlup/tripster-server/commit/159b74f012e576a1a16d857440f4ea04ecc59549) | Fixed an internal mistake where the coordinates were not properly ordered when updating a route leading to an error. The ordering of the X and Y coordinates is now the same as when creating a route (which worked in the past without issues). Also removed some logging functions which are obsolete now since the basics work. | We are now able to update a route (either change the POI's used or the travel mode). Without that, there was a need for the user to constantly delete routes and create new routes which would have been tedious. |
 
 
 ---
