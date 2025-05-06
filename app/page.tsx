@@ -11,25 +11,6 @@ export default function Home() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const featuresRef = useRef<HTMLElement | null>(null);
 
-  // Handle scroll for parallax effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Auto-rotate testimonials
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
   // Features data
   const features = [
     {
@@ -78,6 +59,25 @@ export default function Home() {
       text: "The checklist feature ensures we never forget anything important. Being able to assign items to different family members makes trip preparation so much easier."
     }
   ];
+  
+  // Handle scroll for parallax effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
 
   // Scroll to features section
   const scrollToFeatures = () => {
@@ -263,7 +263,7 @@ export default function Home() {
         
         <div className="testimonial-carousel">
           <div className="testimonial-card animate-fade-in delay-200">
-            <div className="quote-mark">"</div>
+            <div className="quote-mark">&ldquo;</div>
             <p className="testimonial-text">{testimonials[currentTestimonial].text}</p>
             <div className="testimonial-author">
               <div className="author-image">
