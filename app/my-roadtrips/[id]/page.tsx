@@ -7,7 +7,7 @@ import {useEffect, useState} from "react";
 import { useCallback } from "react";
 import {useParams, useRouter} from "next/navigation";
 import type {LeafletMouseEvent} from "leaflet";
-import {ColoredMarker} from "@/components/MapComponents/coloredMarker";
+import {DisplayPOIs} from "@/components/MapComponents/DisplayPOIs";
 import POIWindow from "@/components/MapComponents/POIWindow";
 import VerticalSidebar from "@/components/MapComponents/VerticalSidebar";
 import POIList from "@/components/MapComponents/POIList";
@@ -17,7 +17,7 @@ import RouteEditForm from "@/components/MapComponents/RouteEditForm";
 import RouteDetails from "@/components/MapComponents/RouteDetails";
 import RouteList from "@/components/MapComponents/RouteList";
 import "leaflet/dist/leaflet.css";
-import {Marker, useMapEvent} from "react-leaflet";
+import {useMapEvent} from "react-leaflet";
 import {useApi} from "@/hooks/useApi";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -35,12 +35,6 @@ const TileLayer = dynamic(
   { ssr: false },
 );
 
-
-// Define map modes
-enum MapMode {
-  POI = "POI",
-  ROUTE = "ROUTE"
-}
 
 function RoadtripContent() {
   const params = useParams();
@@ -63,7 +57,7 @@ function RoadtripContent() {
   }, [id, apiService]);
 
   const [ownerId, setOwnerId] = useState<number | null>(null);
-  const [decisionProcess, setDecisionProcess] = useState<"MAJORITY" | "OWNER_DECISION">("MAJORITY");
+  const [decisionProcess, setDecisionProcess] = useState<string | null>(null);
   const { authState } = useAuth();
   const userId = authState.userId;
 
@@ -72,23 +66,28 @@ function RoadtripContent() {
   console.log("showVotingButtons:", decisionProcess === "MAJORITY" || Number(userId) === ownerId);
 
   useEffect(() => {
-    const fetchRoadtrip = async () => {
+    const fetchSettingsAndOwner = async () => {
       try {
-        const roadtrip = await apiService.get<{ ownerId: number; decisionProcess: string }>(`/roadtrips/${id}`);
+        const settings = await apiService.get<{ basemapType: string; decisionProcess: string }>(
+            `/roadtrips/${id}/settings`
+        );
+        setBasemapType(settings.basemapType as "SATELLITE" | "OPEN_STREET_MAP");
+        setDecisionProcess(settings.decisionProcess);
+        console.log("Fetched decisionProcess:", settings.decisionProcess);
+      } catch (error) {
+        console.error("Failed to fetch roadtrip settings", error);
+      }
+
+      try {
+        const roadtrip = await apiService.get<{ ownerId: number }>(`/roadtrips/${id}`);
         setOwnerId(roadtrip.ownerId);
-        const raw = roadtrip.decisionProcess?.trim().toUpperCase();
-        if (raw === "MAJORITY" || raw === "OWNER_DECISION") {
-          setDecisionProcess(raw);
-        } else {
-          console.error("Unexpected decisionProcess value:", raw);
-        }
-        console.log("decisionProcess:", decisionProcess);
       } catch (error) {
         console.error("Failed to fetch roadtrip info", error);
       }
     };
-    fetchRoadtrip();
-  }, [id, apiService, decisionProcess]);
+
+    fetchSettingsAndOwner();
+  }, [id, apiService]);
 
   const [pois, setPois] = useState<PointOfInterest[]>([]);
   const [newPoi, setNewPoi] = useState<PointOfInterest | null>(null);
@@ -101,7 +100,6 @@ function RoadtripContent() {
   const [showPOIList, setShowPOIList] = useState(false);
   
   // Route state
-  const [mapMode, setMapMode] = useState<MapMode>(MapMode.POI);
   const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [showRouteForm, setShowRouteForm] = useState(false);
@@ -178,8 +176,7 @@ function RoadtripContent() {
 
   // Fetch routes when in route mode
   useEffect(() => {
-    if (mapMode === MapMode.ROUTE) {
-      async function fetchRoutes() {
+    async function fetchRoutes() {
         try {
           const data = await apiService.get<Route[]>(`/roadtrips/${id}/routes`);
           console.log("Fetched Routes Structure:", JSON.stringify(data, null, 2));
@@ -198,8 +195,7 @@ function RoadtripContent() {
         }
       }
       fetchRoutes();
-    }
-  }, [id, apiService, mapMode]);
+    }, [id, apiService]);
 
   // Route handlers
   const handleCreateRoute = async (routeData: RouteCreateRequest) => {
@@ -270,16 +266,6 @@ function RoadtripContent() {
     }
   };
 
-  // Toggle between POI and Route mode
-  const toggleMapMode = () => {
-    setMapMode(prevMode => prevMode === MapMode.POI ? MapMode.ROUTE : MapMode.POI);
-    setSelectedPoiId(null);
-    setSelectedRoute(null);
-    setShowPOIList(false);
-    setShowRouteList(false);
-    setShowRouteForm(false);
-  };
-
   function MapClickHandler() {
     useMapEvent("contextmenu", (e: LeafletMouseEvent) => {
       setContextMenuLatLng({ lat: e.latlng.lat, lng: e.latlng.lng });
@@ -315,13 +301,11 @@ function RoadtripContent() {
         {/* ------------- SideBar ------------- */}
         <VerticalSidebar
           sidebarTop={sidebarTop}
-          onWayfinder={() => toggleMapMode()}
           onPOIList={() => setShowPOIList((prev) => !prev)}
           onRouteList={() => setShowRouteList((prev) => !prev)}
           onChecklist={() => router.push(`/my-roadtrips/${id}/checklist`)}
           onLayerManager={() => console.log("klick on LayerManager")}
           onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
-          isRouteMode={mapMode === MapMode.ROUTE}
         />
       {showPOIList && <POIList pois={pois} />}
       {newPoi && (
@@ -502,7 +486,8 @@ function RoadtripContent() {
         <RouteList 
           routes={routes} 
           pois={pois} 
-          onRouteSelect={(route) => setSelectedRoute(route)} 
+          onRouteSelect={(route) => setSelectedRoute(route)}
+          onCreateRoute={() => setShowRouteForm(true)}
         />
       )}
       
@@ -535,80 +520,6 @@ function RoadtripContent() {
         />
       )}
 
-      {/* Mode Toggle Button */}
-      <div
-        style={{
-          position: "absolute",
-          top: "30px",
-          right: "30px",
-          zIndex: 1000,
-          background: "white",
-          padding: "10px",
-          borderRadius: "5px",
-          boxShadow: "0 0 10px rgba(0,0,0,0.2)",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px"
-        }}
-      >
-        <span style={{ fontWeight: 600 }}>Mode:</span>
-        <button
-          onClick={toggleMapMode}
-          style={{
-            background: mapMode === MapMode.POI ? "#007bff" : "#6c757d",
-            color: "white",
-            border: "none",
-            padding: "5px 10px",
-            borderRadius: "3px",
-            cursor: "pointer"
-          }}
-        >
-          POI
-        </button>
-        <button
-          onClick={toggleMapMode}
-          style={{
-            background: mapMode === MapMode.ROUTE ? "#007bff" : "#6c757d",
-            color: "white",
-            border: "none",
-            padding: "5px 10px",
-            borderRadius: "3px",
-            cursor: "pointer"
-          }}
-        >
-          Route
-        </button>
-      </div>
-
-      {/* Create Route Button (only in Route mode) */}
-      {mapMode === MapMode.ROUTE && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "30px",
-            right: "30px",
-            zIndex: 1000
-          }}
-        >
-          <button
-            onClick={() => setShowRouteForm(true)}
-            style={{
-              background: "#007bff",
-              color: "white",
-              border: "none",
-              padding: "10px 20px",
-              borderRadius: "5px",
-              fontSize: "16px",
-              fontWeight: 600,
-              boxShadow: "0 0 10px rgba(0,0,0,0.2)",
-              cursor: "pointer"
-            }}
-          >
-            Create Route
-          </button>
-        </div>
-      )}
-
       <MapContainer
         style={{ height: "100%", width: "100%" }}
         center={[47.37013, 8.54427]}
@@ -622,47 +533,14 @@ function RoadtripContent() {
         {basemapType === "OPEN_STREET_MAP" && (
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         )}
-        {/* Display POIs in POI mode */}
-        {mapMode === MapMode.POI && pois.map((poi) => {
-          let color = "#000000"; // Default
-          if (poi.status === PoiAcceptanceStatus.PENDING) color = "#FFD700"; // Gelb
-          else if (poi.status === PoiAcceptanceStatus.ACCEPTED) color = "#79A44D"; // Grün
-          else if (poi.status === PoiAcceptanceStatus.DECLINED) color = "#FF0000"; // Rot
-
-          return (
-            <Marker
-              key={poi.poiId}
-              position={[poi.coordinate.coordinates[1], poi.coordinate.coordinates[0]]}
-              icon={ColoredMarker(color)}
-              eventHandlers={{
-                click: () => setSelectedPoiId(poi.poiId),
-              }}
-            />
-          );
-        })}
-
-        {/* Display Routes in Route mode */}
-        {mapMode === MapMode.ROUTE && (
-          <>
-            {/* Display all POIs as markers */}
-            {pois.map((poi) => (
-              <Marker
-                key={poi.poiId}
-                position={[poi.coordinate.coordinates[1], poi.coordinate.coordinates[0]]}
-                icon={ColoredMarker("#000000")}
-                eventHandlers={{
-                  click: () => setSelectedPoiId(poi.poiId),
-                }}
-              />
-            ))}
-            
-            {/* Display routes as polylines */}
-            <RouteDisplay 
-              routes={routes} 
-              onRouteClick={(route) => setSelectedRoute(route)} 
-            />
-          </>
-        )}
+        <DisplayPOIs
+            pois={pois}
+            setSelectedPoiId={setSelectedPoiId}
+        />
+        <RouteDisplay
+          routes={routes}
+          onRouteClick={(route) => setSelectedRoute(route)}
+        />
       </MapContainer>
     </div>
   );

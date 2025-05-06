@@ -8,8 +8,8 @@ export enum TravelMode {
 
 export enum RouteAcceptanceStatus {
     PENDING = "PENDING",
-    APPROVED = "APPROVED",
-    REJECTED = "REJECTED"
+    ACCEPTED = "ACCEPTED",
+    DECLINED = "DECLINED"
 }
 
 export interface Route {

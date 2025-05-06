@@ -1,4 +1,4 @@
-import { Route, RouteAcceptanceStatus, TravelMode } from "@/types/routeTypes";
+import { Route, RouteAcceptanceStatus } from "@/types/routeTypes";
 import { Polyline } from "react-leaflet";
 
 interface RouteDisplayProps {
@@ -38,7 +38,7 @@ export default function RouteDisplay({ routes, onRouteClick }: RouteDisplayProps
             <Polyline
               key={`${route.startId}-${route.endId}-${index}`}
               positions={routeData.coordinates.map((coord: [number, number]) => [coord[1], coord[0]])}
-              color={getRouteColor(route.status, route.travelMode)}
+              color={getRouteColor(route.status)}
               weight={4}
               opacity={0.7}
               eventHandlers={{
@@ -56,32 +56,17 @@ export default function RouteDisplay({ routes, onRouteClick }: RouteDisplayProps
   );
 }
 
-function getRouteColor(status: RouteAcceptanceStatus, travelMode: TravelMode): string {
-  // First determine base color by travel mode
-  let baseColor: string;
-  switch (travelMode) {
-    case TravelMode.DRIVING_CAR:
-      baseColor = "#3388ff"; // Blue
-      break;
-    case TravelMode.FOOT_WALKING:
-      baseColor = "#33cc33"; // Green
-      break;
-    case TravelMode.CYCLING_REGULAR:
-      baseColor = "#ff9900"; // Orange
-      break;
-    default:
-      baseColor = "#3388ff"; // Default blue
-  }
-
-  // Then adjust based on status
+function getRouteColor(status: RouteAcceptanceStatus): string {
+console.log("Route status:", status);
+  // adjust based on status
   switch (status) {
-    case RouteAcceptanceStatus.APPROVED:
-      return baseColor; // Keep the original color for approved routes
+    case RouteAcceptanceStatus.ACCEPTED:
+      return "#33cc33"; // Keep the original color for approved routes
     case RouteAcceptanceStatus.PENDING:
-      return "#FFD700"; // Yellow for pending routes
-    case RouteAcceptanceStatus.REJECTED:
+      return "#ff9900"; // Yellow for pending routes "#ff9900"  "#FFD700"
+    case RouteAcceptanceStatus.DECLINED:
       return "#FF0000"; // Red for rejected routes
     default:
-      return baseColor;
+      return "#3388ff";
   }
 }
