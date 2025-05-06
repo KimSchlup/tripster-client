@@ -96,6 +96,14 @@ reason).
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@RicoCamenzind** | 22.04.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/3ac4b9c8920619b03729f8babf4212c85ef105cc) | Added the backend logic to add comments to a POI | Using the comments, users are now able to communicate their thoughts on specific POI's and have a collection of all thoughts. |
+|                    | 23.04.2025   | [Commit 2](https://github.com/KimSchlup/tripster-server/commit/f8a2079d55364eda95c461f478add9a54c5dc651) | Further improved the backend logic to update the status of a POI after a vote has been cast. | Users are now able to vote on POI's properly taking also the decision process into account. |
+|                    | 23.04.2025   | [Commit 3](https://github.com/KimSchlup/tripster-server/commit/20487065d8462e8b3fcbdbce1c533e02d5fd595c) [Commit 6](https://github.com/KimSchlup/tripster-server/commit/f2743736849031a4d6b9e82c5f3fada60a8b4cec)| The external API is now reachable to create routes using two POI's and a travel mode. | Without the external API we could not generate routes and thus a roadtrip would be pretty meaningsless. |
+|                    | 24.04.2025   | [Commit 4](https://github.com/KimSchlup/tripster-server/commit/f60fa558c8bee0e9c9479e87f9e7def569d70041) | Added tests for the POIService class. | Making sure that the POI's are handled properly is essential to our app. With the tests we ensure the proper handling even if new features are added in the future. |
+|                    | 24.04.2025   | [Commit 5](https://github.com/KimSchlup/tripster-server/commit/acfdaeaafcb44222795896015a7c891bb1787538) | Added tests for the RouteService class. | The tests ensure that a route is properly generated and faulty inputs detected. |
+|                    | 24.04.2025   | [Commit 7](https://github.com/KimSchlup/tripster-server/commit/62647738dd57efe572a28e262a449cfb227bf3ed) | Added tests for the Comment service. | Those tests ensure that comments are handled properly. |
+|                    | 25.04.2025   | [Commit 8](https://github.com/KimSchlup/tripster-server/commit/87a1ef50560d13a73938b926a3defc58ba8ede9f) | Added tests for POI Controller | Makes sure the reqeusts are handled properly including faulty ones. |
+
 
 
 ---
@@ -109,6 +117,8 @@ reason).
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **@RicoCamenzind** | 05.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/7667cb82ef852e7c4f44ca7064a421f441628510) | Added flushing/ saving after casting a vote and cleaned up some code. | Before, the voting was not persistent and the status of a POI/ Route did not change even if a vote was cast. |
 |                    | 05.05.2025   | [Commit 2](https://github.com/KimSchlup/tripster-server/commit/159b74f012e576a1a16d857440f4ea04ecc59549) | Fixed an internal mistake where the coordinates were not properly ordered when updating a route leading to an error. The ordering of the X and Y coordinates is now the same as when creating a route (which worked in the past without issues). Also removed some logging functions which are obsolete now since the basics work. | We are now able to update a route (either change the POI's used or the travel mode). Without that, there was a need for the user to constantly delete routes and create new routes which would have been tedious. |
