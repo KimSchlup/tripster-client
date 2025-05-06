@@ -112,8 +112,8 @@ reason).
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@KimSchlup** | 05.05.2025   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/commit/d3a14bb7237db8ea9a3ef80e461fe4ceab4b835a) | started implementing Emergency Contact functionality and fixed the Edit method | Users need to add emergency info and be able to update this |
+|                    | 06.05.2025   | [Link to Commit 2](https://github.com/KimSchlup/tripster-server/commit/8fa22915b1dbb8d1d6d079b52f5fd8d70ee04208) | Worked on the backend to add the Emergency Contact Information | Users want to add Emergency Information |
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
