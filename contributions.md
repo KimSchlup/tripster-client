@@ -114,8 +114,8 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **@KimSchlup** | 05.05.2025   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/commit/d3a14bb7237db8ea9a3ef80e461fe4ceab4b835a) | started implementing Emergency Contact functionality and fixed the Edit method | Users need to add emergency info and be able to update this |
 |                    | 06.05.2025   | [Link to Commit 2](https://github.com/KimSchlup/tripster-server/commit/8fa22915b1dbb8d1d6d079b52f5fd8d70ee04208) | Worked on the backend to add the Emergency Contact Information | Users want to add Emergency Information |
-| **[@P4P5T123]** | 06.05.2025   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/pull/92/commits/1794b909befdf44c7e6155384c819ab6177309ca) | Redesigned Landingpage | There was false information and it giives a better impression and advertises for the app |
-|                    | 07.05.2025  | [Link to Commit 2(https://github.com/KimSchlup/tripster-client/pull/94/commits/d00e12a20af32807a58e1dcb29964a555b56111c) | Wanted to refactor all forms into centralized components: unsuccessful | maintainablility, flexibility |
+| **[@P4P5T123]** | 06.05.2025   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/pull/92/commits/1794b909befdf44c7e6155384c819ab6177309ca) | Redesigned Landingpage | There was false information and it gives a better impression and advertises for the app |
+|                    | 06.05.2025  | [Link to Commit 2](https://github.com/KimSchlup/tripster-client/pull/94/commits/d00e12a20af32807a58e1dcb29964a555b56111c) | Wanted to refactor all forms into centralized components: unsuccessful | maintainablility, flexibility |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
