@@ -146,29 +146,6 @@ useEffect(() => {
                         }} type="primary" style={{ backgroundColor: "#22426b" }}>
                             {isEditing ? "Save" : "Edit"}
                         </Button>
-
-                            {/* <Button  onClick={async () => {
-                                if (isEditing) {
-                                    await apiService.put("/users/" + user.userId, {
-                                        username: editedUsername,
-                                        firstName: editedFirstName,
-                                        lastName: editedLastName,
-                                        mail: editedEmail,
-                                        phoneNumber: editedPhone,
-                                        receiveNotifications: editedNotifications,
-                                        emergencyContact: {
-                                            firstName: editedEmergencyFirstName,
-                                            lastName: editedEmergencyLastName,
-                                            phoneNumber: editedEmergencyPhone,
-                                        }
-                                    });
-                                    window.location.reload();
-                                } else {
-                                    setIsEditing(true);
-                                }
-                            }} type="primary" style={{ backgroundColor : "#22426b"}}>
-                                {isEditing ? "Save" : "Edit"}
-                            </Button> */}
                             <Button
                                 //danger
                                 onClick={async () => {
