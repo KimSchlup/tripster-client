@@ -14,7 +14,6 @@ import type { GeoJSON } from "geojson";
 import Checkbox from "@/components/Checkbox";
 import RoadtripMemberManagement from "@/components/RoadtripMemberManagement";
 import BackToMapButton from "@/components/BackToMapButton";
-import Image from "next/image";
 
 export default function RoadtripSettings() {
   const params = useParams();
@@ -132,7 +131,9 @@ export default function RoadtripSettings() {
       await apiService.post(`/roadtrips/${id}/settings/images`, formData);
 
       // then fetch the signed image URL
-      const res: Response = await apiService.get(`/roadtrips/${id}/settings/images`);
+      const res: Response = await apiService.get(
+        `/roadtrips/${id}/settings/images`
+      );
       const imageUrl = await res.text();
       setImageUrl(imageUrl);
     } catch (err) {
@@ -438,7 +439,7 @@ export default function RoadtripSettings() {
                       }}
                     >
                       {imageUrl ? (
-                        <Image
+                        <img
                           src={imageUrl}
                           alt="Roadtrip cover"
                           style={{

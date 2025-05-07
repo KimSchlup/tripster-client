@@ -1,7 +1,6 @@
 import { InvitationStatus } from "@/types/roadtripMember";
 import { Roadtrip, RoadtripMemberDisplay } from "@/types/roadtrip";
-import React from "react";
-import Image from "next/image";
+import React, { useState } from "react";
 
 const styles = {
   card: {
@@ -12,15 +11,13 @@ const styles = {
     cursor: "pointer",
   } as const,
 
-  // Make banner the relative container
   banner: {
     position: "relative" as const,
     width: 328,
-    height: 200, // grow height for your text overlay
+    height: 200,
     overflow: "hidden" as const,
   },
 
-  // image sits underneath
   backgroundImage: {
     position: "absolute" as const,
     top: 0,
@@ -30,7 +27,6 @@ const styles = {
     objectFit: "cover" as const,
   },
 
-  // translucent panel at the bottom
   overlay: {
     position: "absolute" as const,
     bottom: 0,
@@ -89,26 +85,49 @@ export default function RoadtripCard({
   formatMembersList,
 }: Props) {
   const pending = roadtrip.invitationStatus === InvitationStatus.PENDING;
+  const [imageError, setImageError] = useState(false);
+
+  const showImage = imageUrl && !imageError;
 
   return (
     <div style={styles.card} onClick={onClick}>
       <div style={styles.banner}>
-        {/* background image */}
-        {imageUrl && (
-          <Image
+        {showImage ? (
+          <img
             width={328}
             height={200}
             src={imageUrl}
             alt="Cover"
             style={styles.backgroundImage}
-            onError={(e) => (e.currentTarget.style.display = "none")}
+            onError={() => setImageError(true)}
           />
+        ) : (
+          <div
+            style={{
+              width: 328,
+              height: 100,
+              background: pending ? "#FFA500" : "#D9D9D9",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                color: "white",
+                fontSize: 24,
+                fontFamily: "Manrope",
+                fontWeight: "700",
+              }}
+            >
+              {roadtrip.name.charAt(0).toUpperCase()}
+            </div>
+          </div>
         )}
 
-        {/* pending badge */}
         {pending && <div style={styles.pendingBadge}>!</div>}
 
-        {/* translucent overlay with text */}
         <div style={styles.overlay}>
           <h3 style={styles.title}>{roadtrip.name}</h3>
           <p style={styles.members}>
