@@ -14,6 +14,7 @@ import type { GeoJSON } from "geojson";
 import Checkbox from "@/components/Checkbox";
 import RoadtripMemberManagement from "@/components/RoadtripMemberManagement";
 import BackToMapButton from "@/components/BackToMapButton";
+import Image from "next/image";
 
 export default function RoadtripSettings() {
   const params = useParams();
@@ -26,7 +27,6 @@ export default function RoadtripSettings() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   // New state for image upload
-  const [imageName, setImageName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // RoadtripSettings state
@@ -47,6 +47,9 @@ export default function RoadtripSettings() {
   const [spotifyPlaylistUrl, setSpotifyPlaylistUrl] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isOwner, setIsOwner] = useState<boolean>(false);
+  const handleImageClick = () => {
+    if (isOwner) fileInputRef.current?.click();
+  };
 
   const apiService = useApi();
   const router = useRouter();
@@ -54,11 +57,13 @@ export default function RoadtripSettings() {
   const currentUserId = authState.userId;
 
   useEffect(() => {
-    const fetchRoadtripAndSettings = async () => {
+    const loadRoadtripSettings = async () => {
+      if (!id) return;
+
       try {
         setLoading(true);
 
-        // Fetch basic roadtrip info
+        // 1. Fetch Roadtrip Info
         const roadtripData = await apiService.get<Roadtrip>(`/roadtrips/${id}`);
         setRoadtrip(roadtripData);
         setRoadtripName(roadtripData.name);
@@ -69,23 +74,36 @@ export default function RoadtripSettings() {
           roadtripData.ownerId?.toString() === currentUserId?.toString()
         );
 
-        // Fetch settings
+        // 2. Fetch Settings
         const settingsData = await apiService.get<RoadtripSettings>(
           `/roadtrips/${id}/settings`
         );
         setRoadtripSettings(settingsData);
-
-        // Initialize other settings
         setBasemapType(settingsData.basemapType ?? BasemapType.DEFAULT);
         setDecisionProcess(
           settingsData.decisionProcess ?? DecisionProcess.MAJORITY
         );
-        setBoundingBox(settingsData.boundingBox);
+        if (settingsData.boundingBox) {
+          setBoundingBox(settingsData.boundingBox);
+        }
         setStartDate(settingsData.startDate);
         setEndDate(settingsData.endDate);
+
         if (settingsData.spotifyPlaylistUrl) {
           setSpotifyPlaylistUrl(settingsData.spotifyPlaylistUrl);
           setHasSpotifyPlaylist(true);
+        }
+
+        // 3. Fetch image (if available)
+        try {
+          const res = await apiService.get<Response>(
+            `/roadtrips/${id}/settings/images`
+          );
+          if (!res.ok) throw new Error("Image not found");
+          const url = await res.text();
+          setImageUrl(url);
+        } catch (imgErr) {
+          console.warn("No image or error loading image for", id, imgErr);
         }
 
         setError(null);
@@ -97,53 +115,31 @@ export default function RoadtripSettings() {
       }
     };
 
-    if (id) {
-      fetchRoadtripAndSettings();
-    }
+    loadRoadtripSettings();
   }, [apiService, id, currentUserId]);
 
-  // Handle image selection & upload
+  const handleAddLink = () => {
+    console.log("Add link clicked");
+  };
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
-    const file = e.target.files[0];
-    const form = new FormData();
-    form.append("file", file);
+    const formData = new FormData();
+    formData.append("file", e.target.files[0]);
 
     try {
-      const returnedName = await apiService.post<string>(
-        `/roadtrips/${id}/settings/images`,
-        form
-      );
-      setImageName(returnedName);
+      // Upload the file
+      await apiService.post(`/roadtrips/${id}/settings/images`, formData);
+
+      // then fetch the signed image URL
+      const res: Response = await apiService.get(`/roadtrips/${id}/settings/images`);
+      const imageUrl = await res.text();
+      setImageUrl(imageUrl);
     } catch (err) {
       console.error("Image upload failed:", err);
-      setError("Failed to upload image. Please try again.");
+      setError("Failed to upload or load image. Please try again.");
     }
   };
-  useEffect(() => {
-    const fetchImage = async () => {
-      if (!id) return;
-
-      try {
-        const response = await fetch(`/roadtrips/${id}/settings/images`);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const blob = await response.blob();
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImageUrl(reader.result as string);
-        };
-        reader.readAsDataURL(blob);
-      } catch (err) {
-        console.error("Failed to load image:", err);
-      }
-    };
-
-    fetchImage();
-  }, [id, authState.token]);
 
   // Save handler
   const handleSave = async () => {
@@ -314,7 +310,7 @@ export default function RoadtripSettings() {
                   {/* Roadtrip Infos Section */}
                   <div
                     style={{
-                      flex: 2,
+                      flex: 3,
                       background: "white",
                       boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
                       borderRadius: 10,
@@ -408,31 +404,27 @@ export default function RoadtripSettings() {
 
                   <div
                     style={{
-                      width: 150,
-                      minWidth: 150,
                       background: "white",
                       boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
                       borderRadius: 10,
                       padding: "20px",
                       display: "flex",
                       flexDirection: "column",
-                      alignItems: "center",
                       justifyContent: "flex-start",
-                      gap: 10,
                       color: "black",
                       fontSize: 24,
                       fontFamily: "Manrope",
                       fontWeight: 700,
-                      marginBottom: "20px",
                       flex: 1,
                     }}
                   >
                     Roadtrip Image
                     <div
-                      onClick={() => isOwner && fileInputRef.current?.click()}
+                      onClick={handleImageClick}
                       style={{
-                        width: 100,
-                        height: 100,
+                        marginTop: 20,
+                        width: 200,
+                        height: 150,
                         background: "#DDD",
                         display: "flex",
                         justifyContent: "center",
@@ -441,9 +433,24 @@ export default function RoadtripSettings() {
                         color: "#888",
                         cursor: isOwner ? "pointer" : "not-allowed",
                         borderRadius: 8,
+                        alignSelf: "center",
+                        overflow: "hidden",
                       }}
                     >
-                      +
+                      {imageUrl ? (
+                        <Image
+                          src={imageUrl}
+                          alt="Roadtrip cover"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: 8,
+                          }}
+                        />
+                      ) : (
+                        "+"
+                      )}
                     </div>
                     <input
                       ref={fileInputRef}
@@ -453,20 +460,6 @@ export default function RoadtripSettings() {
                       disabled={!isOwner}
                       onChange={handleImageChange}
                     />
-                    {imageUrl && (
-                      <img
-                        src={imageUrl}
-                        alt="Roadtrip cover"
-                        style={{
-                          width: 100,
-                          height: 100,
-                          objectFit: "cover",
-                          borderRadius: 8,
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                          marginTop: 10,
-                        }}
-                      />
-                    )}
                   </div>
                 </div>
                 {/* Users Section */}

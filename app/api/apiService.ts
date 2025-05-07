@@ -577,10 +577,10 @@ export class ApiService {
     // If it's a FormData, don’t JSON-stringify, and don’t set Content-Type
     if (data instanceof FormData) {
       // remove any content-type that defaultHeaders added
-      delete headers["Content-Type"];
+      delete (headers as Record<string, string>)["Content-Type"];
       body = data;
     } else {
-      headers["Content-Type"] = "application/json";
+      (headers as Record<string, string>)["Content-Type"] = "application/json";
       body = JSON.stringify(data);
     }
 
