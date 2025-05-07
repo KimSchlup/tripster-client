@@ -3,11 +3,11 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useCallback } from "react";
-import {useParams, useRouter} from "next/navigation";
-import type {LeafletMouseEvent} from "leaflet";
-import {DisplayPOIs} from "@/components/MapComponents/DisplayPOIs";
+import { useParams, useRouter } from "next/navigation";
+import type { LeafletMouseEvent } from "leaflet";
+import { DisplayPOIs } from "@/components/MapComponents/DisplayPOIs";
 import POIWindow from "@/components/MapComponents/POIWindow";
 import VerticalSidebar from "@/components/MapComponents/VerticalSidebar";
 import POIList from "@/components/MapComponents/POIList";
@@ -17,24 +17,29 @@ import RouteEditForm from "@/components/MapComponents/RouteEditForm";
 import RouteDetails from "@/components/MapComponents/RouteDetails";
 import RouteList from "@/components/MapComponents/RouteList";
 import "leaflet/dist/leaflet.css";
-import {useMapEvent} from "react-leaflet";
-import {useApi} from "@/hooks/useApi";
+import { useMapEvent } from "react-leaflet";
+import { useApi } from "@/hooks/useApi";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-import {PoiAcceptanceStatus, PoiCategory, PointOfInterest, PoiPriority, Comment} from "@/types/poi"; // Assuming PoiCategory is defined in the same file
-import { RoadtripMember} from "@/types/roadtripMember";
+import {
+  PoiAcceptanceStatus,
+  PoiCategory,
+  PointOfInterest,
+  PoiPriority,
+  Comment,
+} from "@/types/poi"; // Assuming PoiCategory is defined in the same file
+import { RoadtripMember } from "@/types/roadtripMember";
 import { useAuth } from "@/hooks/useAuth";
-import {Route, RouteCreateRequest, TravelMode} from "@/types/routeTypes";
+import { Route, RouteCreateRequest, TravelMode } from "@/types/routeTypes";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
-  { ssr: false },
+  { ssr: false }
 );
 const TileLayer = dynamic(
   () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false },
+  { ssr: false }
 );
-
 
 function RoadtripContent() {
   const params = useParams();
@@ -43,11 +48,15 @@ function RoadtripContent() {
   const apiService = useApi();
 
   const [sidebarTop, setSidebarTop] = useState("30%");
-  const [basemapType, setBasemapType] = useState<"SATELLITE" | "OPEN_STREET_MAP">("OPEN_STREET_MAP");
+  const [basemapType, setBasemapType] = useState<
+    "SATELLITE" | "OPEN_STREET_MAP"
+  >("OPEN_STREET_MAP");
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const settings = await apiService.get<{ basemapType: string }>(`/roadtrips/${id}/settings`);
+        const settings = await apiService.get<{ basemapType: string }>(
+          `/roadtrips/${id}/settings`
+        );
         setBasemapType(settings.basemapType as "SATELLITE" | "OPEN_STREET_MAP");
       } catch (error) {
         console.error("Failed to fetch roadtrip settings", error);
@@ -63,14 +72,18 @@ function RoadtripContent() {
 
   // Debug logs for decisionProcess, userId, ownerId, and showVotingButtons
   console.log("userId:", userId, "ownerId:", ownerId);
-  console.log("showVotingButtons:", decisionProcess === "MAJORITY" || Number(userId) === ownerId);
+  console.log(
+    "showVotingButtons:",
+    decisionProcess === "MAJORITY" || Number(userId) === ownerId
+  );
 
   useEffect(() => {
     const fetchSettingsAndOwner = async () => {
       try {
-        const settings = await apiService.get<{ basemapType: string; decisionProcess: string }>(
-            `/roadtrips/${id}/settings`
-        );
+        const settings = await apiService.get<{
+          basemapType: string;
+          decisionProcess: string;
+        }>(`/roadtrips/${id}/settings`);
         setBasemapType(settings.basemapType as "SATELLITE" | "OPEN_STREET_MAP");
         setDecisionProcess(settings.decisionProcess);
         console.log("Fetched decisionProcess:", settings.decisionProcess);
@@ -79,7 +92,9 @@ function RoadtripContent() {
       }
 
       try {
-        const roadtrip = await apiService.get<{ ownerId: number }>(`/roadtrips/${id}`);
+        const roadtrip = await apiService.get<{ ownerId: number }>(
+          `/roadtrips/${id}`
+        );
         setOwnerId(roadtrip.ownerId);
       } catch (error) {
         console.error("Failed to fetch roadtrip info", error);
@@ -92,13 +107,19 @@ function RoadtripContent() {
   const [pois, setPois] = useState<PointOfInterest[]>([]);
   const [newPoi, setNewPoi] = useState<PointOfInterest | null>(null);
   const [selectedPoiId, setSelectedPoiId] = useState<number | null>(null);
-  const selectedPoi = pois.find(p => p.poiId === selectedPoiId) || null;
+  const selectedPoi = pois.find((p) => p.poiId === selectedPoiId) || null;
   const [selectedPoiComments, setSelectedPoiComments] = useState<Comment[]>([]);
   const [members, setMembers] = useState<RoadtripMember[]>([]);
-  const [contextMenuLatLng, setContextMenuLatLng] = useState<{ lat: number, lng: number } | null>(null);
-  const [contextMenuScreenPosition, setContextMenuScreenPosition] = useState<{ x: number, y: number } | null>(null);
+  const [contextMenuLatLng, setContextMenuLatLng] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [contextMenuScreenPosition, setContextMenuScreenPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [showPOIList, setShowPOIList] = useState(false);
-  
+
   // Route state
   const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
@@ -107,7 +128,7 @@ function RoadtripContent() {
   const [showRouteList, setShowRouteList] = useState(false);
 
   // Dynamically resize VerticalSidebar Position, if Browser Window is shortened
-    // Checks, that SideBar slides upwards, but doesn't cover Logo
+  // Checks, that SideBar slides upwards, but doesn't cover Logo
   useEffect(() => {
     const handleResize = () => {
       const logoBottom = 30 + 60 + 20; // logo top + logo height + Abstand
@@ -127,10 +148,13 @@ function RoadtripContent() {
   // Fetch POIs helper
   const fetchPois = useCallback(async () => {
     try {
-      const data = await apiService.get<PointOfInterest[]>(`/roadtrips/${id}/pois`);
-      const enriched = data.map(poi => ({
+      const data = await apiService.get<PointOfInterest[]>(
+        `/roadtrips/${id}/pois`
+      );
+      const enriched = data.map((poi) => ({
         ...poi,
-        creatorUserName: members.find(m => m.userId === poi.creatorId)?.username
+        creatorUserName: members.find((m) => m.userId === poi.creatorId)
+          ?.username,
       }));
       setPois(enriched);
     } catch (error) {
@@ -152,7 +176,8 @@ function RoadtripContent() {
   }, [fetchPois]);
 
   useEffect(() => {
-    apiService.get<RoadtripMember[]>(`/roadtrips/${id}/members`)
+    apiService
+      .get<RoadtripMember[]>(`/roadtrips/${id}/members`)
       .then(setMembers)
       .catch((err) => console.error("Failed to fetch roadtrip members", err));
   }, [id, apiService]);
@@ -161,10 +186,13 @@ function RoadtripContent() {
     if (!selectedPoi) return;
     const fetchCommentsWithAuthors = async () => {
       try {
-        const comments = await apiService.get<Comment[]>(`/roadtrips/${id}/pois/${selectedPoi.poiId}/comments`);
+        const comments = await apiService.get<Comment[]>(
+          `/roadtrips/${id}/pois/${selectedPoi.poiId}/comments`
+        );
         const enriched = comments.map((c) => ({
           ...c,
-          authorUserName: members.find(m => m.userId === c.authorId)?.username
+          authorUserName: members.find((m) => m.userId === c.authorId)
+            ?.username,
         }));
         setSelectedPoiComments(enriched);
       } catch (error) {
@@ -177,32 +205,35 @@ function RoadtripContent() {
   // Fetch routes when in route mode
   useEffect(() => {
     async function fetchRoutes() {
-        try {
-          const data = await apiService.get<Route[]>(`/roadtrips/${id}/routes`);
-          console.log("Fetched Routes Structure:", JSON.stringify(data, null, 2));
-          console.log("Route data type:", typeof data);
-          if (data && data.length > 0) {
-            console.log("First route properties:", Object.keys(data[0]));
-            console.log("Route.route type:", data[0].route ? typeof data[0].route : "undefined");
-            if (data[0].route) {
-              console.log("Route.route properties:", Object.keys(data[0].route));
-            }
+      try {
+        const data = await apiService.get<Route[]>(`/roadtrips/${id}/routes`);
+        console.log("Fetched Routes Structure:", JSON.stringify(data, null, 2));
+        console.log("Route data type:", typeof data);
+        if (data && data.length > 0) {
+          console.log("First route properties:", Object.keys(data[0]));
+          console.log(
+            "Route.route type:",
+            data[0].route ? typeof data[0].route : "undefined"
+          );
+          if (data[0].route) {
+            console.log("Route.route properties:", Object.keys(data[0].route));
           }
-          setRoutes(data);
-          console.log("Fetched Routes:", data);
-        } catch (error) {
-          console.error("Failed to fetch routes:", error);
         }
+        setRoutes(data);
+        console.log("Fetched Routes:", data);
+      } catch (error) {
+        console.error("Failed to fetch routes:", error);
       }
-      fetchRoutes();
-    }, [id, apiService]);
+    }
+    fetchRoutes();
+  }, [id, apiService]);
 
   // Route handlers
   const handleCreateRoute = async (routeData: RouteCreateRequest) => {
     try {
       console.log("Creating route with data:", routeData);
       const newRoute = await apiService.addRoute<Route>(id, routeData);
-      setRoutes(prevRoutes => [...prevRoutes, newRoute]);
+      setRoutes((prevRoutes) => [...prevRoutes, newRoute]);
       setShowRouteForm(false);
       console.log("Route created successfully");
     } catch (error) {
@@ -214,7 +245,9 @@ function RoadtripContent() {
     try {
       console.log(`Deleting route with ID ${routeId}`);
       await apiService.deleteRoute(id, routeId);
-      setRoutes(prevRoutes => prevRoutes.filter(route => route.routeId !== routeId));
+      setRoutes((prevRoutes) =>
+        prevRoutes.filter((route) => route.routeId !== routeId)
+      );
       setSelectedRoute(null);
       console.log("Route deleted successfully");
     } catch (error) {
@@ -222,10 +255,13 @@ function RoadtripContent() {
     }
   };
 
-  const handleEditRoute = async (routeId: number, routeData: RouteCreateRequest) => {
+  const handleEditRoute = async (
+    routeId: number,
+    routeData: RouteCreateRequest
+  ) => {
     try {
       console.log(`Editing route with ID ${routeId} with data:`, routeData);
-      
+
       // Extract the enum name directly from the TravelMode enum value
       const getTravelModeEnumName = (travelMode: string): string => {
         // Find the enum key by its value
@@ -236,28 +272,33 @@ function RoadtripContent() {
         }
         return travelMode;
       };
-      
+
       // Create a clean payload with just the required fields
       const formattedRouteData = {
         startId: Number(routeData.startId),
         endId: Number(routeData.endId),
-        travelMode: getTravelModeEnumName(routeData.travelMode)
+        travelMode: getTravelModeEnumName(routeData.travelMode),
       };
-      
+
       // Use the put method directly
       const endpoint = `/roadtrips/${id}/routes/${routeId}`;
-      const updatedRoute = await apiService.put<Route>(endpoint, formattedRouteData);
-      
+      const updatedRoute = await apiService.put<Route>(
+        endpoint,
+        formattedRouteData
+      );
+
       // If the response is empty (204 No Content), create a default response
       const finalUpdatedRoute = updatedRoute || {
         ...selectedRoute!,
         ...routeData,
-        routeId: routeId
+        routeId: routeId,
       };
-      
-      setRoutes(prevRoutes => prevRoutes.map(route => 
-        route.routeId === routeId ? finalUpdatedRoute : route
-      ));
+
+      setRoutes((prevRoutes) =>
+        prevRoutes.map((route) =>
+          route.routeId === routeId ? finalUpdatedRoute : route
+        )
+      );
       setShowRouteEditForm(false);
       setSelectedRoute(null);
       console.log("Route updated successfully");
@@ -269,14 +310,17 @@ function RoadtripContent() {
   function MapClickHandler() {
     useMapEvent("contextmenu", (e: LeafletMouseEvent) => {
       setContextMenuLatLng({ lat: e.latlng.lat, lng: e.latlng.lng });
-      setContextMenuScreenPosition({ x: e.originalEvent.clientX, y: e.originalEvent.clientY });
+      setContextMenuScreenPosition({
+        x: e.originalEvent.clientX,
+        y: e.originalEvent.clientY,
+      });
     });
     return null;
   }
 
   return (
-    <div style={{ height: "100vh", width: "100%", marginTop: "-144px"}}>
-        {/* ------------- Logo ------------- */}
+    <div style={{ height: "100vh", width: "100%", marginTop: "-144px" }}>
+      {/* ------------- Logo ------------- */}
       <Link
         href="/"
         style={{
@@ -298,15 +342,15 @@ function RoadtripContent() {
           style={{ borderRadius: "10%" }}
         />
       </Link>
-        {/* ------------- SideBar ------------- */}
-        <VerticalSidebar
-          sidebarTop={sidebarTop}
-          onPOIList={() => setShowPOIList((prev) => !prev)}
-          onRouteList={() => setShowRouteList((prev) => !prev)}
-          onChecklist={() => router.push(`/my-roadtrips/${id}/checklist`)}
-          onLayerManager={() => console.log("klick on LayerManager")}
-          onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
-        />
+      {/* ------------- SideBar ------------- */}
+      <VerticalSidebar
+        sidebarTop={sidebarTop}
+        onPOIList={() => setShowPOIList((prev) => !prev)}
+        onRouteList={() => setShowRouteList((prev) => !prev)}
+        onChecklist={() => router.push(`/my-roadtrips/${id}/checklist`)}
+        onLayerManager={() => console.log("klick on LayerManager")}
+        onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
+      />
       {showPOIList && <POIList pois={pois} />}
       {newPoi && (
         <POIWindow
@@ -325,7 +369,10 @@ function RoadtripContent() {
               priority: priority as PoiPriority,
             };
             try {
-              const createdPoi = await apiService.post<PointOfInterest>(`/roadtrips/${id}/pois`, updatedPoi);
+              const createdPoi = await apiService.post<PointOfInterest>(
+                `/roadtrips/${id}/pois`,
+                updatedPoi
+              );
               setPois((prevPois) => [...prevPois, createdPoi]);
               console.log("POI created successfully");
             } catch (error) {
@@ -337,25 +384,29 @@ function RoadtripContent() {
           }}
           onDelete={() => {
             if (!newPoi) return;
-            setPois((prevPois) => prevPois.filter((poi) => poi.poiId !== newPoi.poiId));
+            setPois((prevPois) =>
+              prevPois.filter((poi) => poi.poiId !== newPoi.poiId)
+            );
             /*const apiService = new ApiService();
             apiService.delete(`/roadtrips/${id}/pois/${newPoi.poiId}`).catch((error) => {
               console.error("Failed to delete POI:", error);
             });*/
-              // TODO: Delete "new POI" könnte vereinfacht werden, ein API DELETE braucht es vermutlich nicht
+            // TODO: Delete "new POI" könnte vereinfacht werden, ein API DELETE braucht es vermutlich nicht
             setNewPoi(null);
             setContextMenuLatLng(null);
             setContextMenuScreenPosition(null);
           }}
           onUpvote={() => {}}
-          onDownvote={ () => {}}
+          onDownvote={() => {}}
           onClose={() => {
             setNewPoi(null);
             setContextMenuLatLng(null);
             setContextMenuScreenPosition(null);
           }}
           isNew={true}
-          showVotingButtons={decisionProcess === "MAJORITY" || Number(userId) === ownerId}
+          showVotingButtons={
+            decisionProcess === "MAJORITY" || Number(userId) === ownerId
+          }
         />
       )}
       {selectedPoi && (
@@ -368,14 +419,20 @@ function RoadtripContent() {
           comments={selectedPoiComments}
           onSendComment={async (message) => {
             try {
-              await apiService.post(`/roadtrips/${id}/pois/${selectedPoi.poiId}/comments`, {
-                comment: message
-              });
-              const updated = await apiService.get<Comment[]>(`/roadtrips/${id}/pois/${selectedPoi.poiId}/comments`);
+              await apiService.post(
+                `/roadtrips/${id}/pois/${selectedPoi.poiId}/comments`,
+                {
+                  comment: message,
+                }
+              );
+              const updated = await apiService.get<Comment[]>(
+                `/roadtrips/${id}/pois/${selectedPoi.poiId}/comments`
+              );
               // Enrich comments with authorUserName after sending new comment
               const enriched = updated.map((c) => ({
                 ...c,
-                authorUserName: members.find(m => m.userId === c.authorId)?.username
+                authorUserName: members.find((m) => m.userId === c.authorId)
+                  ?.username,
               }));
               setSelectedPoiComments(enriched);
             } catch (err) {
@@ -396,7 +453,10 @@ function RoadtripContent() {
               )
             );
             try {
-              await apiService.put(`/roadtrips/${id}/pois/${selectedPoi?.poiId}`, updatedPoi);
+              await apiService.put(
+                `/roadtrips/${id}/pois/${selectedPoi?.poiId}`,
+                updatedPoi
+              );
               console.log("POI updated successfully");
             } catch (error) {
               console.error("Failed to update POI:", error);
@@ -405,9 +465,13 @@ function RoadtripContent() {
           }}
           onDelete={async () => {
             if (!selectedPoi) return;
-            setPois((prevPois) => prevPois.filter((poi) => poi.poiId !== selectedPoi.poiId));
+            setPois((prevPois) =>
+              prevPois.filter((poi) => poi.poiId !== selectedPoi.poiId)
+            );
             try {
-              await apiService.delete(`/roadtrips/${id}/pois/${selectedPoi.poiId}`);
+              await apiService.delete(
+                `/roadtrips/${id}/pois/${selectedPoi.poiId}`
+              );
               console.log("POI deleted successfully");
             } catch (error) {
               console.error("Failed to delete POI:", error);
@@ -415,30 +479,38 @@ function RoadtripContent() {
             setSelectedPoiId(null);
           }}
           onUpvote={async () => {
-              if (!selectedPoi) return;
-              try {
-                  await apiService.put(`/roadtrips/${id}/pois/${selectedPoi.poiId}/votes`, {
-                      vote: "upvote",
-                  });
-                  console.log("Upvote erfolgreich");
-              } catch (error) {
-                  console.error("Fehler beim Upvoten:", error);
-              }
+            if (!selectedPoi) return;
+            try {
+              await apiService.put(
+                `/roadtrips/${id}/pois/${selectedPoi.poiId}/votes`,
+                {
+                  vote: "upvote",
+                }
+              );
+              console.log("Upvote erfolgreich");
+            } catch (error) {
+              console.error("Fehler beim Upvoten:", error);
+            }
           }}
           onDownvote={async () => {
-              if (!selectedPoi) return;
-              try {
-                  await apiService.put(`/roadtrips/${id}/pois/${selectedPoi.poiId}/votes`, {
-                      vote: "downvote",
-                  });
-                  console.log("Downvote erfolgreich");
-              } catch (error) {
-                  console.error("Fehler beim Downvoten:", error);
-              }
+            if (!selectedPoi) return;
+            try {
+              await apiService.put(
+                `/roadtrips/${id}/pois/${selectedPoi.poiId}/votes`,
+                {
+                  vote: "downvote",
+                }
+              );
+              console.log("Downvote erfolgreich");
+            } catch (error) {
+              console.error("Fehler beim Downvoten:", error);
+            }
           }}
           onClose={() => setSelectedPoiId(null)}
           isNew={false}
-          showVotingButtons={decisionProcess === "MAJORITY" || Number(userId) === ownerId}
+          showVotingButtons={
+            decisionProcess === "MAJORITY" || Number(userId) === ownerId
+          }
         />
       )}
       {contextMenuLatLng && contextMenuScreenPosition && (
@@ -455,55 +527,61 @@ function RoadtripContent() {
             zIndex: 2000,
           }}
         >
-          <button style = {{backgroundColor: "white",  // weißer Hintergrund
-            color: "black",
-          borderWidth: "0px"}}
-                  onClick={() => {
-            const newPoint: PointOfInterest = {
-              poiId: Date.now(), // TODO: Anpassen?
-              name: "",
-              coordinate: {
-                type: "Point",
-                coordinates: [contextMenuLatLng.lng, contextMenuLatLng.lat],
-              },
-              description: "",
-              category: PoiCategory.OTHER,
-              priority: PoiPriority.OPTIONAL,
-              creatorId: 0,
-              status: PoiAcceptanceStatus.PENDING,
-              upvotes: 0,
-              downvotes: 0,
-              eligibleVoteCount: 0,
-            };
-            setNewPoi(newPoint);
-            setContextMenuScreenPosition(null);
-            setContextMenuLatLng(null);
-          }}>Add POI</button>
+          <button
+            style={{
+              backgroundColor: "white", // weißer Hintergrund
+              color: "black",
+              borderWidth: "0px",
+            }}
+            onClick={() => {
+              const newPoint: PointOfInterest = {
+                poiId: Date.now(), // TODO: Anpassen?
+                name: "",
+                coordinate: {
+                  type: "Point",
+                  coordinates: [contextMenuLatLng.lng, contextMenuLatLng.lat],
+                },
+                description: "",
+                category: PoiCategory.OTHER,
+                priority: PoiPriority.OPTIONAL,
+                creatorId: 0,
+                status: PoiAcceptanceStatus.PENDING,
+                upvotes: 0,
+                downvotes: 0,
+                eligibleVoteCount: 0,
+              };
+              setNewPoi(newPoint);
+              setContextMenuScreenPosition(null);
+              setContextMenuLatLng(null);
+            }}
+          >
+            Add POI
+          </button>
         </div>
       )}
       {/* Route Components */}
       {showRouteList && (
-        <RouteList 
-          routes={routes} 
-          pois={pois} 
+        <RouteList
+          routes={routes}
+          pois={pois}
           onRouteSelect={(route) => setSelectedRoute(route)}
           onCreateRoute={() => setShowRouteForm(true)}
         />
       )}
-      
+
       {showRouteForm && (
-        <RouteForm 
-          pois={pois} 
-          onCreateRoute={handleCreateRoute} 
-          onCancel={() => setShowRouteForm(false)} 
+        <RouteForm
+          pois={pois}
+          onCreateRoute={handleCreateRoute}
+          onCancel={() => setShowRouteForm(false)}
         />
       )}
-      
+
       {selectedRoute && (
-        <RouteDetails 
-          route={selectedRoute} 
-          pois={pois} 
-          onClose={() => setSelectedRoute(null)} 
+        <RouteDetails
+          route={selectedRoute}
+          pois={pois}
+          onClose={() => setSelectedRoute(null)}
           onDelete={() => handleDeleteRoute(selectedRoute.routeId!)}
           onEdit={() => {
             setShowRouteEditForm(true);
@@ -533,10 +611,7 @@ function RoadtripContent() {
         {basemapType === "OPEN_STREET_MAP" && (
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         )}
-        <DisplayPOIs
-            pois={pois}
-            setSelectedPoiId={setSelectedPoiId}
-        />
+        <DisplayPOIs pois={pois} setSelectedPoiId={setSelectedPoiId} />
         <RouteDisplay
           routes={routes}
           onRouteClick={(route) => setSelectedRoute(route)}
