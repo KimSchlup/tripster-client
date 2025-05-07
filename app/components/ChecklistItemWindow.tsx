@@ -3,6 +3,12 @@ import Image from "next/image";
 import Draggable from "react-draggable";
 import { ChecklistItemCategory, ChecklistItemPriority } from "@/types/checklistItem";
 import Checkbox from "@/components/Checkbox";
+import {
+  Form,
+  FormInput,
+  FormButton,
+  useForm
+} from "@/design-system";
 
 interface ChecklistItemWindowProps {
   name: string;
@@ -22,6 +28,37 @@ interface ChecklistItemWindowProps {
   isNew?: boolean;
 }
 
+/**
+ * Form values type for checklist item
+ */
+interface ChecklistItemFormValues {
+  name: string;
+  isCompleted: boolean;
+  assignedUser: string;
+  category: string;
+  priority: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Checklist item form validation function
+ */
+const validateChecklistItemForm = (values: ChecklistItemFormValues) => {
+  const errors: Record<string, string> = {};
+  
+  if (!values.name.trim()) {
+    errors.name = "Name cannot be empty";
+  }
+  
+  return errors;
+};
+
+/**
+ * ChecklistItemWindow component
+ * 
+ * A modal window for creating and editing checklist items.
+ * Uses the design system components for form handling.
+ */
 export default function ChecklistItemWindow({
   name,
   isCompleted,
@@ -34,13 +71,49 @@ export default function ChecklistItemWindow({
   isNew
 }: ChecklistItemWindowProps) {
   const [isEditing, setIsEditing] = useState(isNew || false);
-  const [editableName, setEditableName] = useState(name || "");
-  const [editableIsCompleted, setEditableIsCompleted] = useState(isCompleted || false);
-  const [editableAssignedUser, setEditableAssignedUser] = useState(assignedUser || "");
-  const [editableCategory, setEditableCategory] = useState(category || "");
-  const [editablePriority, setEditablePriority] = useState(priority || "");
-
   const nodeRef = useRef<HTMLDivElement>(null!);
+  
+  // Initialize form with useForm hook
+  const {
+    values,
+    setValue,
+    fieldErrors,
+    formError,
+    handleSubmit
+  } = useForm<ChecklistItemFormValues>(
+    { 
+      name: name || "",
+      isCompleted: isCompleted || false,
+      assignedUser: assignedUser || "",
+      category: category || ChecklistItemCategory.ITEM,
+      priority: priority || ChecklistItemPriority.MEDIUM
+    },
+    validateChecklistItemForm,
+    (values) => {
+      onSave?.({ 
+        name: values.name, 
+        isCompleted: values.isCompleted, 
+        assignedUser: values.assignedUser || null, 
+        category: values.category, 
+        priority: values.priority 
+      });
+      setIsEditing(false);
+    }
+  );
+
+  // Get color based on priority
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case ChecklistItemPriority.HIGH:
+        return "#E6393B"; // Red
+      case ChecklistItemPriority.MEDIUM:
+        return "#F3A712"; // Orange
+      case ChecklistItemPriority.LOW:
+        return "#79A44D"; // Green
+      default:
+        return "#999999"; // Gray
+    }
+  };
 
   return (
     <Draggable handle=".handle" nodeRef={nodeRef}>
@@ -87,32 +160,38 @@ export default function ChecklistItemWindow({
                 }}
             />
           </button>
-          <Image
-            src="/map-elements/garbage_bin.svg"
-            alt="Delete"
-            width={25}
-            height={25}
-            onClick={() => onDelete?.()}
-            style={{
-              position: "absolute",
-              top: "24px",
-              right: "24px",
-              cursor: "pointer"
-            }}
-          />
-          <Image
-            src="/map-elements/edit.svg"
-            alt="Edit"
-            width={23}
-            height={23}
-            onClick={() => setIsEditing(true)}
-            style={{
-              position: "absolute",
-              top: "24px",
-              right: "60px",
-              cursor: "pointer",
-            }}
-          />
+          {!isNew && (
+            <>
+              <Image
+                src="/map-elements/garbage_bin.svg"
+                alt="Delete"
+                width={25}
+                height={25}
+                onClick={() => onDelete?.()}
+                style={{
+                  position: "absolute",
+                  top: "24px",
+                  right: "24px",
+                  cursor: "pointer"
+                }}
+              />
+              {!isEditing && (
+                <Image
+                  src="/map-elements/edit.svg"
+                  alt="Edit"
+                  width={23}
+                  height={23}
+                  onClick={() => setIsEditing(true)}
+                  style={{
+                    position: "absolute",
+                    top: "24px",
+                    right: "60px",
+                    cursor: "pointer",
+                  }}
+                />
+              )}
+            </>
+          )}
           {/* === Title Section === */}
           <h2 style={{
             position: "absolute",
@@ -147,150 +226,171 @@ export default function ChecklistItemWindow({
           paddingRight: "10px", // Add some padding for the scrollbar
           paddingBottom: "20px" // Add padding at the bottom for better spacing
         }}>
-          {/* Name Field */}
-          <div style={{
-            background: "white",
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-            borderRadius: 3,
-            border: "1px solid #E4E4E4",
-            padding: "15px"
-          }}>
-            <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Name</div>
-            <input
-              value={editableName}
-              onChange={(e) => setEditableName(e.target.value)}
-              disabled={!isEditing}
-              style={{
-                fontSize: "14px",
-                fontWeight: 700,
-                width: "100%",
-                color: "black",
-                background: isEditing ? "rgba(228, 228, 228, 0.24)" : "white",
-                border: isEditing ? "1px solid #ccc" : "none",
-                padding: "8px",
-                borderRadius: "4px"
-              }}
-            />
-          </div>
-
-          {/* Category and Priority */}
-          <div style={{
-            background: "white",
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-            borderRadius: 3,
-            border: "1px solid #E4E4E4",
-            padding: "15px"
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Category</div>
-              <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Priority</div>
-            </div>
-            {isEditing ? (
-              <div style={{ display: "flex", gap: "10px", justifyContent: "space-between" }}>
-                <select
-                  value={editableCategory}
-                  onChange={(e) => setEditableCategory(e.target.value)}
+          <Form 
+            onSubmit={handleSubmit} 
+            error={formError}
+            style={{ width: "100%" }}
+          >
+            {/* Name Field */}
+            <div style={{
+              background: "white",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
+              borderRadius: 3,
+              border: "1px solid #E4E4E4",
+              padding: "15px"
+            }}>
+              <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Name</div>
+              {isEditing ? (
+                <FormInput
+                  name="name"
+                  value={values.name}
+                  onChange={(value) => setValue("name", value)}
+                  disabled={!isEditing}
+                  error={fieldErrors.name}
                   style={{
                     fontSize: "14px",
                     fontWeight: 700,
-                    width: "48%",
+                    width: "100%",
                     color: "black",
                     background: "rgba(228, 228, 228, 0.24)",
-                    padding: "8px",
-                    borderRadius: "4px"
                   }}
-                >
-                  {Object.values(ChecklistItemCategory).map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat === "TASK" ? "TASK" : "ITEM"}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={editablePriority}
-                  onChange={(e) => setEditablePriority(e.target.value)}
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 700,
-                    width: "48%",
-                    color: "black",
-                    background: "rgba(228, 228, 228, 0.24)",
-                    padding: "8px",
-                    borderRadius: "4px"
-                  }}
-                >
-                  {Object.values(ChecklistItemPriority).map((pri) => (
-                    <option key={pri} value={pri}>
-                      {pri}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <p style={{ fontSize: "14px", fontWeight: 700, color: "black" }}>{category}</p>
-                <p style={{ 
+                />
+              ) : (
+                <div style={{ 
                   fontSize: "14px", 
                   fontWeight: 700, 
-                  color:
-                    priority === "HIGH" ? "#E6393B" :
-                    priority === "MEDIUM" ? "#F3A712" :
-                    priority === "LOW" ? "#79A44D" :
-                    "#999999" 
+                  color: "black",
+                  padding: "8px 0"
                 }}>
-                  {priority}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Assigned User */}
-          <div style={{
-            background: "white",
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-            borderRadius: 3,
-            border: "1px solid #E4E4E4",
-            padding: "15px"
-          }}>
-            <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Assigned User</div>
-            <input
-              value={editableAssignedUser || ""}
-              onChange={(e) => setEditableAssignedUser(e.target.value)}
-              disabled={!isEditing}
-              placeholder={isEditing ? "Enter username or leave blank" : "Unassigned"}
-              style={{
-                fontSize: "14px",
-                fontWeight: 700,
-                width: "100%",
-                color: "black",
-                background: isEditing ? "rgba(228, 228, 228, 0.24)" : "white",
-                border: isEditing ? "1px solid #ccc" : "none",
-                padding: "8px",
-                borderRadius: "4px"
-              }}
-            />
-          </div>
-
-          {/* Completion Status */}
-          <div style={{
-            background: "white",
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-            borderRadius: 3,
-            border: "1px solid #E4E4E4",
-            padding: "15px"
-          }}>
-            <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Status</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <Checkbox
-                checked={editableIsCompleted}
-                onChange={(checked) => isEditing && setEditableIsCompleted(checked)}
-                disabled={!isEditing}
-              />
-              <span style={{ fontSize: "14px", fontWeight: 700, color: "black" }}>
-                {editableIsCompleted ? "Completed" : "Not Completed"}
-              </span>
+                  {values.name}
+                </div>
+              )}
             </div>
-          </div>
+
+            {/* Category and Priority */}
+            <div style={{
+              background: "white",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
+              borderRadius: 3,
+              border: "1px solid #E4E4E4",
+              padding: "15px"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Category</div>
+                <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Priority</div>
+              </div>
+              {isEditing ? (
+                <div style={{ display: "flex", gap: "10px", justifyContent: "space-between" }}>
+                  <select
+                    value={values.category}
+                    onChange={(e) => setValue("category", e.target.value)}
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      width: "48%",
+                      color: "black",
+                      background: "rgba(228, 228, 228, 0.24)",
+                      padding: "8px",
+                      borderRadius: "4px"
+                    }}
+                  >
+                    {Object.values(ChecklistItemCategory).map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat === "TASK" ? "TASK" : "ITEM"}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={values.priority}
+                    onChange={(e) => setValue("priority", e.target.value)}
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      width: "48%",
+                      color: "black",
+                      background: "rgba(228, 228, 228, 0.24)",
+                      padding: "8px",
+                      borderRadius: "4px"
+                    }}
+                  >
+                    {Object.values(ChecklistItemPriority).map((pri) => (
+                      <option key={pri} value={pri}>
+                        {pri}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <p style={{ fontSize: "14px", fontWeight: 700, color: "black" }}>{values.category}</p>
+                  <p style={{ 
+                    fontSize: "14px", 
+                    fontWeight: 700, 
+                    color: getPriorityColor(values.priority)
+                  }}>
+                    {values.priority}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Assigned User */}
+            <div style={{
+              background: "white",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
+              borderRadius: 3,
+              border: "1px solid #E4E4E4",
+              padding: "15px"
+            }}>
+              <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Assigned User</div>
+              {isEditing ? (
+                <FormInput
+                  name="assignedUser"
+                  value={values.assignedUser}
+                  onChange={(value) => setValue("assignedUser", value)}
+                  disabled={!isEditing}
+                  placeholder="Enter username or leave blank"
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    width: "100%",
+                    color: "black",
+                    background: "rgba(228, 228, 228, 0.24)",
+                  }}
+                />
+              ) : (
+                <div style={{ 
+                  fontSize: "14px", 
+                  fontWeight: 700, 
+                  color: "black",
+                  padding: "8px 0"
+                }}>
+                  {values.assignedUser || "Unassigned"}
+                </div>
+              )}
+            </div>
+
+            {/* Completion Status */}
+            <div style={{
+              background: "white",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
+              borderRadius: 3,
+              border: "1px solid #E4E4E4",
+              padding: "15px"
+            }}>
+              <div style={{ fontSize: "20px", fontWeight: 700, marginBottom: "10px", color: "black" }}>Status</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Checkbox
+                  checked={values.isCompleted}
+                  onChange={(checked) => isEditing && setValue("isCompleted", checked)}
+                  disabled={!isEditing}
+                />
+                <span style={{ fontSize: "14px", fontWeight: 700, color: "black" }}>
+                  {values.isCompleted ? "Completed" : "Not Completed"}
+                </span>
+              </div>
+            </div>
+          </Form>
         </div>
 
         {/* === Action Buttons === */}
@@ -303,32 +403,28 @@ export default function ChecklistItemWindow({
             display: "flex",
             gap: "28px"
           }}>
-            <button
-              onClick={() => {
+            <FormButton
+              onClick={(e) => {
+                e.preventDefault();
                 onSave?.({ 
-                  name: editableName, 
-                  isCompleted: editableIsCompleted, 
-                  assignedUser: editableAssignedUser || null, 
-                  category: editableCategory, 
-                  priority: editablePriority 
+                  name: values.name, 
+                  isCompleted: values.isCompleted, 
+                  assignedUser: values.assignedUser || null, 
+                  category: values.category, 
+                  priority: values.priority 
                 });
                 setIsEditing(false);
               }}
+              variant="primary"
               style={{
                 width: "127px",
                 height: "40px",
-                background: "#007bff", // blue
-                borderRadius: "3px",
                 fontSize: "20px",
-                fontWeight: 700,
-                color: "white",
-                border: "none",
-                cursor: "pointer"
               }}
             >
               Save
-            </button>
-            <button
+            </FormButton>
+            <FormButton
               onClick={() => {
                 if (isNew) {
                   onClose();
@@ -336,20 +432,15 @@ export default function ChecklistItemWindow({
                   setIsEditing(false);
                 }
               }}
+              variant="secondary"
               style={{
                 width: "127px",
                 height: "40px",
-                background: "black",
-                borderRadius: "3px",
                 fontSize: "20px",
-                fontWeight: 700,
-                color: "white",
-                border: "none",
-                cursor: "pointer"
               }}
             >
               {isNew ? "Cancel" : "Close"}
-            </button>
+            </FormButton>
           </div>
         ) : (
           <div style={{
@@ -360,38 +451,28 @@ export default function ChecklistItemWindow({
             display: "flex",
             gap: "28px"
           }}>
-            <button
+            <FormButton
               onClick={() => setIsEditing(true)}
+              variant="primary"
               style={{
                 width: "127px",
                 height: "40px",
-                background: "#007bff", // blue
-                borderRadius: "3px",
                 fontSize: "20px",
-                fontWeight: 700,
-                color: "white",
-                border: "none",
-                cursor: "pointer"
               }}
             >
               Edit
-            </button>
-            <button
+            </FormButton>
+            <FormButton
               onClick={onClose}
+              variant="secondary"
               style={{
                 width: "127px",
                 height: "40px",
-                background: "black",
-                borderRadius: "3px",
                 fontSize: "20px",
-                fontWeight: 700,
-                color: "white",
-                border: "none",
-                cursor: "pointer"
               }}
             >
               Close
-            </button>
+            </FormButton>
           </div>
         )}
       </div>

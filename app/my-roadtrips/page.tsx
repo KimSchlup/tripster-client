@@ -136,7 +136,7 @@ function RoadtripsContent() {
         } finally {
             setLoading(false);
         }
-    }, [apiService, authState.isLoggedIn, router, userId, showToast]);
+    }, [apiService, authState.isLoggedIn, router, userId, showToast, hasShownLoginToast]);
 
     useEffect(() => {
         fetchRoadtrips();
