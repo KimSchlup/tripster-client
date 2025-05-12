@@ -102,7 +102,7 @@ useEffect(() => {
             // If there are any fields to update, send them
             if (Object.keys(updatedFields).length > 0) {
                 await apiService.put("/users/" + user.userId, updatedFields);
-                window.location.reload();
+                globalThis.location.reload();
             } else {
                 console.log("No changes detected.");
             }
@@ -170,7 +170,7 @@ useEffect(() => {
                                     if (confirm("Are you sure you want to permanently delete your account?")) {
                                         await apiService.delete("/users/" + user.userId);
                                         // Optional: clear localStorage and redirect to home or login page
-                                        window.location.href = "/";
+                                        globalThis.location.href = "/";
                                     }
                                 }}
                                 type="primary" style={{ backgroundColor : "#b30000"}}>

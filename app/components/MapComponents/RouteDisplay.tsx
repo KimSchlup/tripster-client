@@ -1,5 +1,6 @@
 import { Route, RouteAcceptanceStatus } from "@/types/routeTypes";
 import { Polyline } from "react-leaflet";
+import { useLayerFilter } from "./LayerFilterContext";
 
 interface RouteDisplayProps {
   routes: Route[];
@@ -9,6 +10,13 @@ interface RouteDisplayProps {
 export default function RouteDisplay({ routes, onRouteClick }: RouteDisplayProps) {
   // Debug the route data structure
   console.log("Routes in RouteDisplay:", routes);
+  
+  const { filter } = useLayerFilter();
+  
+  // Don't render routes if showRoutes is false
+  if (!filter.showRoutes) {
+    return null;
+  }
   
   return (
     <>
