@@ -88,8 +88,7 @@ reason).
 
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@KimSchlup** | [25.04.25]   | [Links to Pull requests](https://github.com/KimSchlup/tripster-server/pull/158)(https://github.com/KimSchlup/tripster-server/pull/173)(https://github.com/KimSchlup/tripster-server/pull/176)(https://github.com/KimSchlup/tripster-server/pull/179)(https://github.com/KimSchlup/tripster-server/pull/182) | Wrote a lot of tests | Test coverage is important |
 | **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
