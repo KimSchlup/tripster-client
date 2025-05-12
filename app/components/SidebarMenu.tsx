@@ -16,7 +16,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [clickedItem, setClickedItem] = useState<string | null>(null);
 
-  const handleItemClick = async (route: string, itemName: string) => {
+  const handleItemClick = (route: string, itemName: string) => {
     setClickedItem(itemName);
     
     // Handle logout separately

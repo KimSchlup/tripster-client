@@ -3,19 +3,20 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import LayerManager from "@/components/MapComponents/LayerManager";
+import { LayerFilterProvider } from "@/components/MapComponents/LayerFilterContext";
 import { useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { LeafletMouseEvent } from "leaflet";
-import { DisplayPOIs } from "@/components/MapComponents/DisplayPOIs";
 import POIWindow from "@/components/MapComponents/POIWindow";
 import VerticalSidebar from "@/components/MapComponents/VerticalSidebar";
 import POIList from "@/components/MapComponents/POIList";
-import RouteDisplay from "@/components/MapComponents/RouteDisplay";
 import RouteForm from "@/components/MapComponents/RouteForm";
 import RouteEditForm from "@/components/MapComponents/RouteEditForm";
 import RouteDetails from "@/components/MapComponents/RouteDetails";
 import RouteList from "@/components/MapComponents/RouteList";
+import MapLayersControl from "@/components/MapComponents/MapLayersControl";
 import "leaflet/dist/leaflet.css";
 import { useMapEvent } from "react-leaflet";
 import { useApi } from "@/hooks/useApi";
@@ -36,10 +37,6 @@ const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
 );
-const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false }
-);
 
 function RoadtripContent() {
   const params = useParams();
@@ -48,22 +45,9 @@ function RoadtripContent() {
   const apiService = useApi();
 
   const [sidebarTop, setSidebarTop] = useState("30%");
-  const [basemapType, setBasemapType] = useState<
-    "SATELLITE" | "OPEN_STREET_MAP"
-  >("OPEN_STREET_MAP");
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const settings = await apiService.get<{ basemapType: string }>(
-          `/roadtrips/${id}/settings`
-        );
-        setBasemapType(settings.basemapType as "SATELLITE" | "OPEN_STREET_MAP");
-      } catch (error) {
-        console.error("Failed to fetch roadtrip settings", error);
-      }
-    };
-    fetchSettings();
-  }, [id, apiService]);
+  
+  // Reference to store the initial basemap type fetched from the API
+  const initialBasemapType = useRef<"SATELLITE" | "OPEN_STREET_MAP" | "TOPOGRAPHY">("OPEN_STREET_MAP");
 
   const [ownerId, setOwnerId] = useState<number | null>(null);
   const [decisionProcess, setDecisionProcess] = useState<string | null>(null);
@@ -77,6 +61,7 @@ function RoadtripContent() {
     decisionProcess === "MAJORITY" || Number(userId) === ownerId
   );
 
+  // Consolidated useEffect to fetch settings and owner info
   useEffect(() => {
     const fetchSettingsAndOwner = async () => {
       try {
@@ -84,7 +69,8 @@ function RoadtripContent() {
           basemapType: string;
           decisionProcess: string;
         }>(`/roadtrips/${id}/settings`);
-        setBasemapType(settings.basemapType as "SATELLITE" | "OPEN_STREET_MAP");
+        // Update the initial basemap type
+        initialBasemapType.current = settings.basemapType as "SATELLITE" | "OPEN_STREET_MAP" | "TOPOGRAPHY";
         setDecisionProcess(settings.decisionProcess);
         console.log("Fetched decisionProcess:", settings.decisionProcess);
       } catch (error) {
@@ -126,6 +112,7 @@ function RoadtripContent() {
   const [showRouteForm, setShowRouteForm] = useState(false);
   const [showRouteEditForm, setShowRouteEditForm] = useState(false);
   const [showRouteList, setShowRouteList] = useState(false);
+  const [showLayerManager, setShowLayerManager] = useState(false);
 
   // Dynamically resize VerticalSidebar Position, if Browser Window is shortened
   // Checks, that SideBar slides upwards, but doesn't cover Logo
@@ -145,7 +132,7 @@ function RoadtripContent() {
     return () => globalThis.removeEventListener("resize", handleResize);
   }, []);
 
-  // Fetch POIs helper
+  // Fetch POIs helper with memoized dependencies
   const fetchPois = useCallback(async () => {
     try {
       const data = await apiService.get<PointOfInterest[]>(
@@ -162,16 +149,17 @@ function RoadtripContent() {
     }
   }, [apiService, id, members]);
 
-  // Initial fetchPois call
+  // Initial fetchPois call and polling setup in a single useEffect
   useEffect(() => {
+    // Initial fetch
     fetchPois();
-  }, [fetchPois]);
-
-  // Polling fetchPois every 5 seconds
-  useEffect(() => {
+    
+    // Setup polling
     const interval = setInterval(() => {
       fetchPois();
-    }, 5000); // alle 5 Sekunden
+    }, 5000); // every 5 seconds
+    
+    // Cleanup interval on unmount
     return () => clearInterval(interval);
   }, [fetchPois]);
 
@@ -348,7 +336,7 @@ function RoadtripContent() {
         onPOIList={() => setShowPOIList((prev) => !prev)}
         onRouteList={() => setShowRouteList((prev) => !prev)}
         onChecklist={() => router.push(`/my-roadtrips/${id}/checklist`)}
-        onLayerManager={() => console.log("klick on LayerManager")}
+        onLayerManager={() => setShowLayerManager(prev => !prev)}
         onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
       />
       {showPOIList && <POIList pois={pois} />}
@@ -598,25 +586,24 @@ function RoadtripContent() {
         />
       )}
 
-      <MapContainer
-        style={{ height: "100%", width: "100%" }}
-        center={[47.37013, 8.54427]}
-        zoom={13}
-        zoomControl={false}
-      >
-        <MapClickHandler />
-        {basemapType === "SATELLITE" && (
-          <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-        )}
-        {basemapType === "OPEN_STREET_MAP" && (
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        )}
-        <DisplayPOIs pois={pois} setSelectedPoiId={setSelectedPoiId} />
-        <RouteDisplay
-          routes={routes}
-          onRouteClick={(route) => setSelectedRoute(route)}
-        />
-      </MapContainer>
+      <LayerFilterProvider>
+        {showLayerManager && <LayerManager members={members} onClose={() => setShowLayerManager(false)} />}
+        <MapContainer
+          style={{ height: "100%", width: "100%" }}
+          center={[47.37013, 8.54427]}
+          zoom={13}
+          zoomControl={false}
+        >
+          <MapClickHandler />
+          <MapLayersControl 
+            initialBasemapType={initialBasemapType.current} 
+            pois={pois} 
+            routes={routes}
+            setSelectedPoiId={setSelectedPoiId}
+            setSelectedRoute={setSelectedRoute}
+          />
+        </MapContainer>
+      </LayerFilterProvider>
     </div>
   );
 }

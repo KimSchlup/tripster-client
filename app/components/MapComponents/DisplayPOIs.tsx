@@ -2,6 +2,7 @@ import {Icon} from "leaflet";
 import {Marker} from "react-leaflet";
 import {PoiAcceptanceStatus, PointOfInterest} from "@/types/poi";
 import {FC} from "react";
+import { useLayerFilter } from "./LayerFilterContext";
 
 function ColoredMarker(color: string): Icon {
     const svgString = `
@@ -27,9 +28,22 @@ export const DisplayPOIs: FC<{
     pois: PointOfInterest[];
     setSelectedPoiId: (id: number) => void;
 }> = ({ pois, setSelectedPoiId }) => {
+    const { filter } = useLayerFilter();
+    
+    // Filter POIs based on the layer filter settings
+    const filteredPois = pois.filter(poi => {
+        // If filter arrays are empty, show all POIs (no filtering)
+        const statusFilter = filter.poiFilter.status.length === 0 || filter.poiFilter.status.includes(poi.status);
+        const categoryFilter = filter.poiFilter.category.length === 0 || filter.poiFilter.category.includes(poi.category);
+        const priorityFilter = filter.poiFilter.priority.length === 0 || filter.poiFilter.priority.includes(poi.priority);
+        const creatorFilter = filter.poiFilter.creatorUserIds.length === 0 || filter.poiFilter.creatorUserIds.includes(poi.creatorId);
+        
+        return statusFilter && categoryFilter && priorityFilter && creatorFilter;
+    });
+
     return (
         <>
-            {pois.map((poi) => {
+            {filteredPois.map((poi) => {
                 let color = "#000000";
                 if (poi.status === PoiAcceptanceStatus.PENDING) color = "#ff9900";
                 else if (poi.status === PoiAcceptanceStatus.ACCEPTED) color = "#79A44D";

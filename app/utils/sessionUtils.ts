@@ -71,13 +71,13 @@ export const setupActivityTracking = (
   
   // Add event listeners
   events.forEach((eventName) => {
-    window.addEventListener(eventName, handleActivity, { passive: true });
+    globalThis.addEventListener(eventName, handleActivity, { passive: true });
   });
   
   // Return cleanup function
   return () => {
     events.forEach((eventName) => {
-      window.removeEventListener(eventName, handleActivity);
+      globalThis.removeEventListener(eventName, handleActivity);
     });
   };
 };
