@@ -13,14 +13,14 @@ export default function RouteDisplay({ routes, onRouteClick }: RouteDisplayProps
   
   const { filter } = useLayerFilter();
   
-  // Don't render routes if showRoutes is false
-  if (!filter.showRoutes) {
+  // Don't render routes if showRoutes is false or if no route status is selected
+  if (!filter.showRoutes || filter.routeFilter.status.length === 0) {
     return null;
   }
   
   return (
     <>
-      {routes.map((route, index) => {
+      {routes.filter(route => filter.routeFilter.status.includes(route.status)).map((route, index) => {
         try {
           // Parse the route data if it's a string (from backend DTO)
           let routeData;

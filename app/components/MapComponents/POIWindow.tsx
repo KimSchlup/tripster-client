@@ -312,6 +312,12 @@ export default function POIWindow(
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newComment.trim()) {
+                  onSendComment?.(newComment.trim());
+                  setNewComment("");
+                }
+              }}
               placeholder="Write a comment..."
               style={{
                 flex: 1,

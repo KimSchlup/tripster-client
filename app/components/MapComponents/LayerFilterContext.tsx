@@ -7,6 +7,9 @@ type BasemapType = "OPEN_STREET_MAP" | "SATELLITE" | "TOPOGRAPHY";
 interface LayerFilter {
     basemapType: BasemapType;
     showRoutes: boolean;
+    routeFilter: {
+        status: string[];
+    };
     poiFilter: {
         status: PoiAcceptanceStatus[];
         category: PoiCategory[];
@@ -19,11 +22,15 @@ interface LayerFilterContextProps {
     filter: LayerFilter;
     setFilter: (newFilter: Partial<LayerFilter>) => void;
     setPOIFilter: (updates: Partial<LayerFilter["poiFilter"]>) => void;
+    setRouteFilter: (updates: Partial<LayerFilter["routeFilter"]>) => void;
 }
 
 const defaultFilter: LayerFilter = {
     basemapType: "OPEN_STREET_MAP",
     showRoutes: true,
+    routeFilter: {
+        status: ["APPROVED", "PENDING", "REJECTED"],
+    },
     poiFilter: {
         status: Object.values(PoiAcceptanceStatus),
         category: Object.values(PoiCategory),
@@ -48,11 +55,19 @@ export const LayerFilterProvider = ({ children }: { children: ReactNode }) => {
         }));
     }, []);
 
+    const setRouteFilter = useCallback((updates: Partial<LayerFilter["routeFilter"]>) => {
+        setFilterState((prev) => ({
+            ...prev,
+            routeFilter: { ...prev.routeFilter, ...updates },
+        }));
+    }, []);
+
     const contextValue = useMemo(() => ({
         filter,
         setFilter,
-        setPOIFilter
-    }), [filter, setFilter, setPOIFilter]);
+        setPOIFilter,
+        setRouteFilter
+    }), [filter, setFilter, setPOIFilter, setRouteFilter]);
 
     return (
         <LayerFilterContext.Provider value={contextValue}>

@@ -1,12 +1,14 @@
 import Draggable from "react-draggable";
 import { useRef } from "react";
 import { PointOfInterest } from "../../types/poi";
+import Image from "next/image";
 
 interface POIListProps {
     pois: PointOfInterest[];
+    onClose: () => void;
 }
 
-export default function POIList({ pois }: POIListProps) {
+export default function POIList({ pois, onClose }: POIListProps) {
     const nodeRef = useRef<HTMLDivElement>(null!);
 
     const getPriorityColor = (priority: string) => {
@@ -24,12 +26,12 @@ export default function POIList({ pois }: POIListProps) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case "Accepted":
+            case "ACCEPTED":
                 return "#79A44D";
-            case "Proposal":
-                return "#FF9E44";
-            case "Rejected":
-                return "#E6393B";
+            case "PENDING":
+                return "#ff9900";
+            case "DECLINED":
+                return "#FF0000";
             default:
                 return "black";
         }
@@ -56,6 +58,31 @@ export default function POIList({ pois }: POIListProps) {
                 }}
             >
                 <div className="handle" style={{ width: "100%", height: "60px", cursor: "move", position: "absolute", top: 0 }}>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            position: "absolute",
+                            top: "14px",
+                            left: "17px",
+                            width: "35px",
+                            height: "35px",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "20px",
+                            color: "#000000",
+                        }}
+                    >
+                        <Image
+                            src="/map-elements/close.svg"
+                            alt="Close"
+                            width={24}
+                            height={24}
+                            style={{
+                                cursor: "pointer"
+                            }}
+                        />
+                    </button>
                     <div style={{
                         textAlign: "center",
                         fontSize: 20,
@@ -99,7 +126,7 @@ export default function POIList({ pois }: POIListProps) {
                   {poi.priority}
                 </span>
                             </div>
-                            <div style={{ fontSize: 20, fontWeight: 700, color: getStatusColor(poi.status), textAlign: "center", marginTop: "5px" }}>
+                            <div style={{ fontSize: 20, fontWeight: 700, color: getStatusColor(poi.status), textAlign: "right", marginTop: "5px" }}>
                                 {poi.status}
                             </div>
                         </div>
