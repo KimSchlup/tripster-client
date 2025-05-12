@@ -12,7 +12,7 @@ interface LayerManagerProps {
 
 export default function LayerManager({ members = [], onClose }: LayerManagerProps) {
   const nodeRef = useRef<HTMLDivElement>(null!);
-  const { filter, setFilter, setPOIFilter } = useLayerFilter();
+  const { filter, setFilter, setPOIFilter, setRouteFilter } = useLayerFilter();
   
   // State for dropdown sections
   const [categoryOpen, setCategoryOpen] = useState(false);
@@ -214,26 +214,26 @@ export default function LayerManager({ members = [], onClose }: LayerManagerProp
           {sectionTitle("Filter by Status")}
           
           {checkbox(
-            "route-accepted",
+            "route-approved",
             "Accepted",
-            filter.showRoutes,
-            () => setFilter({ showRoutes: !filter.showRoutes }),
+            filter.routeFilter.status.includes("APPROVED"),
+            () => setRouteFilter({ status: toggleArrayValue(filter.routeFilter.status, "APPROVED") }),
             "#79A44D"
           )}
           
           {checkbox(
-            "route-proposal",
+            "route-pending",
             "Proposal",
-            filter.showRoutes,
-            () => setFilter({ showRoutes: !filter.showRoutes }),
+            filter.routeFilter.status.includes("PENDING"),
+            () => setRouteFilter({ status: toggleArrayValue(filter.routeFilter.status, "PENDING") }),
             "#FF9E44"
           )}
           
           {checkbox(
-            "route-declined",
+            "route-rejected",
             "Declined",
-            filter.showRoutes,
-            () => setFilter({ showRoutes: !filter.showRoutes }),
+            filter.routeFilter.status.includes("REJECTED"),
+            () => setRouteFilter({ status: toggleArrayValue(filter.routeFilter.status, "REJECTED") }),
             "#E6393B"
           )}
         </div>

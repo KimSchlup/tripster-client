@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
+import WelcomeBox from "@/components/WelcomeBox";
 import LayerManager from "@/components/MapComponents/LayerManager";
 import { LayerFilterProvider } from "@/components/MapComponents/LayerFilterContext";
 import { useCallback } from "react";
@@ -113,6 +114,15 @@ function RoadtripContent() {
   const [showRouteEditForm, setShowRouteEditForm] = useState(false);
   const [showRouteList, setShowRouteList] = useState(false);
   const [showLayerManager, setShowLayerManager] = useState(false);
+  const [showWelcomeBox, setShowWelcomeBox] = useState(false);
+
+  // Check if welcome box should be shown (only on first visit)
+  useEffect(() => {
+    const welcomeBoxClosed = sessionStorage.getItem('welcomeBoxClosed');
+    if (welcomeBoxClosed !== 'true') {
+      setShowWelcomeBox(true);
+    }
+  }, []);
 
   // Dynamically resize VerticalSidebar Position, if Browser Window is shortened
   // Checks, that SideBar slides upwards, but doesn't cover Logo
@@ -149,19 +159,32 @@ function RoadtripContent() {
     }
   }, [apiService, id, members]);
 
-  // Initial fetchPois call and polling setup in a single useEffect
+  // Fetch routes helper with memoized dependencies
+  const fetchRoutes = useCallback(async () => {
+    try {
+      const data = await apiService.get<Route[]>(`/roadtrips/${id}/routes`);
+      setRoutes(data);
+      console.log("Fetched Routes:", data);
+    } catch (error) {
+      console.error("Failed to fetch routes:", error);
+    }
+  }, [apiService, id]);
+
+  // Initial fetch and polling setup for both POIs and Routes in a single useEffect
   useEffect(() => {
     // Initial fetch
     fetchPois();
-    
+    fetchRoutes();
+
     // Setup polling
     const interval = setInterval(() => {
       fetchPois();
-    }, 5000); // every 5 seconds
-    
+      fetchRoutes();
+    }, 3000); // every 3 seconds
+
     // Cleanup interval on unmount
     return () => clearInterval(interval);
-  }, [fetchPois]);
+  }, [fetchPois, fetchRoutes]);
 
   useEffect(() => {
     apiService
@@ -190,31 +213,6 @@ function RoadtripContent() {
     fetchCommentsWithAuthors();
   }, [selectedPoi, apiService, id, members]);
 
-  // Fetch routes when in route mode
-  useEffect(() => {
-    async function fetchRoutes() {
-      try {
-        const data = await apiService.get<Route[]>(`/roadtrips/${id}/routes`);
-        console.log("Fetched Routes Structure:", JSON.stringify(data, null, 2));
-        console.log("Route data type:", typeof data);
-        if (data && data.length > 0) {
-          console.log("First route properties:", Object.keys(data[0]));
-          console.log(
-            "Route.route type:",
-            data[0].route ? typeof data[0].route : "undefined"
-          );
-          if (data[0].route) {
-            console.log("Route.route properties:", Object.keys(data[0].route));
-          }
-        }
-        setRoutes(data);
-        console.log("Fetched Routes:", data);
-      } catch (error) {
-        console.error("Failed to fetch routes:", error);
-      }
-    }
-    fetchRoutes();
-  }, [id, apiService]);
 
   // Route handlers
   const handleCreateRoute = async (routeData: RouteCreateRequest) => {
@@ -339,7 +337,7 @@ function RoadtripContent() {
         onLayerManager={() => setShowLayerManager(prev => !prev)}
         onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
       />
-      {showPOIList && <POIList pois={pois} />}
+      {showPOIList && <POIList pois={pois} onClose={() => setShowPOIList(false)} />}
       {newPoi && (
         <POIWindow
           title={newPoi.name}
@@ -554,6 +552,7 @@ function RoadtripContent() {
           pois={pois}
           onRouteSelect={(route) => setSelectedRoute(route)}
           onCreateRoute={() => setShowRouteForm(true)}
+          onClose={() => setShowRouteList(false)}
         />
       )}
 
@@ -586,6 +585,12 @@ function RoadtripContent() {
         />
       )}
 
+      {showWelcomeBox && <WelcomeBox onClose={() => {
+        setShowWelcomeBox(false);
+        // Save to session storage to remember that the welcome box has been closed
+        sessionStorage.setItem('welcomeBoxClosed', 'true');
+      }} />}
+      
       <LayerFilterProvider>
         {showLayerManager && <LayerManager members={members} onClose={() => setShowLayerManager(false)} />}
         <MapContainer
