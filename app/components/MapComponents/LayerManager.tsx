@@ -3,8 +3,6 @@ import { useRef, useState } from "react";
 import Draggable from "react-draggable";
 import { useLayerFilter } from "./LayerFilterContext";
 import { PoiAcceptanceStatus, PoiCategory, PoiPriority } from "@/types/poi";
-// Import BasemapType from roadtripSettings but we'll use it as a reference only
-import { BasemapType as _BasemapTypeEnum } from "@/types/roadtripSettings";
 import { RoadtripMember } from "@/types/roadtripMember";
 
 interface LayerManagerProps {
