@@ -138,7 +138,7 @@ reason).
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser5]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@RicoCamenzind** | 12.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/de84f92f09adfce364e61faf44e7a81807189b0e) | Added the check if a POI is inside a bounding box. This method gets called before creating a new POI or before updating such. | Provides the functionality to add a boundingBox to restrict where new POI can be created. |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
 ---
