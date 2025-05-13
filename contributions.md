@@ -29,6 +29,15 @@ reason).
 - Use a commit authored by another GitHub user.
 
 ---
+## Content
+
+  - [Contributions Week 1 - 26.06.2026 to 02.04.2025](#contributions-week-1---26062026-to-02042025)
+  - [Contributions Week 2 - 02.04.2025 to 09.04.2025](#contributions-week-2---02042025-to-09042025)
+  - [Contributions Week 3 - 09.04.2025 to 16.04.2025](#contributions-week-3---09042025-to-16042025)
+  - [Contributions Week 4 - 16.04.2025 to 30.04.2025](#contributions-week-4---16042025-to-30042025)
+  - [Contributions Week 5 - 30.04.2025 to 07.05.2025](#contributions-week-5---30042025-to-07052025)
+  - [Contributions Week 6 - 07.05.2025 to 14.05.2025](#contributions-week-6---07052025-to-14052025)
+  - [Contributions Week 7 - 14.05.2025 to 23.05.2025](#contributions-week-7---14052025-to-23052025)
 
 ## Contributions Week 1 - 26.06.2026 to 02.04.2025
 
