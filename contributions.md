@@ -131,7 +131,7 @@ reason).
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **@KimSchlup** | [12.05.25]   | [Link to Pull request 1](https://github.com/KimSchlup/tripster-server/pull/199)  | Added Get & Post endpoints for EmergencyInfo including authentication and tests | Users need to be able to specifiy their emergency contacts |
 | **@P4P5T123** | 13.05.2023   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/pull/102/commits) | Fixed Bug that roadtrip members were not displayed in my-roadtrips page | Makes identifying roadtrips a lot easier and gets the user a better overview |
-|                    | 13.05.2025   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | 13.05.2025   | [Link to Commit 2](https://github.com/KimSchlup/tripster-client/pull/103/commits/7659492e358672b51fe4dd3fa4f00d020069f03e) | Did frontend of bounding Box | Owners can now set a boundingbox for pois where they can be added. Boundingbox can be edited or deleted. Check if poi is in boundingbox and error is shown if not in box.  |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
