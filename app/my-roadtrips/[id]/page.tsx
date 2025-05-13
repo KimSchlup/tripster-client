@@ -21,6 +21,7 @@ import MapLayersControl from "@/components/MapComponents/MapLayersControl";
 import "leaflet/dist/leaflet.css";
 import { useMapEvent } from "react-leaflet";
 import { useApi } from "@/hooks/useApi";
+import { useToast } from "@/hooks/useToast";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 import {
@@ -33,25 +34,60 @@ import {
 import { RoadtripMember } from "@/types/roadtripMember";
 import { useAuth } from "@/hooks/useAuth";
 import { Route, RouteCreateRequest, TravelMode } from "@/types/routeTypes";
+import type { RoadtripSettings } from "@/types/roadtripSettings";
+import type { GeoJSON } from "geojson";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
 );
 
+// Utility function to check if a point is within a polygon
+const isPointInPolygon = (
+  point: [number, number],
+  polygon: GeoJSON
+): boolean => {
+  if (!polygon || polygon.type !== "Polygon") return true; // If no polygon or not a polygon, don't restrict
+
+  // Implementation of point-in-polygon algorithm
+  const x = point[0];
+  const y = point[1];
+  const vertices = polygon.coordinates[0];
+
+  let inside = false;
+  for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+    const xi = vertices[i][0],
+      yi = vertices[i][1];
+    const xj = vertices[j][0],
+      yj = vertices[j][1];
+
+    const intersect =
+      yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+};
+
 function RoadtripContent() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   const apiService = useApi();
+  const { showToast } = useToast();
 
   const [sidebarTop, setSidebarTop] = useState("30%");
-  
+
   // Reference to store the initial basemap type fetched from the API
-  const initialBasemapType = useRef<"SATELLITE" | "OPEN_STREET_MAP" | "TOPOGRAPHY">("OPEN_STREET_MAP");
+  const initialBasemapType = useRef<
+    "SATELLITE" | "OPEN_STREET_MAP" | "TOPOGRAPHY"
+  >("OPEN_STREET_MAP");
 
   const [ownerId, setOwnerId] = useState<number | null>(null);
   const [decisionProcess, setDecisionProcess] = useState<string | null>(null);
+  const [boundingBox, setBoundingBox] = useState<GeoJSON | undefined>(
+    undefined
+  );
   const { authState } = useAuth();
   const userId = authState.userId;
 
@@ -66,14 +102,18 @@ function RoadtripContent() {
   useEffect(() => {
     const fetchSettingsAndOwner = async () => {
       try {
-        const settings = await apiService.get<{
-          basemapType: string;
-          decisionProcess: string;
-        }>(`/roadtrips/${id}/settings`);
+        const settings = await apiService.get<RoadtripSettings>(
+          `/roadtrips/${id}/settings`
+        );
         // Update the initial basemap type
-        initialBasemapType.current = settings.basemapType as "SATELLITE" | "OPEN_STREET_MAP" | "TOPOGRAPHY";
+        initialBasemapType.current = settings.basemapType as
+          | "SATELLITE"
+          | "OPEN_STREET_MAP"
+          | "TOPOGRAPHY";
         setDecisionProcess(settings.decisionProcess);
+        setBoundingBox(settings.boundingBox);
         console.log("Fetched decisionProcess:", settings.decisionProcess);
+        console.log("Fetched boundingBox:", settings.boundingBox);
       } catch (error) {
         console.error("Failed to fetch roadtrip settings", error);
       }
@@ -118,8 +158,8 @@ function RoadtripContent() {
 
   // Check if welcome box should be shown (only on first visit)
   useEffect(() => {
-    const welcomeBoxClosed = sessionStorage.getItem('welcomeBoxClosed');
-    if (welcomeBoxClosed !== 'true') {
+    const welcomeBoxClosed = sessionStorage.getItem("welcomeBoxClosed");
+    if (welcomeBoxClosed !== "true") {
       setShowWelcomeBox(true);
     }
   }, []);
@@ -170,21 +210,38 @@ function RoadtripContent() {
     }
   }, [apiService, id]);
 
+  // Use a ref to store the interval ID
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Initial fetch and polling setup for both POIs and Routes in a single useEffect
   useEffect(() => {
     // Initial fetch
     fetchPois();
     fetchRoutes();
 
-    // Setup polling
-    const interval = setInterval(() => {
+    // Setup polling with ref to ensure proper cleanup
+    intervalRef.current = setInterval(() => {
       fetchPois();
       fetchRoutes();
-    }, 3000); // every 3 seconds
+    }, 10000); // every 10 seconds (increased from 3 seconds)
 
     // Cleanup interval on unmount
-    return () => clearInterval(interval);
-  }, [fetchPois, fetchRoutes]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []); // Empty dependency array to prevent recreation of interval
+
+  // Update data when dependencies change
+  useEffect(() => {
+    fetchPois();
+  }, [fetchPois]);
+
+  useEffect(() => {
+    fetchRoutes();
+  }, [fetchRoutes]);
 
   useEffect(() => {
     apiService
@@ -212,7 +269,6 @@ function RoadtripContent() {
     };
     fetchCommentsWithAuthors();
   }, [selectedPoi, apiService, id, members]);
-
 
   // Route handlers
   const handleCreateRoute = async (routeData: RouteCreateRequest) => {
@@ -334,10 +390,12 @@ function RoadtripContent() {
         onPOIList={() => setShowPOIList((prev) => !prev)}
         onRouteList={() => setShowRouteList((prev) => !prev)}
         onChecklist={() => router.push(`/my-roadtrips/${id}/checklist`)}
-        onLayerManager={() => setShowLayerManager(prev => !prev)}
+        onLayerManager={() => setShowLayerManager((prev) => !prev)}
         onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
       />
-      {showPOIList && <POIList pois={pois} onClose={() => setShowPOIList(false)} />}
+      {showPOIList && (
+        <POIList pois={pois} onClose={() => setShowPOIList(false)} />
+      )}
       {newPoi && (
         <POIWindow
           title={newPoi.name}
@@ -520,6 +578,23 @@ function RoadtripContent() {
               borderWidth: "0px",
             }}
             onClick={() => {
+              // Check if point is within bounding box
+              const point: [number, number] = [
+                contextMenuLatLng.lng,
+                contextMenuLatLng.lat,
+              ];
+
+              if (boundingBox && !isPointInPolygon(point, boundingBox)) {
+                // Show error toast if outside boundaries
+                showToast(
+                  "Cannot create POI outside of defined boundaries",
+                  "error"
+                );
+                setContextMenuLatLng(null);
+                setContextMenuScreenPosition(null);
+                return;
+              }
+
               const newPoint: PointOfInterest = {
                 poiId: Date.now(), // TODO: Anpassen?
                 name: "",
@@ -585,14 +660,23 @@ function RoadtripContent() {
         />
       )}
 
-      {showWelcomeBox && <WelcomeBox onClose={() => {
-        setShowWelcomeBox(false);
-        // Save to session storage to remember that the welcome box has been closed
-        sessionStorage.setItem('welcomeBoxClosed', 'true');
-      }} />}
-      
+      {showWelcomeBox && (
+        <WelcomeBox
+          onClose={() => {
+            setShowWelcomeBox(false);
+            // Save to session storage to remember that the welcome box has been closed
+            sessionStorage.setItem("welcomeBoxClosed", "true");
+          }}
+        />
+      )}
+
       <LayerFilterProvider>
-        {showLayerManager && <LayerManager members={members} onClose={() => setShowLayerManager(false)} />}
+        {showLayerManager && (
+          <LayerManager
+            members={members}
+            onClose={() => setShowLayerManager(false)}
+          />
+        )}
         <MapContainer
           style={{ height: "100%", width: "100%" }}
           center={[47.37013, 8.54427]}
@@ -600,12 +684,13 @@ function RoadtripContent() {
           zoomControl={false}
         >
           <MapClickHandler />
-          <MapLayersControl 
-            initialBasemapType={initialBasemapType.current} 
-            pois={pois} 
+          <MapLayersControl
+            initialBasemapType={initialBasemapType.current}
+            pois={pois}
             routes={routes}
             setSelectedPoiId={setSelectedPoiId}
             setSelectedRoute={setSelectedRoute}
+            boundingBox={boundingBox}
           />
         </MapContainer>
       </LayerFilterProvider>
