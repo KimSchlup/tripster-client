@@ -29,6 +29,15 @@ reason).
 - Use a commit authored by another GitHub user.
 
 ---
+## Content
+
+  - [Contributions Week 1 - 26.06.2026 to 02.04.2025](#contributions-week-1---26062026-to-02042025)
+  - [Contributions Week 2 - 02.04.2025 to 09.04.2025](#contributions-week-2---02042025-to-09042025)
+  - [Contributions Week 3 - 09.04.2025 to 16.04.2025](#contributions-week-3---09042025-to-16042025)
+  - [Contributions Week 4 - 16.04.2025 to 30.04.2025](#contributions-week-4---16042025-to-30042025)
+  - [Contributions Week 5 - 30.04.2025 to 07.05.2025](#contributions-week-5---30042025-to-07052025)
+  - [Contributions Week 6 - 07.05.2025 to 14.05.2025](#contributions-week-6---07052025-to-14052025)
+  - [Contributions Week 7 - 14.05.2025 to 23.05.2025](#contributions-week-7---14052025-to-23052025)
 
 ## Contributions Week 1 - 26.06.2026 to 02.04.2025
 
@@ -117,8 +126,8 @@ reason).
 |                    | 06.05.2025  | [Link to Commit 2](https://github.com/KimSchlup/tripster-client/pull/94/commits/d00e12a20af32807a58e1dcb29964a555b56111c) | Wanted to refactor all forms into centralized components: unsuccessful | maintainablility, flexibility |
 | **@AdrianHauser** | 05.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/pull/196/commits/5e4d20dd7694bb971af6d4852081d501090a3117)  [Commit 2](https://github.com/KimSchlup/tripster-server/pull/196/commits/eb429e0201838db1e2c2995fa007c4e063542dce)  [Commit 3](https://github.com/KimSchlup/tripster-server/pull/196/commits/79d2525d91958cff33ffcfec97e6ae5157d065bd)  [Commit 4](https://github.com/KimSchlup/tripster-server/pull/196/commits/fe8dae64ed516e0b5578bc3c0786607412343168) | Set up Object Store in Google Cloud and service account with correct rights. Added Post and Get Methods for adding and fetching roadtrip image. | We need a way to store and download images for profile pictures and roadtrip pictures. |
 |                    | 06.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-client/commit/a45845020dd239aeb390b4adcdf923c63d6fe12f) | Added section in roadtip settings to add a photo | The roadtrip owner needs to be able to add a photo out of his library. |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@segmue** | 05.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-client/pull/91/commits/22ef14cf1dd44465b71f4a10eab825b4e5eb5114) | Cleanup of Map Interface: Removed the POI/Route Modes from the UI. Routes and POIs are now always shown. Thus removed this button. Moved "Create Route" Button within the RouteList Window, therefore removed another Button from the Vertical Sidebar on the left Side of the Screen, fixed some Bugs. | The earlisert feedback mentioned an unclear User Experience. These changes cleaned the UI alot and are a first step towards an intuitive, user-friendly Interface. |
+|                    | 05.05.2025   | [Commit 2](https://github.com/KimSchlup/tripster-client/pull/91/commits/7792f4202fdf672bbbcb8f1866864775be16061e) | A really small change for the MapMarkers (added a white Border and changed Size). | Should make them visually easier distinguishable from the background |
 | **@RicoCamenzind** | 05.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/7667cb82ef852e7c4f44ca7064a421f441628510) | Added flushing/ saving after casting a vote and cleaned up some code. | Before, the voting was not persistent and the status of a POI/ Route did not change even if a vote was cast. |
 |                    | 05.05.2025   | [Commit 2](https://github.com/KimSchlup/tripster-server/commit/159b74f012e576a1a16d857440f4ea04ecc59549) | Fixed an internal mistake where the coordinates were not properly ordered when updating a route leading to an error. The ordering of the X and Y coordinates is now the same as when creating a route (which worked in the past without issues). Also removed some logging functions which are obsolete now since the basics work. | We are now able to update a route (either change the POI's used or the travel mode). Without that, there was a need for the user to constantly delete routes and create new routes which would have been tedious. |
 
@@ -130,12 +139,12 @@ reason).
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **@KimSchlup** | [12.05.25]   | [Link to Pull request 1](https://github.com/KimSchlup/tripster-server/pull/199)  | Added Get & Post endpoints for EmergencyInfo including authentication and tests | Users need to be able to specifiy their emergency contacts |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@P4P5T123** | 13.05.2023   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/pull/102/commits) | Fixed Bug that roadtrip members were not displayed in my-roadtrips page | Makes identifying roadtrips a lot easier and gets the user a better overview |
+|                    | 13.05.2025   | [Link to Commit 2](https://github.com/KimSchlup/tripster-client/pull/103/commits/7659492e358672b51fe4dd3fa4f00d020069f03e) | Did frontend of bounding Box | Owners can now set a boundingbox for pois where they can be added. Boundingbox can be edited or deleted. Check if poi is in boundingbox and error is shown if not in box.  |
+| **@segmue** | 12.05.2025   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/pull/98/commits/61ddd4ac677cff795055c8b7b63bba2dbb06ea0f) | Added the LayerManager-Window  to the Map Interface. The Layer Manager should help filter the Map Elements by different Attributes and make changing BaseMaps easier. | First of all, it is the last Button in the Map-UI, which wasn't implemented yet.. By filtering what should be shown on the map, it should help users in the planning process to remove unnecessary information from the map (like rejected POIs) and thus reduce map information content, if necessary. Or of course, search for very specific Information (e.g. only Sighteeing-POIs added by User XY) |
+|                    | 12.05.2025   | [Link to Commit 2](https://github.com/KimSchlup/tripster-client/pull/99/commits/b492b31c714438a76ba7a223817c612a53ef389b) | Added Long-Polling to Routes, added Close Buttons to some Windows, which didn't have them yet, Some Bugfixing, and a "Welcome Box" which tells how to start. | With the routes also being dynamically updated, the real-time Features for the Map Interface are done. Now, every Map-Element is updated if someone changes something. The Welcome-Box contains a simple message as a Guide for the User, how to start. This is now tested and could be extended to a Tutorial in later stages. The rest just improves the UI generally. |
+| **@AdrianHauser** | 07.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/600ec4b664e808a0e4126f23d2eb9b27a5b0d33b) | Changed Image API so it returns a signed URL which allows image access for a specific user for 15 minute | Sending strings instead of binaries saves a lot of bandwidth. Signed URL are more secure and allow limiting access. |
+|                    | 07.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-client/pull/96/commits/689b5f5c48b738c25a4805c40ed5c5747e278bb2)  [Commit 2](https://github.com/KimSchlup/tripster-client/pull/97/commits/2ef0a551658c6a61e61db4211a653ed1740c8d43) | Frontend integraton of images in Roadtrip Overview, made components out of roadtrip cards. | Showing roadtrip images in the roadtrip overview |
 | **@RicoCamenzind** | 12.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/de84f92f09adfce364e61faf44e7a81807189b0e) | Added the check if a POI is inside a bounding box. This method gets called before creating a new POI or before updating such. | Provides the functionality to add a boundingBox to restrict where new POI can be created. |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
