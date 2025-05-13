@@ -79,10 +79,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [testimonials.length]);
 
-  // Scroll to features section
-  const scrollToFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <div style={{width: '100%', background: 'white', position: 'relative'}}>
