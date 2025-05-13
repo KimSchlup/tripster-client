@@ -15,6 +15,7 @@ import type { GeoJSON } from "geojson";
 import Checkbox from "@/components/Checkbox";
 import RoadtripMemberManagement from "@/components/RoadtripMemberManagement";
 import BackToMapButton from "@/components/BackToMapButton";
+import BoundingBoxSelector from "@/components/MapComponents/BoundingBoxSelector";
 
 export default function RoadtripSettings() {
   const params = useParams();
@@ -41,6 +42,7 @@ export default function RoadtripSettings() {
   const [boundingBox, setBoundingBox] = useState<GeoJSON | undefined>(
     undefined
   );
+  const [showBoundingBoxSelector, setShowBoundingBoxSelector] = useState(false);
   const [startDate, setStartDate] = useState<string | undefined>(undefined);
   const [endDate, setEndDate] = useState<string | undefined>(undefined);
   const [hasSpotifyPlaylist, setHasSpotifyPlaylist] = useState(false);
@@ -140,9 +142,12 @@ export default function RoadtripSettings() {
       setImageUrl(imageUrl);
     } catch (err) {
       console.error("Image upload failed:", err);
-      
+
       // Check for the specific error message
-      if (err instanceof Error && err.message.includes("Maximum upload size exceeded")) {
+      if (
+        err instanceof Error &&
+        err.message.includes("Maximum upload size exceeded")
+      ) {
         showToast("Image too large", "error");
       } else {
         setError("Failed to upload or load image. Please try again.");
@@ -634,6 +639,88 @@ export default function RoadtripSettings() {
                     </div>
                   </div>
                 </div>
+
+                {/* Geographic Boundaries Section */}
+                <div
+                  style={{
+                    width: "100%",
+                    background: "white",
+                    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
+                    borderRadius: 10,
+                    padding: "20px",
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "black",
+                      fontSize: 24,
+                      fontFamily: "Manrope",
+                      fontWeight: 700,
+                      marginBottom: "20px",
+                    }}
+                  >
+                    Geographic Boundaries
+                  </div>
+
+                  <div style={{ marginBottom: "20px" }}>
+                    {boundingBox ? (
+                      <p style={{ color: "black" }}>
+                        Bounding box is set. POIs can only be created within
+                        this area.
+                      </p>
+                    ) : (
+                      <p style={{ color: "black" }}>
+                        No boundaries set. POIs can be created anywhere on the
+                        map.
+                      </p>
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <button
+                      onClick={() =>
+                        isOwner && setShowBoundingBoxSelector(true)
+                      }
+                      className="form-button"
+                      style={{
+                        width: "auto",
+                        backgroundColor: isOwner ? "#000000" : "#f5f5f5",
+                        color: isOwner ? "white" : "#888",
+                        padding: "10px 20px",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: isOwner ? "pointer" : "not-allowed",
+                      }}
+                      disabled={!isOwner}
+                    >
+                      <span style={{ fontWeight: "bold" }}>
+                        {boundingBox ? "Edit Boundaries" : "Set Boundaries"}
+                      </span>
+                    </button>
+
+                    {boundingBox && (
+                      <button
+                        onClick={() => isOwner && setBoundingBox(undefined)}
+                        className="form-button"
+                        style={{
+                          width: "auto",
+                          backgroundColor: isOwner ? "#E74C3C" : "#f5f5f5",
+                          color: isOwner ? "white" : "#888",
+                          padding: "10px 20px",
+                          border: "none",
+                          borderRadius: "5px",
+                          cursor: isOwner ? "pointer" : "not-allowed",
+                        }}
+                        disabled={!isOwner}
+                      >
+                        <span style={{ fontWeight: "bold" }}>
+                          Remove Boundaries
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {/* Voting Mechanism Section */}
                 <div
                   style={{
@@ -839,6 +926,18 @@ export default function RoadtripSettings() {
       </div>
 
       {/* Member management UI is now handled by the RoadtripMemberManagement component */}
+
+      {/* Bounding Box Selector Modal */}
+      {showBoundingBoxSelector && (
+        <BoundingBoxSelector
+          initialBoundingBox={boundingBox}
+          onBoundingBoxChange={(newBoundingBox) => {
+            setBoundingBox(newBoundingBox);
+            setShowBoundingBoxSelector(false);
+          }}
+          onClose={() => setShowBoundingBoxSelector(false)}
+        />
+      )}
     </>
   );
 }

@@ -12,13 +12,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useToast } from "@/hooks/useToast";
 import RoadtripCard from "@/components/cards/RoadtripCard";
 import NewTripCard from "@/components/cards/NewTripCard";
-import { useRoadtripMembers } from "@/hooks/useRoadtripMembers";
-import { User } from "@/types/user";
+import RoadtripCardMembers from "@/components/RoadtripCardMembers";
 
-// Interface for a user with invitation status
-interface MemberWithStatus extends User {
-  invitationStatus?: InvitationStatus;
-}
 interface newRoadtripProps {
   name: string;
   roadtripMembers: RoadtripMemberDisplay[];
@@ -89,73 +84,62 @@ function RoadtripsContent() {
       // Process roadtrips to determine invitation status
       if (Array.isArray(data)) {
         // Process each roadtrip to determine the current user's invitation status
-        const processedRoadtrips = data.map(
-          (roadtrip) => {
-            if (roadtrip.roadtripId === undefined) {
-              console.warn("Roadtrip without ID:", roadtrip);
-            }
+        const processedRoadtrips = data.map((roadtrip) => {
+          if (roadtrip.roadtripId === undefined) {
+            console.warn("Roadtrip without ID:", roadtrip);
+          }
 
-            // Check if the current user is the owner of the roadtrip
-            const isOwner =
-              roadtrip.ownerId &&
-              userId &&
-              roadtrip.ownerId.toString() === userId.toString();
+          // Check if the current user is the owner of the roadtrip
+          const isOwner =
+            roadtrip.ownerId &&
+            userId &&
+            roadtrip.ownerId.toString() === userId.toString();
 
-            // If the user is the owner, always set invitation status to ACCEPTED
-            if (isOwner) {
-              console.log(
-                `User is the owner of roadtrip ${roadtrip.roadtripId}, setting status to ACCEPTED`
-              );
-              return {
-                ...roadtrip,
-                invitationStatus: InvitationStatus.ACCEPTED,
-              };
-            }
-
-            // Make sure roadtripMembers exists before trying to find a member
-            const roadtripMembers = roadtrip.roadtripMembers || [];
-            const currentUserMember = roadtripMembers.find(
-              (member) => member.id === userId
-            );
-
-            // If the user is a member, check their invitation status
-            if (currentUserMember && currentUserMember.invitationStatus) {
-              console.log(
-                `User is a member of roadtrip ${roadtrip.roadtripId} with status: ${currentUserMember.invitationStatus}`
-              );
-              return {
-                ...roadtrip,
-                invitationStatus: currentUserMember.invitationStatus,
-              };
-            }
-
-            // If the roadtrip has an invitationStatus from the API, use that
-            if (roadtrip.invitationStatus) {
-              console.log(
-                `Using API-provided invitation status for roadtrip ${roadtrip.roadtripId}: ${roadtrip.invitationStatus}`
-              );
-              return roadtrip;
-            }
-
-            // Default to ACCEPTED for existing roadtrips
+          // If the user is the owner, always set invitation status to ACCEPTED
+          if (isOwner) {
             console.log(
-              `No invitation status found for roadtrip ${roadtrip.roadtripId}, defaulting to ACCEPTED`
+              `User is the owner of roadtrip ${roadtrip.roadtripId}, setting status to ACCEPTED`
             );
             return {
               ...roadtrip,
               invitationStatus: InvitationStatus.ACCEPTED,
             };
-          },
-          [
-            apiService,
-            authState.isLoggedIn,
-            router,
-            userId,
-            showToast,
-            hasShownLoginToast,
-            fetchRoadtripImage,
-          ]
-        );
+          }
+
+          // Make sure roadtripMembers exists before trying to find a member
+          const roadtripMembers = roadtrip.roadtripMembers || [];
+          const currentUserMember = roadtripMembers.find(
+            (member) => member.id === userId
+          );
+
+          // If the user is a member, check their invitation status
+          if (currentUserMember && currentUserMember.invitationStatus) {
+            console.log(
+              `User is a member of roadtrip ${roadtrip.roadtripId} with status: ${currentUserMember.invitationStatus}`
+            );
+            return {
+              ...roadtrip,
+              invitationStatus: currentUserMember.invitationStatus,
+            };
+          }
+
+          // If the roadtrip has an invitationStatus from the API, use that
+          if (roadtrip.invitationStatus) {
+            console.log(
+              `Using API-provided invitation status for roadtrip ${roadtrip.roadtripId}: ${roadtrip.invitationStatus}`
+            );
+            return roadtrip;
+          }
+
+          // Default to ACCEPTED for existing roadtrips
+          console.log(
+            `No invitation status found for roadtrip ${roadtrip.roadtripId}, defaulting to ACCEPTED`
+          );
+          return {
+            ...roadtrip,
+            invitationStatus: InvitationStatus.ACCEPTED,
+          };
+        });
 
         setRoadtrips(processedRoadtrips);
 
@@ -200,7 +184,7 @@ function RoadtripsContent() {
     userId,
     showToast,
     hasShownLoginToast,
-    fetchRoadtripImage,
+    // fetchRoadtripImage removed from dependencies to prevent circular updates
   ]);
 
   useEffect(() => {
@@ -275,148 +259,6 @@ function RoadtripsContent() {
     }
   };
 
-  // Component to display members for a specific roadtrip
-  const RoadtripMembers = ({ roadtripId }: { roadtripId: string | number }) => {
-    const { members, loading, error } = useRoadtripMembers({ roadtripId });
-
-    if (loading) return <span>Loading members...</span>;
-    if (error) return <span>Error loading members</span>;
-
-    // Get invitation status label
-    const getInvitationStatusLabel = (user: MemberWithStatus): string => {
-      // Check if this is the current user (always show as "Member")
-      if (user.userId === userId) {
-        return "Member";
-      }
-
-      // For other users, we'll use the invitationStatus property if it exists
-      if (user.invitationStatus) {
-        switch (user.invitationStatus) {
-          case InvitationStatus.PENDING:
-            return "Pending";
-          case InvitationStatus.ACCEPTED:
-            return "Member";
-          case InvitationStatus.DECLINED:
-            return "Declined";
-          default:
-            return "Member";
-        }
-      }
-
-      // Default to Member if no status is available
-      return "Member";
-    };
-
-    // Get status color based on invitation status
-    const getStatusColor = (status: string): string => {
-      switch (status) {
-        case "Pending":
-          return "#FFA500"; // Orange
-        case "Declined":
-          return "#FF0000"; // Red
-        default:
-          return "#4CAF50"; // Green for Accepted/Member
-      }
-    };
-
-    // Limit display to 2 members with "+ X more" indicator
-    const displayMembers = members.slice(0, 2);
-    const remainingCount = members.length - 2;
-
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "5px",
-          justifyContent: "center",
-        }}
-      >
-        {displayMembers.map((member) => {
-          const status = getInvitationStatusLabel(member);
-          const statusColor = getStatusColor(status);
-
-          return (
-            <div
-              key={member.userId}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                background: "rgba(128, 128, 128, 0.55)",
-                borderRadius: 10,
-                padding: "3px 6px",
-                margin: "2px",
-              }}
-            >
-              <div
-                style={{
-                  color: "white",
-                  fontSize: 12,
-                  fontFamily: "Manrope",
-                  fontWeight: 700,
-                  marginRight: "5px",
-                }}
-              >
-                {member.username}
-              </div>
-
-              {/* Status indicator */}
-              <div
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  backgroundColor: statusColor,
-                  marginRight: "3px",
-                }}
-              ></div>
-
-              <div
-                style={{
-                  color: "white",
-                  fontSize: 10,
-                  fontFamily: "Manrope",
-                  fontWeight: 400,
-                }}
-              >
-                {status}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Show "+ X more" indicator if there are more than 2 members */}
-        {remainingCount > 0 && (
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              background: "rgba(128, 128, 128, 0.55)",
-              borderRadius: 10,
-              padding: "3px 6px",
-              margin: "2px",
-            }}
-          >
-            <div
-              style={{
-                color: "white",
-                fontSize: 12,
-                fontFamily: "Manrope",
-                fontWeight: 700,
-              }}
-            >
-              +{remainingCount} more
-            </div>
-          </div>
-        )}
-
-        {members.length === 0 && (
-          <span style={{ color: "#666" }}>No members</span>
-        )}
-      </div>
-    );
-  };
-
   const formatMembersList = (members?: RoadtripMemberDisplay[]) => {
     // Handle undefined or empty members array
     if (!members || members.length === 0) return "No members";
@@ -483,7 +325,7 @@ function RoadtripsContent() {
                 formatMembersList={formatMembersList}
                 membersComponent={
                   rt.roadtripId ? (
-                    <RoadtripMembers roadtripId={rt.roadtripId} />
+                    <RoadtripCardMembers roadtripId={rt.roadtripId} />
                   ) : null
                 }
               />
