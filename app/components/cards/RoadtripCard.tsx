@@ -1,6 +1,6 @@
 import { InvitationStatus } from "@/types/roadtripMember";
 import { Roadtrip, RoadtripMemberDisplay } from "@/types/roadtrip";
-import React, { useState } from "react";
+import React, { useState, ReactNode } from "react";
 
 const styles = {
   card: {
@@ -76,6 +76,7 @@ type Props = {
   imageUrl?: string;
   onClick: () => void;
   formatMembersList: (members?: RoadtripMemberDisplay[]) => string;
+  membersComponent?: ReactNode;
 };
 
 export default function RoadtripCard({
@@ -83,6 +84,7 @@ export default function RoadtripCard({
   imageUrl,
   onClick,
   formatMembersList,
+  membersComponent,
 }: Props) {
   const pending = roadtrip.invitationStatus === InvitationStatus.PENDING;
   const [imageError, setImageError] = useState(false);
@@ -130,11 +132,22 @@ export default function RoadtripCard({
 
         <div style={styles.overlay}>
           <h3 style={styles.title}>{roadtrip.name}</h3>
-          <p style={styles.members}>
-            {pending
-              ? "Pending Invitation"
-              : formatMembersList(roadtrip.roadtripMembers)}
-          </p>
+          {pending ? (
+            <p style={styles.members}>Pending Invitation</p>
+          ) : membersComponent ? (
+            <div style={{ 
+              marginTop: "5px", 
+              width: "100%", 
+              display: "flex", 
+              justifyContent: "center" 
+            }}>
+              {membersComponent}
+            </div>
+          ) : (
+            <p style={styles.members}>
+              {formatMembersList(roadtrip.roadtripMembers)}
+            </p>
+          )}
         </div>
       </div>
     </div>
