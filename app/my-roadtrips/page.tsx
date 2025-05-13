@@ -19,97 +19,90 @@ interface newRoadtripProps {
 }
 
 function RoadtripsContent() {
-  const [roadtrips, setRoadtrips] = useState<Roadtrip[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedRoadtrip, setSelectedRoadtrip] = useState<Roadtrip | null>(
-    null
-  );
-  const [showInvitationPopup, setShowInvitationPopup] = useState(false);
-  const apiService = useApi();
-  const router = useRouter();
-  const { authState } = useAuth();
-  const { showToast } = useToast();
-  const userId = authState.userId;
-  const [roadtripImages, setRoadtripImages] = useState<{
-    [id: number]: string;
-  }>({});
+    const [roadtrips, setRoadtrips] = useState<Roadtrip[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedRoadtrip, setSelectedRoadtrip] = useState<Roadtrip | null>(null);
+    const [showInvitationPopup, setShowInvitationPopup] = useState(false);
+    const apiService = useApi();
+    const router = useRouter();
+    const { authState } = useAuth();
+    const { showToast } = useToast();
+    const userId = authState.userId;
+    const [roadtripImages, setRoadtripImages] = useState<{
+      [id: number]: string;
+    }>({});
 
-  // Track if we've already shown the login toast
-  const [hasShownLoginToast, setHasShownLoginToast] = useState(false);
-
-  const fetchRoadtripImage = async (roadtripId: number) => {
-    try {
-      const res = await apiService.get<Response>(
-        `/roadtrips/${roadtripId}/settings/images`
-      );
-      if (!res.ok) throw new Error("Image not found");
-      const imageUrl = await res.text(); // ← pull the URL string from the body
-      console.log("got image URL:", imageUrl);
-      setRoadtripImages((prev) => ({ ...prev, [roadtripId]: imageUrl }));
-    } catch (err) {
-      console.warn("No image or error loading image for", roadtripId, err);
-    }
-  };
-
-  // Function to fetch roadtrips
-  const fetchRoadtrips = useCallback(async () => {
-    // Check token directly from localStorage for debugging
-    const token = localStorage.getItem("token");
-    console.log("Token in my-roadtrips page:", token);
-
-    // If user is not logged in, don't try to fetch roadtrips
-    if (!authState.isLoggedIn || !token) {
-      console.log("User not logged in or no token found");
-      setError("Please login first in order to access your roadtrips.");
-      setLoading(false);
-
-      // Only show the toast once
-      if (!hasShownLoginToast) {
-        showToast("Please login to access your roadtrips", "warning");
-        setHasShownLoginToast(true);
+    // Track if we've already shown the login toast
+    const [hasShownLoginToast, setHasShownLoginToast] = useState(false);
+    
+    const fetchRoadtripImage = async (roadtripId: number) => {
+      try {
+        const res = await apiService.get<Response>(
+          `/roadtrips/${roadtripId}/settings/images`
+        );
+        if (!res.ok) throw new Error("Image not found");
+        const imageUrl = await res.text(); // ← pull the URL string from the body
+        console.log("got image URL:", imageUrl);
+        setRoadtripImages((prev) => ({ ...prev, [roadtripId]: imageUrl }));
+      } catch (err) {
+        console.warn("No image or error loading image for", roadtripId, err);
       }
-      return;
-    }
-
-    try {
-      setLoading(true);
-      console.log("Fetching roadtrips with token:", token);
-
-      const data = await apiService.get<Roadtrip[]>("/roadtrips");
-      console.log("API response:", data);
-
-      // Process roadtrips to determine invitation status
-      if (Array.isArray(data)) {
-        // Process each roadtrip to determine the current user's invitation status
-        const processedRoadtrips = data.map((roadtrip) => {
-          if (roadtrip.roadtripId === undefined) {
-            console.warn("Roadtrip without ID:", roadtrip);
-          }
-
-          // Check if the current user is the owner of the roadtrip
-          const isOwner =
-            roadtrip.ownerId &&
-            userId &&
-            roadtrip.ownerId.toString() === userId.toString();
-
-          // If the user is the owner, always set invitation status to ACCEPTED
-          if (isOwner) {
-            console.log(
-              `User is the owner of roadtrip ${roadtrip.roadtripId}, setting status to ACCEPTED`
-            );
-            return {
-              ...roadtrip,
-              invitationStatus: InvitationStatus.ACCEPTED,
-            };
-          }
-
-          // Make sure roadtripMembers exists before trying to find a member
-          const roadtripMembers = roadtrip.roadtripMembers || [];
-          const currentUserMember = roadtripMembers.find(
-            (member) => member.id === userId
-          );
-
+    };  
+  
+    // Function to fetch roadtrips
+    const fetchRoadtrips = useCallback(async () => {
+        // Check token directly from localStorage for debugging
+        const token = localStorage.getItem("token");
+        console.log("Token in my-roadtrips page:", token);
+        
+        // If user is not logged in, don't try to fetch roadtrips
+        if (!authState.isLoggedIn || !token) {
+            console.log("User not logged in or no token found");
+            setError("Please login first in order to access your roadtrips.");
+            setLoading(false);
+            
+            // Only show the toast once
+            if (!hasShownLoginToast) {
+                showToast("Please login to access your roadtrips", "warning");
+                setHasShownLoginToast(true);
+            }
+            return;
+        }
+        
+        try {
+            setLoading(true);
+            console.log("Fetching roadtrips with token:", token);
+            
+            const data = await apiService.get<Roadtrip[]>("/roadtrips");
+            console.log("API response:", data);
+            
+            // Process roadtrips to determine invitation status
+            if (Array.isArray(data)) {
+                // Process each roadtrip to determine the current user's invitation status
+                const processedRoadtrips = data.map(roadtrip => {
+                    if (roadtrip.roadtripId === undefined) {
+                        console.warn("Roadtrip without ID:", roadtrip);
+                    }
+                    
+                    // Check if the current user is the owner of the roadtrip
+                    const isOwner = roadtrip.ownerId && userId && roadtrip.ownerId.toString() === userId.toString();
+                    
+                    // If the user is the owner, always set invitation status to ACCEPTED
+                    if (isOwner) {
+                        console.log(`User is the owner of roadtrip ${roadtrip.roadtripId}, setting status to ACCEPTED`);
+                        return {
+                            ...roadtrip,
+                            invitationStatus: InvitationStatus.ACCEPTED
+                        };
+                    }
+                    
+                    // Make sure roadtripMembers exists before trying to find a member
+                    const roadtripMembers = roadtrip.roadtripMembers || [];
+                    const currentUserMember = roadtripMembers.find(
+                        member => member.id === userId
+                    );
+                    
           // If the user is a member, check their invitation status
           if (currentUserMember && currentUserMember.invitationStatus) {
             console.log(
@@ -175,7 +168,7 @@ function RoadtripsContent() {
     } finally {
       setLoading(false);
     }
-  }, [apiService, authState.isLoggedIn, router, userId, showToast]);
+  }, [apiService, authState.isLoggedIn, router, userId, showToast, hasShownLoginToast]);
 
   useEffect(() => {
     fetchRoadtrips();
@@ -203,7 +196,7 @@ function RoadtripsContent() {
     // Refresh the roadtrips list
     fetchRoadtrips();
   };
-
+    
   const handleNewRoadtripClick = async () => {
     try {
       // Create a new empty roadtrip
