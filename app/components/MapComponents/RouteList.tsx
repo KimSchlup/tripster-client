@@ -2,15 +2,17 @@ import { Route, TravelMode } from "@/types/routeTypes";
 import { PointOfInterest } from "@/types/poi";
 import Draggable from "react-draggable";
 import { useRef } from "react";
+import Image from "next/image";
 
 interface RouteListProps {
   routes: Route[];
   pois: PointOfInterest[];
   onRouteSelect: (route: Route) => void;
- onCreateRoute: () => void;
+  onCreateRoute: () => void;
+  onClose: () => void;
 }
 
-export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute }: RouteListProps) {
+export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, onClose }: RouteListProps) {
   const nodeRef = useRef<HTMLDivElement>(null!);
 
   // Format travel time (convert from seconds to minutes/hours)
@@ -84,6 +86,31 @@ export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute }
         }}
       >
         <div className="handle" style={{ width: "100%", height: "60px", cursor: "move", position: "absolute", top: 0 }}>
+          <button
+            onClick={onClose}
+            style={{
+              position: "absolute",
+              top: "14px",
+              left: "17px",
+              width: "35px",
+              height: "35px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "20px",
+              color: "#000000",
+            }}
+          >
+            <Image
+              src="/map-elements/close.svg"
+              alt="Close"
+              width={24}
+              height={24}
+              style={{
+                cursor: "pointer"
+              }}
+            />
+          </button>
           <div style={{
             textAlign: "center",
             fontSize: 20,

@@ -63,6 +63,53 @@ useEffect(() => {
         fetchUser();
     }, [apiService, userId]);
 
+
+    const handleSave = async () => {
+        if (isEditing && user) {
+            const updatedFields: Partial<{
+                username: string;
+                firstName: string;
+                lastName: string;
+                mail: string;
+                phoneNumber: string;
+                receiveNotifications: boolean;
+                emergencyContact: Partial<{
+                    firstName: string;
+                    lastName: string;
+                    phoneNumber: string;
+                }>;
+            }> = {};
+
+            // Only add fields that have changed
+            if (editedUsername !== user.username) updatedFields.username = editedUsername;
+            if (editedFirstName !== user.firstName) updatedFields.firstName = editedFirstName;
+            if (editedLastName !== user.lastName) updatedFields.lastName = editedLastName;
+            if (editedEmail !== user.mail) updatedFields.mail = editedEmail;
+            if (editedPhone !== user.phoneNumber) updatedFields.phoneNumber = editedPhone;
+            if (editedNotifications !== user.recieveNotifications) updatedFields.receiveNotifications = editedNotifications;
+            
+            // Emergency contact fields
+            if (editedEmergencyFirstName !== user.emergencyContact?.firstName || 
+                editedEmergencyLastName !== user.emergencyContact?.lastName || 
+                editedEmergencyPhone !== user.emergencyContact?.phoneNumber) {
+                updatedFields.emergencyContact = {
+                    ...(editedEmergencyFirstName !== user.emergencyContact?.firstName && { firstName: editedEmergencyFirstName }),
+                    ...(editedEmergencyLastName !== user.emergencyContact?.lastName && { lastName: editedEmergencyLastName }),
+                    ...(editedEmergencyPhone !== user.emergencyContact?.phoneNumber && { phoneNumber: editedEmergencyPhone })
+                };
+            }
+
+            // If there are any fields to update, send them
+            if (Object.keys(updatedFields).length > 0) {
+                await apiService.put("/users/" + user.userId, updatedFields);
+                globalThis.location.reload();
+            } else {
+                console.log("No changes detected.");
+            }
+        }
+    };
+
+
     return (
         <>
             <Header />
@@ -108,35 +155,22 @@ useEffect(() => {
                         </div>
 
                         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "24px" }}>
-                            <Button  onClick={async () => {
-                                if (isEditing) {
-                                    await apiService.put("/users/" + user.userId, {
-                                        username: editedUsername,
-                                        firstName: editedFirstName,
-                                        lastName: editedLastName,
-                                        mail: editedEmail,
-                                        phoneNumber: editedPhone,
-                                        receiveNotifications: editedNotifications,
-                                        emergencyContact: {
-                                            firstName: editedEmergencyFirstName,
-                                            lastName: editedEmergencyLastName,
-                                            phoneNumber: editedEmergencyPhone,
-                                        }
-                                    });
-                                    window.location.reload();
-                                } else {
-                                    setIsEditing(true);
-                                }
-                            }} type="primary" style={{ backgroundColor : "#22426b"}}>
-                                {isEditing ? "Save" : "Edit"}
-                            </Button>
+                        <Button onClick={() => {
+                            if (isEditing) {
+                                handleSave();
+                            } else {
+                                setIsEditing(true);
+                            }
+                        }} type="primary" style={{ backgroundColor: "#22426b" }}>
+                            {isEditing ? "Save" : "Edit"}
+                        </Button>
                             <Button
                                 //danger
                                 onClick={async () => {
                                     if (confirm("Are you sure you want to permanently delete your account?")) {
                                         await apiService.delete("/users/" + user.userId);
                                         // Optional: clear localStorage and redirect to home or login page
-                                        window.location.href = "/";
+                                        globalThis.location.href = "/";
                                     }
                                 }}
                                 type="primary" style={{ backgroundColor : "#b30000"}}>
