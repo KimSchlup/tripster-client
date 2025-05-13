@@ -13,12 +13,7 @@ import { useToast } from "@/hooks/useToast";
 import RoadtripCard from "@/components/cards/RoadtripCard";
 import NewTripCard from "@/components/cards/NewTripCard";
 import RoadtripCardMembers from "@/components/RoadtripCardMembers";
-import { User } from "@/types/user";
 
-// Interface for a user with invitation status
-interface MemberWithStatus extends User {
-  invitationStatus?: InvitationStatus;
-}
 interface newRoadtripProps {
   name: string;
   roadtripMembers: RoadtripMemberDisplay[];
