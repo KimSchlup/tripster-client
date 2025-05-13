@@ -130,8 +130,8 @@ reason).
 | **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
 | ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
 | **@KimSchlup** | [12.05.25]   | [Link to Pull request 1](https://github.com/KimSchlup/tripster-server/pull/199)  | Added Get & Post endpoints for EmergencyInfo including authentication and tests | Users need to be able to specifiy their emergency contacts |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@P4P5T123** | 13.05.2023   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/pull/102/commits) | Fixed Bug that roadtrip members were not displayed in my-roadtrips page | Makes identifying roadtrips a lot easier and gets the user a better overview |
+|                    | 13.05.2025   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
