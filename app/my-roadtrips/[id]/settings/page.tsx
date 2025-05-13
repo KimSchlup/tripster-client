@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { useApi } from "@/hooks/useApi";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 import { Roadtrip } from "@/types/roadtrip";
 import type { RoadtripSettings } from "@/types/roadtripSettings";
 import { BasemapType, DecisionProcess } from "@/types/roadtripSettings";
@@ -53,6 +54,7 @@ export default function RoadtripSettings() {
   const apiService = useApi();
   const router = useRouter();
   const { authState } = useAuth();
+  const { showToast } = useToast();
   const currentUserId = authState.userId;
 
   useEffect(() => {
@@ -138,7 +140,13 @@ export default function RoadtripSettings() {
       setImageUrl(imageUrl);
     } catch (err) {
       console.error("Image upload failed:", err);
-      setError("Failed to upload or load image. Please try again.");
+      
+      // Check for the specific error message
+      if (err instanceof Error && err.message.includes("Maximum upload size exceeded")) {
+        showToast("Image too large", "error");
+      } else {
+        setError("Failed to upload or load image. Please try again.");
+      }
     }
   };
 
