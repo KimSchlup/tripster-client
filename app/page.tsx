@@ -213,45 +213,7 @@ export default function Home() {
             </p>
           </div>
           
-          {/* Map Feature Icons */}
-          <div className="map-feature animate-fade-in delay-300" style={{ top: '15%', left: '20%' }}>
-            <div className="map-feature-icon">
-              <Image 
-                src="/map-elements/point_marker.svg" 
-                alt="POI" 
-                width={30} 
-                height={30}
-                style={{ filter: "brightness(0) invert(1)" }} // Makes the SVG white
-              />
-            </div>
-            <div className="map-feature-label">Points of Interest</div>
-          </div>
-          
-          <div className="map-feature animate-fade-in delay-400" style={{ top: '75%', left: '60%' }}>
-            <div className="map-feature-icon">
-              <Image 
-                src="/map-elements/wayfinder.svg" 
-                alt="Route" 
-                width={30} 
-                height={30}
-                style={{ filter: "brightness(0) invert(1)" }} // Makes the SVG white
-              />
-            </div>
-            <div className="map-feature-label">Route Planning</div>
-          </div>
-          
-          <div className="map-feature animate-fade-in delay-500" style={{ top: '85%', left: '30%' }}>
-            <div className="map-feature-icon">
-              <Image 
-                src="/map-elements/checklist.svg" 
-                alt="Checklist" 
-                width={30} 
-                height={30}
-                style={{ filter: "brightness(0) invert(1)" }} // Makes the SVG white
-              />
-            </div>
-            <div className="map-feature-label">Checklists</div>
-          </div>
+
         </div>
       </section>
       
@@ -312,35 +274,8 @@ export default function Home() {
             Create routes, mark points of interest, and collaborate with friends on your next road trip.
           </p>
           
-          <div className="cta-buttons">
-            <button 
-              className="primary-button animate-fade-in delay-300"
-              onClick={() => router.push("/register")}
-            >
-              Get Started Now
-            </button>
-            
-            <button 
-              className="secondary-button animate-fade-in delay-400"
-              onClick={scrollToFeatures}
-            >
-              Learn More
-            </button>
-          </div>
         </div>
       </section>
-      
-      {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-column">
-            AGB <br/>IMPRESSUM<br/>DATENSCHUTZ
-          </div>
-          <div className="footer-column">
-            INSTAGRAM<br/>TELEGRAM<br/>NEWSLETTER
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
