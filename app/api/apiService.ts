@@ -24,9 +24,10 @@ export class ApiService {
    */
   public async getChecklist<T>(roadtripId: string | number): Promise<T> {
     // Ensure roadtripId is properly formatted
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
     // Add a delay to ensure token is properly set
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     // Construct the endpoint according to the backend controller mapping
     // Controller is mapped to "/roadtrips" and the endpoint is "/{roadtripId}/checklist"
     const endpoint = `/roadtrips/${formattedRoadtripId}/checklist`;
@@ -41,7 +42,7 @@ export class ApiService {
         return response as unknown as T;
       }
       // According to the ChecklistGetDTO structure, we should look for the 'checklistElements' property
-      if (response && 'checklistElements' in response) {
+      if (response && "checklistElements" in response) {
         if (Array.isArray(response.checklistElements)) {
           return response.checklistElements as unknown as T;
         } else if (response.checklistElements === null) {
@@ -60,7 +61,10 @@ export class ApiService {
       // Otherwise, return the response as is
       return response as unknown as T;
     } catch (error) {
-      console.error(`Error in getChecklist for roadtrip ID ${formattedRoadtripId}:`, error);
+      console.error(
+        `Error in getChecklist for roadtrip ID ${formattedRoadtripId}:`,
+        error
+      );
       console.error(`Full error details:`, error);
       throw error;
     }
@@ -72,9 +76,12 @@ export class ApiService {
    * @param checklistElement - The checklist element to add (ChecklistElementPostDTO).
    * @returns The created checklist element (ChecklistElementGetDTO).
    */
-  public async addChecklistElement<T>(roadtripId: string | number, checklistElement: Omit<T, 'checklistItemId'>): Promise<T> {
+  public async addChecklistElement<T>(
+    roadtripId: string | number,
+    checklistElement: Omit<T, "checklistItemId">
+  ): Promise<T> {
     // Add a delay to ensure token is properly set
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     // Log the token before making the request
     const token = retrieveToken("token");
     if (!token) {
@@ -82,18 +89,24 @@ export class ApiService {
       throw new Error("Authentication required. Please log in again.");
     }
     // Format the roadtripId if needed
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
     // Create a proper ChecklistElementPostDTO object without the roadtripId
     // The backend expects: name, isCompleted, assignedUser, priority, category
     const checklistElementData: Record<string, unknown> = {
       name: (checklistElement as Record<string, unknown>).name || "",
-      isCompleted: (checklistElement as Record<string, unknown>).isCompleted === true,
-      priority: (checklistElement as Record<string, unknown>).priority || "MEDIUM",
-      category: (checklistElement as Record<string, unknown>).category || "ITEM"
+      isCompleted:
+        (checklistElement as Record<string, unknown>).isCompleted === true,
+      priority:
+        (checklistElement as Record<string, unknown>).priority || "MEDIUM",
+      category:
+        (checklistElement as Record<string, unknown>).category || "ITEM",
     };
     // Only include assignedUser if it's not null or empty
     if ((checklistElement as Record<string, unknown>).assignedUser) {
-      checklistElementData.assignedUser = (checklistElement as Record<string, unknown>).assignedUser;
+      checklistElementData.assignedUser = (
+        checklistElement as Record<string, unknown>
+      ).assignedUser;
     }
     // Map the category if it's "TODO" to "TASK" to match backend enum
     if (checklistElementData.category === "TODO") {
@@ -106,14 +119,14 @@ export class ApiService {
       // Make the API request with explicit headers to ensure token is sent
       const headers = {
         "Content-Type": "application/json",
-        "Authorization": token
+        Authorization: token,
       };
 
       // Make the API request with explicit headers
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         method: "POST",
         headers: headers,
-        body: JSON.stringify(checklistElementData)
+        body: JSON.stringify(checklistElementData),
       });
       // Check if the response is OK
       if (!response.ok) {
@@ -146,12 +159,15 @@ export class ApiService {
         throw new Error(detailedMessage);
       }
       // Handle empty responses (e.g., 204 No Content)
-      if (response.status === 204 || response.headers.get("Content-Length") === "0") {
+      if (
+        response.status === 204 ||
+        response.headers.get("Content-Length") === "0"
+      ) {
         // Create a default response with the data we sent
         const defaultResponse = {
           checklistItemId: Date.now(), // Generate a temporary ID
           ...checklistElementData,
-          roadtripId: formattedRoadtripId
+          roadtripId: formattedRoadtripId,
         };
         return defaultResponse as unknown as T;
       }
@@ -171,7 +187,7 @@ export class ApiService {
             responseData = {
               checklistItemId: Date.now(), // Generate a temporary ID
               ...checklistElementData,
-              roadtripId: formattedRoadtripId
+              roadtripId: formattedRoadtripId,
             };
           }
         }
@@ -181,7 +197,7 @@ export class ApiService {
         responseData = {
           checklistItemId: Date.now(), // Generate a temporary ID
           ...checklistElementData,
-          roadtripId: formattedRoadtripId
+          roadtripId: formattedRoadtripId,
         };
       }
       // The backend returns a ChecklistElementGetDTO
@@ -192,7 +208,7 @@ export class ApiService {
         const adaptedResponse = {
           ...responseData,
           checklistItemId: responseData.checklistElementId,
-          roadtripId: formattedRoadtripId
+          roadtripId: formattedRoadtripId,
         };
         return adaptedResponse as unknown as T;
       }
@@ -201,14 +217,19 @@ export class ApiService {
         const adaptedResponse = {
           ...responseData,
           checklistItemId: responseData.id,
-          roadtripId: formattedRoadtripId
+          roadtripId: formattedRoadtripId,
         };
         return adaptedResponse as unknown as T;
       }
       // Case 3: Response is an object but doesn't have expected ID fields
-      else if (responseData && typeof responseData === 'object') {
+      else if (responseData && typeof responseData === "object") {
         // Try to find any property that might be an ID
-        const possibleIdFields = ['checklistElementId', 'id', 'elementId', 'itemId'];
+        const possibleIdFields = [
+          "checklistElementId",
+          "id",
+          "elementId",
+          "itemId",
+        ];
         let idValue = null;
         for (const field of possibleIdFields) {
           if (responseData[field] !== undefined) {
@@ -226,10 +247,16 @@ export class ApiService {
           checklistItemId: idValue,
           roadtripId: formattedRoadtripId,
           name: responseData.name || checklistElementData.name,
-          isCompleted: responseData.isCompleted !== undefined ? responseData.isCompleted : checklistElementData.isCompleted,
-          assignedUser: responseData.assignedUser || checklistElementData.assignedUser || null,
+          isCompleted:
+            responseData.isCompleted !== undefined
+              ? responseData.isCompleted
+              : checklistElementData.isCompleted,
+          assignedUser:
+            responseData.assignedUser ||
+            checklistElementData.assignedUser ||
+            null,
           priority: responseData.priority || checklistElementData.priority,
-          category: responseData.category || checklistElementData.category
+          category: responseData.category || checklistElementData.category,
         };
         return adaptedResponse as unknown as T;
       }
@@ -237,7 +264,7 @@ export class ApiService {
       const defaultResponse = {
         checklistItemId: Date.now(), // Generate a temporary ID
         ...checklistElementData,
-        roadtripId: formattedRoadtripId
+        roadtripId: formattedRoadtripId,
       };
       return defaultResponse as unknown as T;
     } catch (error) {
@@ -248,17 +275,22 @@ export class ApiService {
         console.error("Error message:", error.message);
         console.error("Error stack:", error.stack);
 
-        if ('status' in error) {
+        if ("status" in error) {
           console.error("Error status:", (error as ApplicationError).status);
         }
 
-        if ('info' in error) {
+        if ("info" in error) {
           console.error("Error info:", (error as ApplicationError).info);
         }
 
         // If it's a network error, provide more context
-        if (error.message.includes('fetch') || error.message.includes('network')) {
-          console.error("This appears to be a network error. Check your internet connection and API server status.");
+        if (
+          error.message.includes("fetch") ||
+          error.message.includes("network")
+        ) {
+          console.error(
+            "This appears to be a network error. Check your internet connection and API server status."
+          );
         }
       }
 
@@ -273,10 +305,18 @@ export class ApiService {
    * @param checklistElement - The updated checklist element data.
    * @returns Void - The controller returns no content (204).
    */
-  public async updateChecklistElement<T>(roadtripId: string | number, checklistElementId: string | number, checklistElement: T): Promise<void> {
+  public async updateChecklistElement<T>(
+    roadtripId: string | number,
+    checklistElementId: string | number,
+    checklistElement: T
+  ): Promise<void> {
     // Format the IDs if needed
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
-    const formattedElementId = typeof checklistElementId === 'string' ? parseInt(checklistElementId, 10) : checklistElementId;
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
+    const formattedElementId =
+      typeof checklistElementId === "string"
+        ? parseInt(checklistElementId, 10)
+        : checklistElementId;
     // Create a proper ChecklistElementPostDTO object without the roadtripId and checklistItemId
     // The backend expects: name, isCompleted, assignedUser, priority, category
     const checklistElementData = {
@@ -284,7 +324,7 @@ export class ApiService {
       isCompleted: (checklistElement as Record<string, unknown>).isCompleted,
       assignedUser: (checklistElement as Record<string, unknown>).assignedUser,
       priority: (checklistElement as Record<string, unknown>).priority,
-      category: (checklistElement as Record<string, unknown>).category
+      category: (checklistElement as Record<string, unknown>).category,
     };
     // Map the category if it's "TODO" to "TASK" to match backend enum
     if (checklistElementData.category === "TODO") {
@@ -304,11 +344,11 @@ export class ApiService {
         console.error("Error message:", error.message);
         console.error("Error stack:", error.stack);
 
-        if ('status' in error) {
+        if ("status" in error) {
           console.error("Error status:", (error as ApplicationError).status);
         }
 
-        if ('info' in error) {
+        if ("info" in error) {
           console.error("Error info:", (error as ApplicationError).info);
         }
       }
@@ -323,10 +363,17 @@ export class ApiService {
    * @param checklistElementId - The ID of the checklist element to delete.
    * @returns Void - The controller returns no content (204).
    */
-  public async deleteChecklistElement(roadtripId: string | number, checklistElementId: string | number): Promise<void> {
+  public async deleteChecklistElement(
+    roadtripId: string | number,
+    checklistElementId: string | number
+  ): Promise<void> {
     // Format the IDs if needed
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
-    const formattedElementId = typeof checklistElementId === 'string' ? parseInt(checklistElementId, 10) : checklistElementId;
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
+    const formattedElementId =
+      typeof checklistElementId === "string"
+        ? parseInt(checklistElementId, 10)
+        : checklistElementId;
     // Based on the controller code, the endpoint is DELETE /roadtrips/{roadtripId}/checklist/{checklistelementId}
     const endpoint = `/roadtrips/${formattedRoadtripId}/checklist/${formattedElementId}`;
     try {
@@ -338,10 +385,10 @@ export class ApiService {
       if (error instanceof Error) {
         console.error("Error message:", error.message);
         console.error("Error stack:", error.stack);
-        if ('status' in error) {
+        if ("status" in error) {
           console.error("Error status:", (error as ApplicationError).status);
         }
-        if ('info' in error) {
+        if ("info" in error) {
           console.error("Error info:", (error as ApplicationError).info);
         }
       }
@@ -379,33 +426,35 @@ export class ApiService {
    * @throws ApplicationError if res.ok is false.
    */
   private async processResponse<T>(
-      res: Response,
-      errorMessage: string,
+    res: Response,
+    errorMessage: string
   ): Promise<T> {
     if (!res.ok) {
       // We'll store the raw response text to parse it
       let rawResponse = "";
-      
+
       try {
         // Get the raw response text first
         rawResponse = await res.text();
-        
+
         // Try to parse as JSON
         let errorInfo;
         try {
           errorInfo = JSON.parse(rawResponse);
-          
+
           // Special case for username conflict (409 status with specific detail)
-          if (res.status === 409 && 
-              errorInfo?.detail && 
-              errorInfo.detail.toLowerCase().includes("username already taken")) {
+          if (
+            res.status === 409 &&
+            errorInfo?.detail &&
+            errorInfo.detail.toLowerCase().includes("username already taken")
+          ) {
             // Return just the detail message directly
             const error = new Error(errorInfo.detail) as ApplicationError;
             error.info = JSON.stringify(errorInfo, null, 2);
             error.status = res.status;
             throw error;
           }
-          
+
           // For other JSON errors, use the detail or message if available
           if (errorInfo?.detail) {
             const error = new Error(errorInfo.detail) as ApplicationError;
@@ -420,35 +469,40 @@ export class ApiService {
           }
         } catch (parseError) {
           // If it's not valid JSON or doesn't have the expected fields, continue with default handling
-          if (parseError instanceof Error && parseError.name !== "SyntaxError") {
+          if (
+            parseError instanceof Error &&
+            parseError.name !== "SyntaxError"
+          ) {
             throw parseError; // Re-throw if it's our custom error
           }
           console.error("Error parsing JSON response:", parseError);
         }
       } catch (error) {
         // If we've already created a custom error with the detail message, re-throw it
-        if (error instanceof Error && 'status' in error) {
+        if (error instanceof Error && "status" in error) {
           throw error;
         }
         console.error("Error processing response:", error);
       }
-      
+
       // If we get here, use the default error handling
-      const detailedMessage = `${errorMessage} (${res.status}: ${rawResponse || res.statusText})`;
+      const detailedMessage = `${errorMessage} (${res.status}: ${
+        rawResponse || res.statusText
+      })`;
 
       // Create a custom error with additional properties
       const error = new Error(detailedMessage) as ApplicationError;
       error.info = JSON.stringify(
-          { status: res.status, statusText: res.statusText },
-          null,
-          2,
+        { status: res.status, statusText: res.statusText },
+        null,
+        2
       );
       error.status = res.status;
       // Log the error details
       console.error("API Error:", {
         message: error.message,
         status: error.status,
-        info: error.info
+        info: error.info,
       });
       throw error;
     }
@@ -478,7 +532,9 @@ export class ApiService {
   public async get<T>(endpoint: string): Promise<T> {
     try {
       // Ensure endpoint starts with a slash
-      const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+      const normalizedEndpoint = endpoint.startsWith("/")
+        ? endpoint
+        : `/${endpoint}`;
       const url = `${this.baseURL}${normalizedEndpoint}`;
       const headers = this.defaultHeaders();
       // For GET requests, we don't include a body
@@ -489,8 +545,8 @@ export class ApiService {
         // No body for GET requests
       });
       return this.processResponse<T>(
-          res,
-          "An error occurred while fetching the data.\n",
+        res,
+        "An error occurred while fetching the data.\n"
       );
     } catch (error) {
       console.error(`Error in GET request to ${endpoint}:`, error);
@@ -505,21 +561,37 @@ export class ApiService {
    * @param options - Optional configuration for the request.
    * @returns JSON data of type T.
    */
-  public async post<T>(endpoint: string, data: unknown, options?: { headers?: HeadersInit }): Promise<T> {
+  public async post<T>(
+    endpoint: string,
+    data: unknown,
+    options?: { headers?: HeadersInit }
+  ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     // Merge default headers with any provided headers
     const headers = {
       ...this.defaultHeaders(),
-      ...(options?.headers || {})
+      ...(options?.headers || {}),
     };
+
+    let body: BodyInit;
+    // If it's a FormData, don’t JSON-stringify, and don’t set Content-Type
+    if (data instanceof FormData) {
+      // remove any content-type that defaultHeaders added
+      delete (headers as Record<string, string>)["Content-Type"];
+      body = data;
+    } else {
+      (headers as Record<string, string>)["Content-Type"] = "application/json";
+      body = JSON.stringify(data);
+    }
+
     const res = await fetch(url, {
       method: "POST",
       headers: headers,
-      body: JSON.stringify(data),
+      body: body,
     });
     return this.processResponse<T>(
-        res,
-        "An error occurred while posting the data.\n",
+      res,
+      "An error occurred while posting the data.\n"
     );
   }
 
@@ -538,8 +610,8 @@ export class ApiService {
       body: JSON.stringify(data),
     });
     return this.processResponse<T>(
-        res,
-        "An error occurred while updating the data.\n",
+      res,
+      "An error occurred while updating the data.\n"
     );
   }
 
@@ -556,8 +628,8 @@ export class ApiService {
       headers: headers,
     });
     return this.processResponse<T>(
-        res,
-        "An error occurred while deleting the data.\n",
+      res,
+      "An error occurred while deleting the data.\n"
     );
   }
 
@@ -568,19 +640,23 @@ export class ApiService {
    */
   public async getRoutes<T>(roadtripId: string | number): Promise<T> {
     console.log(`Getting routes for roadtrip ID: ${roadtripId}`);
-    
+
     // Ensure roadtripId is properly formatted
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
-    
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
+
     const endpoint = `/roadtrips/${formattedRoadtripId}/routes`;
     console.log(`Get routes endpoint: ${endpoint}`);
-    
+
     try {
       const response = await this.get<T>(endpoint);
       console.log("Routes response:", response);
       return response;
     } catch (error) {
-      console.error(`Error in getRoutes for roadtrip ID ${formattedRoadtripId}:`, error);
+      console.error(
+        `Error in getRoutes for roadtrip ID ${formattedRoadtripId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -591,13 +667,17 @@ export class ApiService {
    * @param routeData - The route data to add.
    * @returns The created route.
    */
-  public async addRoute<T>(roadtripId: string | number, routeData: RouteCreateRequest): Promise<T> {
+  public async addRoute<T>(
+    roadtripId: string | number,
+    routeData: RouteCreateRequest
+  ): Promise<T> {
     console.log(`Adding route to roadtrip ID: ${roadtripId}`);
     console.log("Original route data:", routeData);
-    
+
     // Ensure roadtripId is properly formatted
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
-    
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
+
     // Extract the enum name directly from the TravelMode enum value
     const getTravelModeEnumName = (travelMode: string): string => {
       // Find the enum key by its value
@@ -608,58 +688,61 @@ export class ApiService {
       }
       return travelMode;
     };
-    
+
     // Create a clean payload with just the required fields
     const formattedRouteData = {
       startId: Number(routeData.startId),
       endId: Number(routeData.endId),
-      travelMode: getTravelModeEnumName(routeData.travelMode)
+      travelMode: getTravelModeEnumName(routeData.travelMode),
     };
-    
+
     console.log("Formatted route data:", formattedRouteData);
     console.log("JSON payload:", JSON.stringify(formattedRouteData, null, 2));
-    
+
     const endpoint = `/roadtrips/${formattedRoadtripId}/routes`;
     console.log(`Add route endpoint: ${endpoint}`);
     console.log(`Full URL: ${this.baseURL}${endpoint}`);
-    
+
     try {
       // Get token
       const token = retrieveToken("token");
       console.log("Token for route creation:", token ? "Found" : "Not found");
-      
+
       if (!token) {
         console.error("No token found for authorization");
         throw new Error("Authentication required. Please log in again.");
       }
-      
+
       // Make the API request with explicit headers
       const headers = {
         "Content-Type": "application/json",
-        "Authorization": token
+        Authorization: token,
       };
-      
+
       console.log("Request headers:", headers);
-      console.log("Request payload:", JSON.stringify(formattedRouteData, null, 2));
-      
+      console.log(
+        "Request payload:",
+        JSON.stringify(formattedRouteData, null, 2)
+      );
+
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         method: "POST",
         headers: headers,
-        body: JSON.stringify(formattedRouteData)
+        body: JSON.stringify(formattedRouteData),
       });
-      
+
       console.log(`Response status: ${response.status} ${response.statusText}`);
-      
+
       if (!response.ok) {
         let errorDetail = response.statusText;
         try {
           const contentType = response.headers.get("Content-Type") || "";
           console.log("Error response content type:", contentType);
-          
+
           // Log the raw response for debugging
           const rawResponse = await response.text();
           console.log("Raw error response:", rawResponse);
-          
+
           // Try to parse as JSON if appropriate
           if (contentType.includes("application/json")) {
             try {
@@ -680,12 +763,12 @@ export class ApiService {
         } catch (error) {
           console.error("Error processing response:", error);
         }
-        
+
         const detailedMessage = `Error creating route: ${response.status}: ${errorDetail}`;
         console.error(detailedMessage);
         throw new Error(detailedMessage);
       }
-      
+
       // Parse the response
       let responseData;
       if (response.headers.get("Content-Type")?.includes("application/json")) {
@@ -696,10 +779,13 @@ export class ApiService {
         responseData = formattedRouteData;
         console.log("No JSON response, using default:", responseData);
       }
-      
+
       return responseData as T;
     } catch (error) {
-      console.error(`Error in addRoute for roadtrip ID ${formattedRoadtripId}:`, error);
+      console.error(
+        `Error in addRoute for roadtrip ID ${formattedRoadtripId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -710,18 +796,22 @@ export class ApiService {
    */
   public async deleteAllRoutes(roadtripId: string | number): Promise<void> {
     console.log(`Deleting all routes for roadtrip ID: ${roadtripId}`);
-    
+
     // Ensure roadtripId is properly formatted
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
-    
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
+
     const endpoint = `/roadtrips/${formattedRoadtripId}/routes`;
     console.log(`Delete all routes endpoint: ${endpoint}`);
-    
+
     try {
       await this.delete<void>(endpoint);
       console.log("All routes deleted successfully");
     } catch (error) {
-      console.error(`Error in deleteAllRoutes for roadtrip ID ${formattedRoadtripId}:`, error);
+      console.error(
+        `Error in deleteAllRoutes for roadtrip ID ${formattedRoadtripId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -731,20 +821,29 @@ export class ApiService {
    * @param roadtripId - The ID of the roadtrip.
    * @param routeId - The ID of the route to delete.
    */
-  public async deleteRoute(roadtripId: string | number, routeId: number): Promise<void> {
-    console.log(`Deleting route with ID ${routeId} for roadtrip ID: ${roadtripId}`);
-    
+  public async deleteRoute(
+    roadtripId: string | number,
+    routeId: number
+  ): Promise<void> {
+    console.log(
+      `Deleting route with ID ${routeId} for roadtrip ID: ${roadtripId}`
+    );
+
     // Ensure roadtripId is properly formatted
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
-    
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
+
     const endpoint = `/roadtrips/${formattedRoadtripId}/routes/${routeId}`;
     console.log(`Delete route endpoint: ${endpoint}`);
-    
+
     try {
       await this.delete<void>(endpoint);
       console.log("Route deleted successfully");
     } catch (error) {
-      console.error(`Error in deleteRoute for roadtrip ID ${formattedRoadtripId}, route ID ${routeId}:`, error);
+      console.error(
+        `Error in deleteRoute for roadtrip ID ${formattedRoadtripId}, route ID ${routeId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -756,13 +855,20 @@ export class ApiService {
    * @param routeData - The updated route data.
    * @returns The updated route.
    */
-  public async updateRoute<T>(roadtripId: string | number, routeId: number, routeData: RouteCreateRequest): Promise<T> {
-    console.log(`Updating route with ID ${routeId} for roadtrip ID: ${roadtripId}`);
+  public async updateRoute<T>(
+    roadtripId: string | number,
+    routeId: number,
+    routeData: RouteCreateRequest
+  ): Promise<T> {
+    console.log(
+      `Updating route with ID ${routeId} for roadtrip ID: ${roadtripId}`
+    );
     console.log("Original route data:", routeData);
-    
+
     // Ensure roadtripId is properly formatted
-    const formattedRoadtripId = typeof roadtripId === 'string' ? parseInt(roadtripId, 10) : roadtripId;
-    
+    const formattedRoadtripId =
+      typeof roadtripId === "string" ? parseInt(roadtripId, 10) : roadtripId;
+
     // Extract the enum name directly from the TravelMode enum value
     const getTravelModeEnumName = (travelMode: string): string => {
       // Find the enum key by its value
@@ -773,56 +879,59 @@ export class ApiService {
       }
       return travelMode;
     };
-    
+
     // Create a clean payload with just the required fields
     const formattedRouteData = {
       startId: Number(routeData.startId),
       endId: Number(routeData.endId),
-      travelMode: getTravelModeEnumName(routeData.travelMode)
+      travelMode: getTravelModeEnumName(routeData.travelMode),
     };
-    
+
     console.log("Formatted route data for update:", formattedRouteData);
-    
+
     const endpoint = `/roadtrips/${formattedRoadtripId}/routes/${routeId}`;
     console.log(`Update route endpoint: ${endpoint}`);
-    
+
     try {
       // Get token
       const token = retrieveToken("token");
       console.log("Token for route update:", token ? "Found" : "Not found");
-      
+
       if (!token) {
         console.error("No token found for authorization");
         throw new Error("Authentication required. Please log in again.");
       }
-      
+
       // Make the API request with explicit headers
       const headers = {
         "Content-Type": "application/json",
-        "Authorization": token
+        Authorization: token,
       };
-      
+
       console.log("Request headers:", headers);
-      console.log("Request payload:", JSON.stringify(formattedRouteData, null, 2));
-      
+      console.log(
+        "Request payload:",
+        JSON.stringify(formattedRouteData, null, 2)
+      );
+
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         method: "PUT",
         headers: headers,
-        body: JSON.stringify(formattedRouteData)
+        body: JSON.stringify(formattedRouteData),
       });
-      
+
       console.log(`Response status: ${response.status} ${response.statusText}`);
-      
+
       if (!response.ok) {
         let errorDetail = response.statusText;
         try {
           const contentType = response.headers.get("Content-Type") || "";
           console.log("Error response content type:", contentType);
-          
+
           // Log the raw response for debugging
           const rawResponse = await response.text();
           console.log("Raw error response:", rawResponse);
-          
+
           // Try to parse as JSON if appropriate
           if (contentType.includes("application/json")) {
             try {
@@ -843,12 +952,12 @@ export class ApiService {
         } catch (error) {
           console.error("Error processing response:", error);
         }
-        
+
         const detailedMessage = `Error updating route: ${response.status}: ${errorDetail}`;
         console.error(detailedMessage);
         throw new Error(detailedMessage);
       }
-      
+
       // Parse the response
       let responseData;
       if (response.headers.get("Content-Type")?.includes("application/json")) {
@@ -858,14 +967,17 @@ export class ApiService {
         // If no JSON response, create a default response
         responseData = {
           ...formattedRouteData,
-          routeId: routeId
+          routeId: routeId,
         };
         console.log("No JSON response, using default:", responseData);
       }
-      
+
       return responseData as T;
     } catch (error) {
-      console.error(`Error in updateRoute for roadtrip ID ${formattedRoadtripId}, route ID ${routeId}:`, error);
+      console.error(
+        `Error in updateRoute for roadtrip ID ${formattedRoadtripId}, route ID ${routeId}:`,
+        error
+      );
       throw error;
     }
   }
