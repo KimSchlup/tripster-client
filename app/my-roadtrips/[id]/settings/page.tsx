@@ -121,16 +121,32 @@ export default function RoadtripSettings() {
     loadRoadtripSettings();
   }, [apiService, id, currentUserId]);
 
-  const handleAddLink = () => {
-    console.log("Add link clicked");
-  };
-
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png"];
+    const maxSizeMB = 10;
+
+    // Validate file type
+    if (!allowedTypes.includes(file.type)) {
+      showToast("Only JPEG and PNG images are allowed.", "error");
+      return;
+    }
+
+    // Validate file size
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      showToast("Image must be 10MB or smaller.", "error");
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("file", e.target.files[0]);
+    formData.append("file", file);
 
     try {
+      // First delete any old files
+      await handleDeleteImage(false);
+
       // Upload the file
       await apiService.post(`/roadtrips/${id}/settings/images`, formData);
 
@@ -140,6 +156,7 @@ export default function RoadtripSettings() {
       );
       const imageUrl = await res.text();
       setImageUrl(imageUrl);
+      fileInputRef.current!.value = "";
     } catch (err) {
       console.error("Image upload failed:", err);
 
@@ -151,6 +168,21 @@ export default function RoadtripSettings() {
         showToast("Image too large", "error");
       } else {
         setError("Failed to upload or load image. Please try again.");
+      }
+    }
+  };
+
+  const handleDeleteImage = async (showToasts: boolean = true) => {
+    try {
+      await apiService.delete(`/roadtrips/${id}/settings/images`);
+      setImageUrl(null);
+      if (showToasts) {
+        showToast("Image deleted successfully", "success");
+      }
+    } catch (err) {
+      console.error("Error deleting image:", err);
+      if (showToasts) {
+        showToast("Failed to delete image. Please try again.", "error");
       }
     }
   };
@@ -430,6 +462,7 @@ export default function RoadtripSettings() {
                       fontFamily: "Manrope",
                       fontWeight: 700,
                       flex: 1,
+                      position: "relative", // Needed for absolute button positioning
                     }}
                   >
                     Roadtrip Image
@@ -474,6 +507,32 @@ export default function RoadtripSettings() {
                       disabled={!isOwner}
                       onChange={handleImageChange}
                     />
+                    {/* Trash icon always shown in bottom right */}
+                    {isOwner && imageUrl && (
+                      <button
+                        onClick={() => handleDeleteImage(true)}
+                        style={{
+                          position: "absolute",
+                          bottom: 10,
+                          right: 10,
+                          background: "rgba(231, 76, 60, 0.9)",
+                          border: "none",
+                          borderRadius: "50%",
+                          width: 32,
+                          height: 32,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          color: "white",
+                          fontSize: 16,
+                          boxShadow: "0px 2px 4px rgba(0,0,0,0.2)",
+                        }}
+                        title="Delete image"
+                      >
+                        🗑
+                      </button>
+                    )}
                   </div>
                 </div>
                 {/* Users Section */}
@@ -845,13 +904,6 @@ export default function RoadtripSettings() {
                         </div>
                       )}
                     </div>
-                    <Checkbox
-                      variant="add"
-                      onChange={() => isOwner && handleAddLink()}
-                      label="Add Link"
-                      style={{ marginTop: "10px" }}
-                      disabled={!isOwner}
-                    />
                   </div>
                 </div>
               </div>
