@@ -121,10 +121,6 @@ export default function RoadtripSettings() {
     loadRoadtripSettings();
   }, [apiService, id, currentUserId]);
 
-  const handleAddLink = () => {
-    console.log("Add link clicked");
-  };
-
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -908,13 +904,6 @@ export default function RoadtripSettings() {
                         </div>
                       )}
                     </div>
-                    <Checkbox
-                      variant="add"
-                      onChange={() => isOwner && handleAddLink()}
-                      label="Add Link"
-                      style={{ marginTop: "10px" }}
-                      disabled={!isOwner}
-                    />
                   </div>
                 </div>
               </div>
