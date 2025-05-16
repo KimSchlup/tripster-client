@@ -15,6 +15,8 @@ interface MapLayersControlProps {
   routes: Route[];
   setSelectedPoiId: (id: number) => void;
   setSelectedRoute: (route: Route) => void;
+  zoomToPoi?: (poi: PointOfInterest) => void;
+  zoomToRoute?: (route: Route) => void;
   boundingBox?: GeoJSON;
 }
 
@@ -24,6 +26,8 @@ export default function MapLayersControl({
   routes,
   setSelectedPoiId,
   setSelectedRoute,
+  zoomToPoi,
+  zoomToRoute,
   boundingBox,
 }: MapLayersControlProps) {
   const { filter, setFilter } = useLayerFilter();
@@ -88,10 +92,11 @@ export default function MapLayersControl({
         />
       )}
 
-      <DisplayPOIs pois={pois} setSelectedPoiId={setSelectedPoiId} />
+      <DisplayPOIs pois={pois} setSelectedPoiId={setSelectedPoiId} zoomToPoi={zoomToPoi} />
       <RouteDisplay
         routes={routes}
         onRouteClick={(route) => setSelectedRoute(route)}
+        zoomToRoute={zoomToRoute}
       />
     </>
   );

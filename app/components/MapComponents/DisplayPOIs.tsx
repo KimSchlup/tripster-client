@@ -27,7 +27,8 @@ function ColoredMarker(color: string): Icon {
 export const DisplayPOIs: FC<{
     pois: PointOfInterest[];
     setSelectedPoiId: (id: number) => void;
-}> = ({ pois, setSelectedPoiId }) => {
+    zoomToPoi?: (poi: PointOfInterest) => void;
+}> = ({ pois, setSelectedPoiId, zoomToPoi }) => {
     const { filter } = useLayerFilter();
     
     // Filter POIs based on the layer filter settings
@@ -58,7 +59,10 @@ export const DisplayPOIs: FC<{
                         ]}
                         icon={ColoredMarker(color)}
                         eventHandlers={{
-                            click: () => setSelectedPoiId(poi.poiId),
+                            click: () => {
+                                setSelectedPoiId(poi.poiId);
+                                if (zoomToPoi) zoomToPoi(poi);
+                            },
                         }}
                     />
                 );

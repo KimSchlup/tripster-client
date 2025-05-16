@@ -4,6 +4,7 @@ import { ConfigProvider, theme } from "antd";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ToastProvider } from "@/hooks/useToast";
+import { RoadtripInvitationProvider } from "@/hooks/useRoadtripInvitations";
 import "@/styles/globals.css";
 
 const geistSans = Geist({
@@ -74,7 +75,9 @@ export default function RootLayout({
           <AntdRegistry>
             <ToastProvider>
               <AuthProvider>
-                {children}
+                <RoadtripInvitationProvider>
+                  {children}
+                </RoadtripInvitationProvider>
               </AuthProvider>
             </ToastProvider>
           </AntdRegistry>
