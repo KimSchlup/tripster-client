@@ -1,7 +1,7 @@
 import { Route, TravelMode } from "@/types/routeTypes";
 import { PointOfInterest } from "@/types/poi";
 import Draggable from "react-draggable";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Image from "next/image";
 
 interface RouteListProps {
@@ -14,6 +14,20 @@ interface RouteListProps {
 
 export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, onClose }: RouteListProps) {
   const nodeRef = useRef<HTMLDivElement>(null!);
+  
+  // Add click outside functionality
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
 
   // Format travel time (convert from seconds to minutes/hours)
   const formatTravelTime = (seconds: number): string => {
@@ -39,24 +53,43 @@ export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, 
 
   // Get icon for travel mode
   const getTravelModeIcon = (mode: TravelMode): string => {
-    switch (mode) {
-      case TravelMode.DRIVING_CAR:
-        return "🚗";
-      case TravelMode.FOOT_WALKING:
-        return "🚶";
-      case TravelMode.CYCLING_REGULAR:
-        return "🚲";
-      default:
-        return "🚗";
+    // Convert to string to handle both enum values and string representations
+    const modeStr = String(mode);
+    
+    if (modeStr.includes("DRIVING_CAR") || modeStr.includes("Car Drive")) {
+      return "🚗";
+    } else if (modeStr.includes("FOOT_WALKING") || modeStr.includes("Walk by foot")) {
+      return "🚶";
+    } else if (modeStr.includes("CYCLING_REGULAR") || modeStr.includes("Cycling")) {
+      return "🚲";
+    } else {
+      console.log("Unknown travel mode:", mode);
+      return "🚗";
+    }
+  };
+  
+  // Get friendly name for travel mode
+  const getFriendlyTravelModeName = (mode: TravelMode): string => {
+    // Convert to string to handle both enum values and string representations
+    const modeStr = String(mode);
+    
+    if (modeStr.includes("DRIVING_CAR")) {
+      return "Car Drive";
+    } else if (modeStr.includes("FOOT_WALKING")) {
+      return "Walk by foot";
+    } else if (modeStr.includes("CYCLING_REGULAR")) {
+      return "Cycling";
+    } else {
+      return modeStr;
     }
   };
 
   // Get status color
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case "APPROVED":
+      case "ACCEPTED":
         return "#79A44D";
-      case "REJECTED":
+      case "DECLINED":
         return "#E6393B";
       case "PENDING":
         return "#FFD700";
@@ -176,7 +209,7 @@ export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, 
                       color: "black"
                     }}>
                       <span style={{ marginRight: "10px" }}>{getTravelModeIcon(route.travelMode)}</span>
-                      <span>{route.travelMode}</span>
+                      <span>{getFriendlyTravelModeName(route.travelMode)}</span>
                     </div>
                     <div style={{
                       fontSize: 14,

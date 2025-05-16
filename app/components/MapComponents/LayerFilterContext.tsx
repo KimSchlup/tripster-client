@@ -29,7 +29,7 @@ const defaultFilter: LayerFilter = {
     basemapType: "OPEN_STREET_MAP",
     showRoutes: true,
     routeFilter: {
-        status: ["APPROVED", "PENDING", "REJECTED"],
+        status: ["ACCEPTED", "PENDING", "DECLINED"],
     },
     poiFilter: {
         status: Object.values(PoiAcceptanceStatus),

@@ -5,9 +5,10 @@ import { useLayerFilter } from "./LayerFilterContext";
 interface RouteDisplayProps {
   routes: Route[];
   onRouteClick: (route: Route) => void;
+  zoomToRoute?: (route: Route) => void;
 }
 
-export default function RouteDisplay({ routes, onRouteClick }: RouteDisplayProps) {
+export default function RouteDisplay({ routes, onRouteClick, zoomToRoute }: RouteDisplayProps) {
   // Debug the route data structure
   console.log("Routes in RouteDisplay:", routes);
   
@@ -50,7 +51,10 @@ export default function RouteDisplay({ routes, onRouteClick }: RouteDisplayProps
               weight={4}
               opacity={0.7}
               eventHandlers={{
-                click: () => onRouteClick(route)
+                click: () => {
+                  onRouteClick(route);
+                  if (zoomToRoute) zoomToRoute(route);
+                }
               }}
             />
           );

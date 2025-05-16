@@ -4,6 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
+import { Map as LeafletMap } from "leaflet";
+import L from "leaflet";
 import WelcomeBox from "@/components/WelcomeBox";
 import LayerManager from "@/components/MapComponents/LayerManager";
 import { LayerFilterProvider } from "@/components/MapComponents/LayerFilterContext";
@@ -155,6 +157,53 @@ function RoadtripContent() {
   const [showRouteList, setShowRouteList] = useState(false);
   const [showLayerManager, setShowLayerManager] = useState(false);
   const [showWelcomeBox, setShowWelcomeBox] = useState(false);
+  
+  // Reference to the Leaflet map instance
+  const mapRef = useRef<LeafletMap | null>(null);
+  
+  // Function to zoom to a POI
+  const zoomToPoi = useCallback((poi: PointOfInterest) => {
+    if (mapRef.current && poi.coordinate) {
+      const [lng, lat] = poi.coordinate.coordinates;
+      mapRef.current.setView([lat, lng], 16);
+    }
+  }, []);
+  
+  // Function to zoom to a route
+  const zoomToRoute = useCallback((route: Route) => {
+    if (mapRef.current && route.route) {
+      try {
+        // Parse the route data if it's a string
+        let routeData;
+        if (typeof route.route === 'string') {
+          try {
+            routeData = JSON.parse(route.route);
+          } catch (parseError) {
+            console.error("Error parsing route string:", parseError);
+            return;
+          }
+        } else {
+          routeData = route.route;
+        }
+        
+        // Check if we have valid coordinates
+        if (!routeData || !routeData.coordinates || !Array.isArray(routeData.coordinates)) {
+          console.warn("Route has invalid coordinates:", routeData);
+          return;
+        }
+        
+        // Create bounds from the route coordinates
+        const bounds = routeData.coordinates.reduce((bounds: L.LatLngBounds, coord: [number, number]) => {
+          return bounds.extend([coord[1], coord[0]]);
+        }, new L.LatLngBounds([routeData.coordinates[0][1], routeData.coordinates[0][0]], [routeData.coordinates[0][1], routeData.coordinates[0][0]]));
+        
+        // Fit the map to the bounds with some padding
+        mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+      } catch (error) {
+        console.error("Error zooming to route:", error);
+      }
+    }
+  }, []);
 
   // Check if welcome box should be shown (only on first visit)
   useEffect(() => {
@@ -232,7 +281,7 @@ function RoadtripContent() {
         intervalRef.current = null;
       }
     };
-  }, []); // Empty dependency array to prevent recreation of interval
+  }, [fetchPois, fetchRoutes]); // Include fetchPois and fetchRoutes to ensure they run with updated dependencies
 
   // Update data when dependencies change
   useEffect(() => {
@@ -249,6 +298,19 @@ function RoadtripContent() {
       .then(setMembers)
       .catch((err) => console.error("Failed to fetch roadtrip members", err));
   }, [id, apiService]);
+  
+  // Separate useEffect to enrich POIs with member usernames when either changes
+  useEffect(() => {
+    if (members.length > 0) {
+      // Only enrich existing POIs with usernames, don't fetch new ones
+      setPois(currentPois => 
+        currentPois.map(poi => ({
+          ...poi,
+          creatorUserName: members.find(m => m.userId === poi.creatorId)?.username
+        }))
+      );
+    }
+  }, [members]);
 
   useEffect(() => {
     if (!selectedPoi) return;
@@ -364,7 +426,7 @@ function RoadtripContent() {
     <div style={{ height: "100vh", width: "100%", marginTop: "-144px" }}>
       {/* ------------- Logo ------------- */}
       <Link
-        href="/"
+        href="/my-roadtrips"
         style={{
           position: "absolute",
           top: "30px",
@@ -394,7 +456,14 @@ function RoadtripContent() {
         onSettings={() => router.push(`/my-roadtrips/${id}/settings`)}
       />
       {showPOIList && (
-        <POIList pois={pois} onClose={() => setShowPOIList(false)} />
+        <POIList 
+          pois={pois} 
+          onClose={() => setShowPOIList(false)} 
+          onPoiSelect={(poi) => {
+            setSelectedPoiId(poi.poiId);
+            zoomToPoi(poi);
+          }}
+        />
       )}
       {newPoi && (
         <POIWindow
@@ -625,7 +694,10 @@ function RoadtripContent() {
         <RouteList
           routes={routes}
           pois={pois}
-          onRouteSelect={(route) => setSelectedRoute(route)}
+          onRouteSelect={(route) => {
+            setSelectedRoute(route);
+            zoomToRoute(route);
+          }}
           onCreateRoute={() => setShowRouteForm(true)}
           onClose={() => setShowRouteList(false)}
         />
@@ -682,6 +754,7 @@ function RoadtripContent() {
           center={[47.37013, 8.54427]}
           zoom={13}
           zoomControl={false}
+          ref={mapRef}
         >
           <MapClickHandler />
           <MapLayersControl
@@ -690,6 +763,8 @@ function RoadtripContent() {
             routes={routes}
             setSelectedPoiId={setSelectedPoiId}
             setSelectedRoute={setSelectedRoute}
+            zoomToPoi={zoomToPoi}
+            zoomToRoute={zoomToRoute}
             boundingBox={boundingBox}
           />
         </MapContainer>
