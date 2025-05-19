@@ -1,30 +1,15 @@
 import Draggable from "react-draggable";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { PointOfInterest } from "../../types/poi";
 import Image from "next/image";
 
 interface POIListProps {
     pois: PointOfInterest[];
     onClose: () => void;
-    onPoiSelect?: (poi: PointOfInterest) => void;
 }
 
-export default function POIList({ pois, onClose, onPoiSelect }: POIListProps) {
+export default function POIList({ pois, onClose }: POIListProps) {
     const nodeRef = useRef<HTMLDivElement>(null!);
-    
-    // Add click outside functionality
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
-                onClose();
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [onClose]);
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
@@ -130,9 +115,7 @@ export default function POIList({ pois, onClose, onPoiSelect }: POIListProps) {
                                 border: "1px solid #E4E4E4",
                                 padding: "10px",
                                 position: "relative",
-                                cursor: "pointer"
                             }}
-                            onClick={() => onPoiSelect && onPoiSelect(poi)}
                         >
                             <div style={{ fontSize: 20, fontWeight: 700, color: "black", textAlign: "center" }}>{poi.name}</div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: "black", textAlign: "center", marginTop: "10px" }}>
