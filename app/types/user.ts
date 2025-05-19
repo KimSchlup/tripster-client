@@ -10,5 +10,6 @@ export interface User {
   token: string | null;
   status: string | null;
   recieveNotifications: boolean;
-  emergencyContact?: EmergencyContact | null;
+  emergencyContact?: EmergencyContact | null; // Kept for backward compatibility
+  emergencyContacts?: EmergencyContact[] | null;
 }

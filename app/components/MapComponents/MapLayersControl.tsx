@@ -1,13 +1,26 @@
+"use client";
+
 // MapLayersControl.tsx
 import { useEffect } from "react";
-import { TileLayer, Rectangle } from "react-leaflet";
+import dynamic from "next/dynamic";
 import { useLayerFilter } from "./LayerFilterContext";
 import { DisplayPOIs } from "./DisplayPOIs";
 import RouteDisplay from "./RouteDisplay";
 import { PointOfInterest } from "@/types/poi";
 import { Route } from "@/types/routeTypes";
-import { LatLngBounds } from "leaflet";
 import type { GeoJSON } from "geojson";
+import { useLeaflet, createBoundsFromGeoJSON } from "@/utils/leafletUtils";
+
+// Dynamically import Leaflet components to avoid SSR issues
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+
+const Rectangle = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Rectangle),
+  { ssr: false }
+);
 
 interface MapLayersControlProps {
   initialBasemapType: "SATELLITE" | "OPEN_STREET_MAP" | "TOPOGRAPHY";
@@ -31,41 +44,15 @@ export default function MapLayersControl({
   boundingBox,
 }: MapLayersControlProps) {
   const { filter, setFilter } = useLayerFilter();
+  const leaflet = useLeaflet();
 
   // Set the initial basemap type when the component mounts
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setFilter({ basemapType: initialBasemapType });
-  }, [initialBasemapType]);
+  }, [initialBasemapType, setFilter]);
 
-  // Convert GeoJSON bounding box to Leaflet bounds if provided
-  const getBoundsFromGeoJSON = (): LatLngBounds | null => {
-    if (!boundingBox || boundingBox.type !== "Polygon") return null;
-
-    try {
-      const coordinates = boundingBox.coordinates[0];
-
-      // Find min/max coordinates to create bounds
-      let minLat = 90,
-        maxLat = -90,
-        minLng = 180,
-        maxLng = -180;
-
-      for (const [lng, lat] of coordinates) {
-        minLat = Math.min(minLat, lat);
-        maxLat = Math.max(maxLat, lat);
-        minLng = Math.min(minLng, lng);
-        maxLng = Math.max(maxLng, lng);
-      }
-
-      return new LatLngBounds([minLat, minLng], [maxLat, maxLng]);
-    } catch (error) {
-      console.error("Error converting GeoJSON to bounds:", error);
-      return null;
-    }
-  };
-
-  const bounds = getBoundsFromGeoJSON();
+  // Create bounds from GeoJSON when Leaflet is loaded
+  const bounds = leaflet ? createBoundsFromGeoJSON(leaflet, boundingBox) : null;
 
   return (
     <>
@@ -92,7 +79,11 @@ export default function MapLayersControl({
         />
       )}
 
-      <DisplayPOIs pois={pois} setSelectedPoiId={setSelectedPoiId} zoomToPoi={zoomToPoi} />
+      <DisplayPOIs
+        pois={pois}
+        setSelectedPoiId={setSelectedPoiId}
+        zoomToPoi={zoomToPoi}
+      />
       <RouteDisplay
         routes={routes}
         onRouteClick={(route) => setSelectedRoute(route)}
