@@ -4,21 +4,23 @@ import React from "react";
 import Image from "next/image";
 
 interface VerticalSidebarProps {
-    sidebarTop: string,
-    onPOIList: () => void;
-    onChecklist: () => void;
-    onLayerManager: () => void;
-    onSettings: () => void;
-    onRouteList?: () => void;
+  sidebarTop: string;
+  onPOIList: () => void;
+  onChecklist: () => void;
+  onLayerManager: () => void;
+  onSettings: () => void;
+  onRouteList?: () => void;
+  onEmergencyContacts?: () => void;
 }
 
 const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
-    sidebarTop,
-    onPOIList,
-    onChecklist,
-    onLayerManager,
-    onSettings,
-    onRouteList,
+  sidebarTop,
+  onPOIList,
+  onChecklist,
+  onLayerManager,
+  onSettings,
+  onRouteList,
+  onEmergencyContacts,
 }) => {
   return (
     <div
@@ -39,7 +41,6 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
         zIndex: 1000,
       }}
     >
-
       {/* POI List */}
       <button
         onClick={onPOIList}
@@ -54,15 +55,28 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "1";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "1";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "0";
         }}
       >
-        <Image src="/map-elements/poi-list.svg" alt="POI List" width={45} height={45} />
+        <Image
+          src="/map-elements/poi-list.svg"
+          alt="POI List"
+          width={45}
+          height={45}
+        />
         <span
           className="hover-overlay"
           style={{
@@ -115,16 +129,29 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "1";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "1";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "0";
         }}
       >
-          <Image src="/map-elements/wayfinder.svg" alt="Route List" width={50} height={50} />
-          <span
+        <Image
+          src="/map-elements/wayfinder.svg"
+          alt="Route List"
+          width={50}
+          height={50}
+        />
+        <span
           className="hover-overlay"
           style={{
             position: "absolute",
@@ -176,15 +203,28 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "1";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "1";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "0";
         }}
       >
-        <Image src="/map-elements/layer-manager.svg" alt="Layer Manager" width={50} height={50} />
+        <Image
+          src="/map-elements/layer-manager.svg"
+          alt="Layer Manager"
+          width={50}
+          height={50}
+        />
         <span
           className="hover-overlay"
           style={{
@@ -237,15 +277,28 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "1";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "1";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "0";
         }}
       >
-        <Image src="/map-elements/checklist.svg" alt="Checklist" width={50} height={50} />
+        <Image
+          src="/map-elements/checklist.svg"
+          alt="Checklist"
+          width={50}
+          height={50}
+        />
         <span
           className="hover-overlay"
           style={{
@@ -298,15 +351,28 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "1";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "1";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0";
-          (e.currentTarget.querySelector(".tooltip") as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0";
+          (e.currentTarget.querySelector(
+            ".tooltip"
+          ) as HTMLElement)!.style.opacity = "0";
         }}
       >
-        <Image src="/map-elements/settings.svg" alt="Settings" width={50} height={50} />
+        <Image
+          src="/map-elements/settings.svg"
+          alt="Settings"
+          width={50}
+          height={50}
+        />
         <span
           className="hover-overlay"
           style={{
@@ -344,6 +410,82 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           Settings
         </div>
       </button>
+
+      {/* Emergency Contacts */}
+      {onEmergencyContacts && (
+        <button
+          onClick={onEmergencyContacts}
+          style={{
+            background: "transparent",
+            border: "none",
+            width: "60px",
+            height: "60px",
+            position: "relative",
+            borderRadius: "30%",
+            overflow: "visible",
+            cursor: "pointer",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget.querySelector(
+              ".hover-overlay"
+            ) as HTMLElement)!.style.opacity = "0.1";
+            (e.currentTarget.querySelector(
+              ".tooltip"
+            ) as HTMLElement)!.style.opacity = "1";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget.querySelector(
+              ".hover-overlay"
+            ) as HTMLElement)!.style.opacity = "0";
+            (e.currentTarget.querySelector(
+              ".tooltip"
+            ) as HTMLElement)!.style.opacity = "0";
+          }}
+        >
+          <Image
+            src="/map-elements/emergency-contact.svg"
+            alt="Emergency Contacts"
+            width={50}
+            height={50}
+          />
+          <span
+            className="hover-overlay"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "#3d2f57",
+              borderRadius: "30%",
+              opacity: 0,
+              transition: "opacity 0.2s",
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            className="tooltip"
+            style={{
+              position: "absolute",
+              left: "70px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "rgba(0, 0, 0, 0.7)",
+              color: "white",
+              padding: "5px 10px",
+              borderRadius: "4px",
+              fontSize: "14px",
+              whiteSpace: "nowrap",
+              opacity: 0,
+              transition: "opacity 0.2s",
+              pointerEvents: "none",
+              zIndex: 9999,
+            }}
+          >
+            Emergency Contacts
+          </div>
+        </button>
+      )}
     </div>
   );
 };
