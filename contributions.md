@@ -164,5 +164,5 @@ reason).
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **@RicoCamenzind** | 19.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/68a85d040d49e5f2bd4b1c4c25acb63e1383e47a) | fixed the voting mechanism to properly support voting | before the votes were not properly cast thus the status of POI and route were not changed. |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+|                    | 19.05.2025   | [Commit 2](https://github.com/KimSchlup/tripster-server/commit/2df515672ba5d57d7a49f6d8db702aaeefe6f9b5) | fixed a bug where deleting a poi did not result i deleting the routes using the poi. | deleting a poi is quite common and to not clutter the map and improve the user experience it is nice to automatically delete the routes. |
 
