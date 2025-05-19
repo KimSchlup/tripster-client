@@ -162,6 +162,6 @@ reason).
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser5]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
+| **[@RicoCamenzind]** | 19.05.2025   | [Commit 1](https://github.com/KimSchlup/tripster-server/commit/68a85d040d49e5f2bd4b1c4c25acb63e1383e47a) | fixed the voting mechanism to properly support voting | before the votes were not properly cast thus the status of POI and route were not changed. |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 
