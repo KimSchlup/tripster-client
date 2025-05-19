@@ -1,7 +1,7 @@
 import { Route, TravelMode } from "@/types/routeTypes";
 import { PointOfInterest } from "@/types/poi";
 import Draggable from "react-draggable";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Image from "next/image";
 
 interface RouteListProps {
@@ -12,8 +12,28 @@ interface RouteListProps {
   onClose: () => void;
 }
 
-export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, onClose }: RouteListProps) {
+export default function RouteList({
+  routes,
+  pois,
+  onRouteSelect,
+  onCreateRoute,
+  onClose,
+}: RouteListProps) {
   const nodeRef = useRef<HTMLDivElement>(null!);
+
+  // Add click outside functionality
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
 
   // Format travel time (convert from seconds to minutes/hours)
   const formatTravelTime = (seconds: number): string => {
@@ -39,24 +59,49 @@ export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, 
 
   // Get icon for travel mode
   const getTravelModeIcon = (mode: TravelMode): string => {
-    switch (mode) {
-      case TravelMode.DRIVING_CAR:
-        return "🚗";
-      case TravelMode.FOOT_WALKING:
-        return "🚶";
-      case TravelMode.CYCLING_REGULAR:
-        return "🚲";
-      default:
-        return "🚗";
+    // Convert to string to handle both enum values and string representations
+    const modeStr = String(mode);
+
+    if (modeStr.includes("DRIVING_CAR") || modeStr.includes("Car Drive")) {
+      return "🚗";
+    } else if (
+      modeStr.includes("FOOT_WALKING") ||
+      modeStr.includes("Walk by foot")
+    ) {
+      return "🚶";
+    } else if (
+      modeStr.includes("CYCLING_REGULAR") ||
+      modeStr.includes("Cycling")
+    ) {
+      return "🚲";
+    } else {
+      console.log("Unknown travel mode:", mode);
+      return "🚗";
+    }
+  };
+
+  // Get friendly name for travel mode
+  const getFriendlyTravelModeName = (mode: TravelMode): string => {
+    // Convert to string to handle both enum values and string representations
+    const modeStr = String(mode);
+
+    if (modeStr.includes("DRIVING_CAR")) {
+      return "Car Drive";
+    } else if (modeStr.includes("FOOT_WALKING")) {
+      return "Walk by foot";
+    } else if (modeStr.includes("CYCLING_REGULAR")) {
+      return "Cycling";
+    } else {
+      return modeStr;
     }
   };
 
   // Get status color
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case "APPROVED":
+      case "ACCEPTED":
         return "#79A44D";
-      case "REJECTED":
+      case "DECLINED":
         return "#E6393B";
       case "PENDING":
         return "#FFD700";
@@ -73,7 +118,7 @@ export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, 
           width: 465,
           height: 685,
           position: "absolute",
-          top: "100px",
+          top: "50px",
           left: "100px",
           background: "rgba(255, 255, 255, 0.70)",
           boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.05)",
@@ -85,7 +130,16 @@ export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, 
           paddingTop: "60px",
         }}
       >
-        <div className="handle" style={{ width: "100%", height: "60px", cursor: "move", position: "absolute", top: 0 }}>
+        <div
+          className="handle"
+          style={{
+            width: "100%",
+            height: "60px",
+            cursor: "move",
+            position: "absolute",
+            top: 0,
+          }}
+        >
           <button
             onClick={onClose}
             style={{
@@ -107,45 +161,52 @@ export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, 
               width={24}
               height={24}
               style={{
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             />
           </button>
-          <div style={{
-            textAlign: "center",
-            fontSize: 20,
-            fontFamily: "Manrope",
-            fontWeight: 700,
-            color: "black",
-            marginTop: "20px",
-          }}>
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: 20,
+              fontFamily: "Manrope",
+              fontWeight: 700,
+              color: "black",
+              marginTop: "20px",
+            }}
+          >
             Routes
           </div>
         </div>
 
-        <div style={{
-          marginTop: "20px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "20px",
-          padding: "0 10px 20px 10px",
-        }}>
+        <div
+          style={{
+            marginTop: "20px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "20px",
+            padding: "0 10px 20px 10px",
+          }}
+        >
           {routes.length === 0 ? (
-            <div style={{
-              width: "428px",
-              padding: "20px",
-              textAlign: "center",
-              color: "#666",
-              fontSize: "16px",
-              fontWeight: 500
-            }}>
-              No routes available. Create a route by selecting two points of interest.
+            <div
+              style={{
+                width: "428px",
+                padding: "20px",
+                textAlign: "center",
+                color: "#666",
+                fontSize: "16px",
+                fontWeight: 500,
+              }}
+            >
+              No routes available. Create a route by selecting two points of
+              interest.
             </div>
           ) : (
             routes.map((route, index) => {
-              const startPoi = pois.find(poi => poi.poiId === route.startId);
-              const endPoi = pois.find(poi => poi.poiId === route.endId);
+              const startPoi = pois.find((poi) => poi.poiId === route.startId);
+              const endPoi = pois.find((poi) => poi.poiId === route.endId);
 
               return (
                 <div
@@ -158,88 +219,107 @@ export default function RouteList({ routes, pois, onRouteSelect, onCreateRoute, 
                     border: "1px solid #E4E4E4",
                     padding: "15px",
                     position: "relative",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                   onClick={() => onRouteSelect(route)}
                 >
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "10px",
-                    justifyContent: "space-between"
-                  }}>
-                    <div style={{
+                  <div
+                    style={{
                       display: "flex",
                       alignItems: "center",
-                      fontSize: 18,
-                      fontWeight: 700,
-                      color: "black"
-                    }}>
-                      <span style={{ marginRight: "10px" }}>{getTravelModeIcon(route.travelMode)}</span>
-                      <span>{route.travelMode}</span>
+                      marginBottom: "10px",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: "black",
+                      }}
+                    >
+                      <span style={{ marginRight: "10px" }}>
+                        {getTravelModeIcon(route.travelMode)}
+                      </span>
+                      <span>{getFriendlyTravelModeName(route.travelMode)}</span>
                     </div>
-                    <div style={{
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: getStatusColor(route.status),
-                      padding: "2px 8px",
-                      borderRadius: "10px",
-                      background: "rgba(228, 228, 228, 0.24)",
-                    }}>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: getStatusColor(route.status),
+                        padding: "2px 8px",
+                        borderRadius: "10px",
+                        background: "rgba(228, 228, 228, 0.24)",
+                      }}
+                    >
                       {route.status}
                     </div>
                   </div>
 
-                  <div style={{
-                    fontSize: 16,
-                    fontWeight: 600,
-                    color: "black",
-                    marginBottom: "10px"
-                  }}>
+                  <div
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 600,
+                      color: "black",
+                      marginBottom: "10px",
+                    }}
+                  >
                     {startPoi?.name || "Unknown"} → {endPoi?.name || "Unknown"}
                   </div>
 
-                  <div style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 14,
-                    color: "#666",
-                    marginTop: "10px"
-                  }}>
-                    <div>Distance: <strong>{formatDistance(route.distance)}</strong></div>
-                    <div>Time: <strong>{formatTravelTime(route.travelTime)}</strong></div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: 14,
+                      color: "#666",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <div>
+                      Distance:{" "}
+                      <strong>{formatDistance(route.distance)}</strong>
+                    </div>
+                    <div>
+                      Time:{" "}
+                      <strong>{formatTravelTime(route.travelTime)}</strong>
+                    </div>
                   </div>
                 </div>
               );
             })
           )}
         </div>
-      <div style={{
-        position: "absolute",
-        bottom: "10px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 2001
-      }}>
-        <button
-          onClick={onCreateRoute}
+        <div
           style={{
-            padding: "12px 24px",
-            fontSize: "16px",
-            fontWeight: 700,
-            background: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)"
+            position: "absolute",
+            bottom: "10px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 2001,
           }}
         >
-          Create Route
-        </button>
+          <button
+            onClick={onCreateRoute}
+            style={{
+              padding: "12px 24px",
+              fontSize: "16px",
+              fontWeight: 700,
+              background: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            Create Route
+          </button>
+        </div>
       </div>
-      </div>
-
     </Draggable>
   );
 }
