@@ -184,7 +184,7 @@ function RoadtripsContent() {
     userId,
     showToast,
     hasShownLoginToast,
-    // fetchRoadtripImage removed from dependencies to prevent circular updates
+    fetchRoadtripImage,
   ]);
 
   useEffect(() => {

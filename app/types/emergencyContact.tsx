@@ -1,6 +1,7 @@
 // types/emergencyContact.ts
 export interface EmergencyContact {
-  userId: string;
+  contactId?: number;
+  userId?: number;
   firstName: string;
   lastName: string;
   phoneNumber: string;
