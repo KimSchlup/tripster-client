@@ -157,8 +157,8 @@ reason).
 | **@P4P5T123** | 19.05.2025   | [Link to Commit 1](https://github.com/KimSchlup/tripster-client/pull/109/commits/4b2c24944a863e67eac0959dc06f31d1ce174210) | Implemented Emergency Contact Form for edit and saving | Finalizes Emergency Contact user story, users can now edit their own Emergency contacts as they wish.  |
 |                    | 19.05.2025   | [Link to Commit 2](https://github.com/KimSchlup/tripster-client/pull/109/commits/4b2c24944a863e67eac0959dc06f31d1ce174210) | Implemented new page in order to view roadtrip member's emergency contacts in one page. Also fixed "window not defined mistake" by importing leaflet functions dynamically. | Adds sense to emergency contacts since in case of emergency people can actually be contacted. |
 |                    | 19.05.2025   | [Link to Pull 3](https://github.com/KimSchlup/tripster-client/pull/116) | UI Adjustments | Formatting and Positions of Popups adjusted, Popups disappear upon click outside of it yadayadayada classic frontend lyfe |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **@KimSchlup** | [15.05.25]   | [Link to Commit 1](https://github.com/KimSchlup/tripster-server/commit/263bd6982f044920d123682fb68a042d94784fb5) | Enbled editing and deleting of User Emergency Contacts | Users need to be able to update their emergency contact |
+|                    | 19.05.25   | [Link to Commit 2](https://github.com/KimSchlup/tripster-server/commit/d9c1aff5df1b33c1efb09e5d27ec9f0d09e3009c) | Added Test for Emergency Contact Functionality | The backend functionality needs to be covered by test |
 | **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
 |                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
 | **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
