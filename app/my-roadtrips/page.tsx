@@ -40,19 +40,22 @@ function RoadtripsContent() {
   // Track if we've already shown the login toast
   const [hasShownLoginToast, setHasShownLoginToast] = useState(false);
 
-  const fetchRoadtripImage = async (roadtripId: number) => {
-    try {
-      const res = await apiService.get<Response>(
-        `/roadtrips/${roadtripId}/settings/images`
-      );
-      if (!res.ok) throw new Error("Image not found");
-      const imageUrl = await res.text(); // ← pull the URL string from the body
-      console.log("got image URL:", imageUrl);
-      setRoadtripImages((prev) => ({ ...prev, [roadtripId]: imageUrl }));
-    } catch (err) {
-      console.warn("No image or error loading image for", roadtripId, err);
-    }
-  };
+  const fetchRoadtripImage = useCallback(
+    async (roadtripId: number) => {
+      try {
+        const res = await apiService.get<Response>(
+          `/roadtrips/${roadtripId}/settings/images`
+        );
+        if (!res.ok) throw new Error("Image not found");
+        const imageUrl = await res.text(); // ← pull the URL string from the body
+        console.log("got image URL:", imageUrl);
+        setRoadtripImages((prev) => ({ ...prev, [roadtripId]: imageUrl }));
+      } catch (err) {
+        console.warn("No image or error loading image for", roadtripId, err);
+      }
+    },
+    [apiService]
+  );
 
   // Function to fetch roadtrips
   const fetchRoadtrips = useCallback(async () => {
@@ -184,7 +187,6 @@ function RoadtripsContent() {
     userId,
     showToast,
     hasShownLoginToast,
-    fetchRoadtripImage,
   ]);
 
   useEffect(() => {
