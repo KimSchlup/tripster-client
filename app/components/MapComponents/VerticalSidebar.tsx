@@ -4,21 +4,21 @@ import React from "react";
 import Image from "next/image";
 
 interface VerticalSidebarProps {
-    sidebarTop: string,
-    onPOIList: () => void;
-    onChecklist: () => void;
-    onLayerManager: () => void;
-    onSettings: () => void;
-    onRouteList?: () => void;
+  sidebarTop: string;
+  onPOIList: () => void;
+  onChecklist: () => void;
+  onLayerManager: () => void;
+  onSettings: () => void;
+  onRouteList?: () => void;
 }
 
 const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
-    sidebarTop,
-    onPOIList,
-    onChecklist,
-    onLayerManager,
-    onSettings,
-    onRouteList,
+  sidebarTop,
+  onPOIList,
+  onChecklist,
+  onLayerManager,
+  onSettings,
+  onRouteList,
 }) => {
   return (
     <div
@@ -39,7 +39,6 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
         zIndex: 1000,
       }}
     >
-
       {/* POI List */}
       <button
         onClick={onPOIList}
@@ -54,13 +53,22 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1")
         }
         onMouseLeave={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0")
         }
       >
-        <Image src="/map-elements/poi-list.svg" alt="POI List" width={45} height={45} />
+        <Image
+          src="/map-elements/poi-list.svg"
+          alt="POI List"
+          width={45}
+          height={45}
+        />
         <span
           className="hover-overlay"
           style={{
@@ -92,14 +100,23 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1")
         }
         onMouseLeave={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0")
         }
       >
-          <Image src="/map-elements/wayfinder.svg" alt="POI List" width={50} height={50} />
-          <span
+        <Image
+          src="/map-elements/wayfinder.svg"
+          alt="POI List"
+          width={50}
+          height={50}
+        />
+        <span
           className="hover-overlay"
           style={{
             position: "absolute",
@@ -130,13 +147,22 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1")
         }
         onMouseLeave={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0")
         }
       >
-        <Image src="/map-elements/layer-manager.svg" alt="Layer Manager" width={50} height={50} />
+        <Image
+          src="/map-elements/layer-manager.svg"
+          alt="Layer Manager"
+          width={50}
+          height={50}
+        />
         <span
           className="hover-overlay"
           style={{
@@ -168,13 +194,22 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1")
         }
         onMouseLeave={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0")
         }
       >
-        <Image src="/map-elements/checklist.svg" alt="Checklist" width={50} height={50} />
+        <Image
+          src="/map-elements/checklist.svg"
+          alt="Checklist"
+          width={50}
+          height={50}
+        />
         <span
           className="hover-overlay"
           style={{
@@ -206,13 +241,22 @@ const VerticalSidebar: React.FC<VerticalSidebarProps> = ({
           cursor: "pointer",
         }}
         onMouseEnter={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0.1"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0.1")
         }
         onMouseLeave={(e) =>
-          (e.currentTarget.querySelector(".hover-overlay") as HTMLElement)!.style.opacity = "0"
+          ((e.currentTarget.querySelector(
+            ".hover-overlay"
+          ) as HTMLElement)!.style.opacity = "0")
         }
       >
-        <Image src="/map-elements/settings.svg" alt="Settings" width={50} height={50} />
+        <Image
+          src="/map-elements/settings.svg"
+          alt="Settings"
+          width={50}
+          height={50}
+        />
         <span
           className="hover-overlay"
           style={{
