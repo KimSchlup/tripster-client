@@ -222,13 +222,23 @@ export default function POIWindow({
               </label>
               <textarea
                 value={editableDescription}
-                onChange={(e) => setEditableDescription(e.target.value)}
+                onChange={(e) => {
+                  setEditableDescription(e.target.value);
+                  // Reset error state when user types
+                  if (descriptionError) {
+                    setDescriptionError(
+                      e.target.value.length > MAX_DESCRIPTION_LENGTH
+                    );
+                  }
+                }}
                 style={{
                   width: "100%",
                   padding: "8px",
                   fontSize: "14px",
                   borderRadius: "3px",
-                  border: "1px solid #E4E4E4",
+                  border: descriptionError
+                    ? "1px solid #E6393B"
+                    : "1px solid #E4E4E4",
                   background: "rgba(228, 228, 228, 0.24)",
                   color: "black",
                   minHeight: "80px",
@@ -237,6 +247,18 @@ export default function POIWindow({
                   flex: "1 1 auto",
                 }}
               />
+              {descriptionError && (
+                <div
+                  style={{
+                    color: "#E6393B",
+                    fontSize: "12px",
+                    marginTop: "4px",
+                  }}
+                >
+                  Description is too long. Maximum length is{" "}
+                  {MAX_DESCRIPTION_LENGTH} characters.
+                </div>
+              )}
             </div>
 
             {/* Category and Priority Selection */}
@@ -591,13 +613,23 @@ export default function POIWindow({
                 </label>
                 <textarea
                   value={editableDescription}
-                  onChange={(e) => setEditableDescription(e.target.value)}
+                  onChange={(e) => {
+                    setEditableDescription(e.target.value);
+                    // Reset error state when user types
+                    if (descriptionError) {
+                      setDescriptionError(
+                        e.target.value.length > MAX_DESCRIPTION_LENGTH
+                      );
+                    }
+                  }}
                   style={{
                     width: "100%",
                     padding: "8px",
                     fontSize: "14px",
                     borderRadius: "3px",
-                    border: "1px solid #E4E4E4",
+                    border: descriptionError
+                      ? "1px solid #E6393B"
+                      : "1px solid #E4E4E4",
                     background: "rgba(228, 228, 228, 0.24)",
                     color: "black",
                     minHeight: "80px",
@@ -606,6 +638,18 @@ export default function POIWindow({
                     flex: "1 1 auto",
                   }}
                 />
+                {descriptionError && (
+                  <div
+                    style={{
+                      color: "#E6393B",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                    }}
+                  >
+                    Description is too long. Maximum length is{" "}
+                    {MAX_DESCRIPTION_LENGTH} characters.
+                  </div>
+                )}
               </div>
 
               {/* Category and Priority Selection */}
