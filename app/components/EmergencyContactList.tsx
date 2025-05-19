@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useApi } from "@/hooks/useApi";
-import { useAuth } from "@/hooks/useAuth";
 import { EmergencyContact } from "@/types/emergencyContact";
 import EmergencyContactPopup from "./EmergencyContactPopup";
 import FormButton from "@/design-system/components/FormButton";
@@ -32,7 +31,7 @@ export default function EmergencyContactList({
     null
   );
 
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     if (!userId) return;
 
     try {
@@ -48,16 +47,16 @@ export default function EmergencyContactList({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, apiService]);
 
   useEffect(() => {
     fetchContacts();
-  }, [userId]);
+  }, [userId, fetchContacts]);
 
-  const handleAddContact = () => {
+  const handleAddContact = useCallback(() => {
     setCurrentContact(null);
     setShowPopup(true);
-  };
+  }, []);
 
   const handleEditContact = (contact: EmergencyContact) => {
     setCurrentContact(contact);
@@ -95,7 +94,9 @@ export default function EmergencyContactList({
     if (id) {
       const element = document.getElementById(id);
       if (element) {
-        (element as any).onAddContact = handleAddContact;
+        // Define a custom property on the HTML element
+        (element as HTMLElement & { onAddContact: () => void }).onAddContact =
+          handleAddContact;
       }
     }
   }, [id, handleAddContact]);

@@ -178,54 +178,60 @@ function RoadtripContent() {
   const leaflet = useLeaflet();
 
   // Function to zoom to a route
-  const zoomToRoute = useCallback((route: Route) => {
-    if (mapRef.current && route.route && leaflet) {
-      try {
-        // Parse the route data if it's a string
-        let routeData;
-        if (typeof route.route === "string") {
-          try {
-            routeData = JSON.parse(route.route);
-          } catch (parseError) {
-            console.error("Error parsing route string:", parseError);
+  const zoomToRoute = useCallback(
+    (route: Route) => {
+      if (mapRef.current && route.route && leaflet) {
+        try {
+          // Parse the route data if it's a string
+          let routeData;
+          if (typeof route.route === "string") {
+            try {
+              routeData = JSON.parse(route.route);
+            } catch (parseError) {
+              console.error("Error parsing route string:", parseError);
+              return;
+            }
+          } else {
+            routeData = route.route;
+          }
+
+          // Check if we have valid coordinates
+          if (
+            !routeData ||
+            !routeData.coordinates ||
+            !Array.isArray(routeData.coordinates)
+          ) {
+            console.warn("Route has invalid coordinates:", routeData);
             return;
           }
-        } else {
-          routeData = route.route;
+
+          // Create bounds from the route coordinates
+          if (!leaflet) return;
+
+          const initialCoord: [number, number] = [
+            routeData.coordinates[0][1],
+            routeData.coordinates[0][0],
+          ];
+
+          const bounds = routeData.coordinates.reduce(
+            (
+              bounds: import("leaflet").LatLngBounds,
+              coord: [number, number]
+            ) => {
+              return bounds.extend([coord[1], coord[0]]);
+            },
+            new leaflet.LatLngBounds(initialCoord, initialCoord)
+          );
+
+          // Fit the map to the bounds with some padding
+          mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+        } catch (error) {
+          console.error("Error zooming to route:", error);
         }
-
-        // Check if we have valid coordinates
-        if (
-          !routeData ||
-          !routeData.coordinates ||
-          !Array.isArray(routeData.coordinates)
-        ) {
-          console.warn("Route has invalid coordinates:", routeData);
-          return;
-        }
-
-        // Create bounds from the route coordinates
-        if (!leaflet) return;
-
-        const initialCoord: [number, number] = [
-          routeData.coordinates[0][1],
-          routeData.coordinates[0][0],
-        ];
-
-        const bounds = routeData.coordinates.reduce(
-          (bounds: any, coord: [number, number]) => {
-            return bounds.extend([coord[1], coord[0]]);
-          },
-          new leaflet.LatLngBounds(initialCoord, initialCoord)
-        );
-
-        // Fit the map to the bounds with some padding
-        mapRef.current.fitBounds(bounds, { padding: [50, 50] });
-      } catch (error) {
-        console.error("Error zooming to route:", error);
       }
-    }
-  }, []);
+    },
+    [leaflet]
+  );
 
   // Check if welcome box should be shown (only on first visit)
   useEffect(() => {

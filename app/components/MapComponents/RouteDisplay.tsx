@@ -1,6 +1,6 @@
 "use client";
 
-import { Route, RouteAcceptanceStatus } from "@/types/routeTypes";
+import { Route } from "@/types/routeTypes";
 import dynamic from "next/dynamic";
 import { useLayerFilter } from "./LayerFilterContext";
 import { getRouteColor } from "@/utils/leafletUtils";

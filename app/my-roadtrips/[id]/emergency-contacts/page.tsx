@@ -1,25 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Header from "@/components/Header";
 import { RoadtripMember } from "@/types/roadtripMember";
-import { EmergencyContact } from "@/types/emergencyContact";
 import BackToMapButton from "@/components/BackToMapButton";
 import EmergencyContactList from "@/components/EmergencyContactList";
 
 function EmergencyContactsContent() {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
   const apiService = useApi();
 
   const [members, setMembers] = useState<RoadtripMember[]>([]);
-  const [memberContacts, setMemberContacts] = useState<
-    Map<number, EmergencyContact[]>
-  >(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,43 +35,12 @@ function EmergencyContactsContent() {
     fetchMembers();
   }, [id, apiService]);
 
-  // Fetch emergency contacts for each member
+  // Set loading to false after members are fetched
   useEffect(() => {
-    const fetchAllMemberContacts = async () => {
-      if (members.length === 0) return;
-
-      setLoading(true);
-      const contactsMap = new Map<number, EmergencyContact[]>();
-
-      try {
-        // Fetch emergency contacts for each member
-        const promises = members.map(async (member) => {
-          try {
-            const contacts = await apiService.get<EmergencyContact[]>(
-              `/users/${member.userId}/emergency-contacts`
-            );
-            contactsMap.set(member.userId, contacts);
-          } catch (err) {
-            console.error(
-              `Failed to fetch emergency contacts for user ${member.userId}`,
-              err
-            );
-            contactsMap.set(member.userId, []);
-          }
-        });
-
-        await Promise.all(promises);
-        setMemberContacts(contactsMap);
-      } catch (err) {
-        console.error("Error fetching emergency contacts", err);
-        setError("Failed to load emergency contacts");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllMemberContacts();
-  }, [members, apiService]);
+    if (members.length > 0) {
+      setLoading(false);
+    }
+  }, [members]);
 
   return (
     <>

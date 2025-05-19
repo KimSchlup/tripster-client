@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { PoiAcceptanceStatus, PointOfInterest } from "@/types/poi";
 import { FC, useEffect, useState } from "react";
+import type { Icon } from "leaflet";
 import { useLayerFilter } from "./LayerFilterContext";
 import { useLeaflet, createColoredMarker } from "@/utils/leafletUtils";
 
@@ -19,13 +20,15 @@ export const DisplayPOIs: FC<{
 }> = ({ pois, setSelectedPoiId, zoomToPoi }) => {
   const { filter } = useLayerFilter();
   const leaflet = useLeaflet();
-  const [markerIcons, setMarkerIcons] = useState<Record<string, any>>({});
+  const [markerIcons, setMarkerIcons] = useState<Record<string, Icon | null>>(
+    {}
+  );
 
   // Create marker icons when Leaflet is loaded
   useEffect(() => {
     if (!leaflet) return;
 
-    const icons: Record<string, any> = {};
+    const icons: Record<string, Icon | null> = {};
     // Create icons for each status
     icons.pending = createColoredMarker(leaflet, "#ff9900");
     icons.accepted = createColoredMarker(leaflet, "#79A44D");

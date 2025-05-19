@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import type { GeoJSON } from 'geojson';
 
 /**
  * A utility to safely import Leaflet only on the client side
@@ -66,13 +67,23 @@ export function getRouteColor(status: string): string {
 /**
  * A utility to create a Leaflet LatLngBounds from a GeoJSON polygon
  */
-export function createBoundsFromGeoJSON(L: typeof import('leaflet'), geoJson: any): any {
-  if (!L || !geoJson || geoJson.type !== "Polygon") {
+export function createBoundsFromGeoJSON(
+  L: typeof import('leaflet'), 
+  geoJson?: GeoJSON
+): import('leaflet').LatLngBounds | null {
+  if (!L || !geoJson) {
     return null;
   }
 
   try {
-    const coordinates = geoJson.coordinates[0];
+    // Check if it's a Polygon and access coordinates
+    if (geoJson.type !== "Polygon") {
+      return null;
+    }
+    
+    // Type assertion to access coordinates
+    const polygonGeoJson = geoJson as { type: "Polygon"; coordinates: number[][][] };
+    const coordinates = polygonGeoJson.coordinates[0];
 
     // Find min/max coordinates to create bounds
     let minLat = 90,

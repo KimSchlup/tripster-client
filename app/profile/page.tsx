@@ -281,8 +281,13 @@ const ProfileContent: React.FC = () => {
                       const contactList = document.getElementById(
                         "emergency-contact-list"
                       );
-                      if (contactList && (contactList as any).onAddContact) {
-                        (contactList as any).onAddContact();
+                      if (contactList) {
+                        const typedContactList = contactList as HTMLElement & {
+                          onAddContact?: () => void;
+                        };
+                        if (typedContactList.onAddContact) {
+                          typedContactList.onAddContact();
+                        }
                       }
                     }}
                     style={{
