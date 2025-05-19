@@ -160,9 +160,10 @@ export default function LayerManager({
         ref={nodeRef}
         style={{
           width: 465,
-          height: 832,
+          maxHeight: "100vh",
+          height: "auto",
           position: "absolute",
-          top: "100px",
+          top: "0",
           left: "100px",
           background: "rgba(255,255,255,0.70)",
           boxShadow: "0px 0px 30px rgba(0,0,0,0.05)",

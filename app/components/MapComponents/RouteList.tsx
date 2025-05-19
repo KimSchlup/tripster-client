@@ -116,9 +116,11 @@ export default function RouteList({
         ref={nodeRef}
         style={{
           width: 465,
-          height: 685,
+          minHeight: "200px",
+          maxHeight: "685px",
+          height: "auto",
           position: "absolute",
-          top: "50px",
+          top: "0",
           left: "100px",
           background: "rgba(255, 255, 255, 0.70)",
           boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.05)",
@@ -128,6 +130,8 @@ export default function RouteList({
           zIndex: 2000,
           overflowY: "auto",
           paddingTop: "60px",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <div
@@ -187,6 +191,7 @@ export default function RouteList({
             alignItems: "center",
             gap: "20px",
             padding: "0 10px 20px 10px",
+            flex: "1 1 auto",
           }}
         >
           {routes.length === 0 ? (
@@ -295,10 +300,11 @@ export default function RouteList({
         </div>
         <div
           style={{
-            position: "absolute",
-            bottom: "10px",
-            left: "50%",
-            transform: "translateX(-50%)",
+            position: "relative",
+            marginTop: "auto",
+            marginBottom: "20px",
+            textAlign: "center",
+            width: "100%",
             zIndex: 2001,
           }}
         >
