@@ -2,7 +2,7 @@ import { Route, TravelMode } from "@/types/routeTypes";
 import { PointOfInterest } from "@/types/poi";
 import Image from "next/image";
 import Draggable from "react-draggable";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 
 interface RouteDetailsProps {
   route: Route;
@@ -14,20 +14,6 @@ interface RouteDetailsProps {
 
 export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }: RouteDetailsProps) {
   const nodeRef = useRef<HTMLDivElement>(null!);
-  
-  // Add click outside functionality
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [onClose]);
   
   // Get start and end POI names
   const startPoi = pois.find(poi => poi.poiId === route.startId);
@@ -57,34 +43,15 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
 
   // Get icon for travel mode
   const getTravelModeIcon = (mode: TravelMode): string => {
-    // Convert to string to handle both enum values and string representations
-    const modeStr = String(mode);
-    
-    if (modeStr.includes("DRIVING_CAR") || modeStr.includes("Car Drive")) {
-      return "🚗";
-    } else if (modeStr.includes("FOOT_WALKING") || modeStr.includes("Walk by foot")) {
-      return "🚶";
-    } else if (modeStr.includes("CYCLING_REGULAR") || modeStr.includes("Cycling")) {
-      return "🚲";
-    } else {
-      console.log("Unknown travel mode:", mode);
-      return "🚗";
-    }
-  };
-  
-  // Get friendly name for travel mode
-  const getFriendlyTravelModeName = (mode: TravelMode): string => {
-    // Convert to string to handle both enum values and string representations
-    const modeStr = String(mode);
-    
-    if (modeStr.includes("DRIVING_CAR")) {
-      return "Car Drive";
-    } else if (modeStr.includes("FOOT_WALKING")) {
-      return "Walk by foot";
-    } else if (modeStr.includes("CYCLING_REGULAR")) {
-      return "Cycling";
-    } else {
-      return modeStr;
+    switch (mode) {
+      case TravelMode.DRIVING_CAR:
+        return "🚗";
+      case TravelMode.FOOT_WALKING:
+        return "🚶";
+      case TravelMode.CYCLING_REGULAR:
+        return "🚲";
+      default:
+        return "🚗";
     }
   };
 
@@ -190,7 +157,7 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
           <div style={{ marginBottom: "20px" }}>
             <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "15px", color: "black", display: "flex", alignItems: "center" }}>
               <span style={{ marginRight: "10px" }}>{getTravelModeIcon(route.travelMode)}</span>
-              {getFriendlyTravelModeName(route.travelMode)}
+              {route.travelMode}
             </div>
             
             <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "5px", color: "black" }}>
