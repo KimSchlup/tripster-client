@@ -2,7 +2,7 @@ import { Route, TravelMode } from "@/types/routeTypes";
 import { PointOfInterest } from "@/types/poi";
 import Image from "next/image";
 import Draggable from "react-draggable";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 interface RouteDetailsProps {
   route: Route;
@@ -12,12 +12,32 @@ interface RouteDetailsProps {
   onEdit: () => void;
 }
 
-export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }: RouteDetailsProps) {
+export default function RouteDetails({
+  route,
+  pois,
+  onClose,
+  onDelete,
+  onEdit,
+}: RouteDetailsProps) {
   const nodeRef = useRef<HTMLDivElement>(null!);
-  
+
+  // Add click outside functionality
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
   // Get start and end POI names
-  const startPoi = pois.find(poi => poi.poiId === route.startId);
-  const endPoi = pois.find(poi => poi.poiId === route.endId);
+  const startPoi = pois.find((poi) => poi.poiId === route.startId);
+  const endPoi = pois.find((poi) => poi.poiId === route.endId);
 
   // Format travel time (convert from seconds to minutes/hours)
   const formatTravelTime = (seconds: number): string => {
@@ -28,7 +48,9 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
     } else {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.round((seconds % 3600) / 60);
-      return `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+      return `${hours} hour${hours !== 1 ? "s" : ""} ${minutes} minute${
+        minutes !== 1 ? "s" : ""
+      }`;
     }
   };
 
@@ -43,15 +65,40 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
 
   // Get icon for travel mode
   const getTravelModeIcon = (mode: TravelMode): string => {
-    switch (mode) {
-      case TravelMode.DRIVING_CAR:
-        return "🚗";
-      case TravelMode.FOOT_WALKING:
-        return "🚶";
-      case TravelMode.CYCLING_REGULAR:
-        return "🚲";
-      default:
-        return "🚗";
+    // Convert to string to handle both enum values and string representations
+    const modeStr = String(mode);
+
+    if (modeStr.includes("DRIVING_CAR") || modeStr.includes("Car Drive")) {
+      return "🚗";
+    } else if (
+      modeStr.includes("FOOT_WALKING") ||
+      modeStr.includes("Walk by foot")
+    ) {
+      return "🚶";
+    } else if (
+      modeStr.includes("CYCLING_REGULAR") ||
+      modeStr.includes("Cycling")
+    ) {
+      return "🚲";
+    } else {
+      console.log("Unknown travel mode:", mode);
+      return "🚗";
+    }
+  };
+
+  // Get friendly name for travel mode
+  const getFriendlyTravelModeName = (mode: TravelMode): string => {
+    // Convert to string to handle both enum values and string representations
+    const modeStr = String(mode);
+
+    if (modeStr.includes("DRIVING_CAR")) {
+      return "Car Drive";
+    } else if (modeStr.includes("FOOT_WALKING")) {
+      return "Walk by foot";
+    } else if (modeStr.includes("CYCLING_REGULAR")) {
+      return "Cycling";
+    } else {
+      return modeStr;
     }
   };
 
@@ -73,7 +120,16 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
           zIndex: 2000,
         }}
       >
-        <div className="handle" style={{ position: "absolute", width: "100%", height: "60px", top: "0px", left: "0px" }}>
+        <div
+          className="handle"
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "60px",
+            top: "0px",
+            left: "0px",
+          }}
+        >
           <button
             onClick={onClose}
             style={{
@@ -95,11 +151,19 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
               width={24}
               height={24}
               style={{
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             />
           </button>
-          <div style={{ position: "absolute", top: "24px", right: "24px", display: "flex", gap: "15px" }}>
+          <div
+            style={{
+              position: "absolute",
+              top: "24px",
+              right: "24px",
+              display: "flex",
+              gap: "15px",
+            }}
+          >
             <Image
               src="/map-elements/edit.svg"
               alt="Edit"
@@ -107,7 +171,7 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
               height={25}
               onClick={onEdit}
               style={{
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             />
             <Image
@@ -117,94 +181,153 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
               height={25}
               onClick={onDelete}
               style={{
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             />
           </div>
-          <h2 style={{
-            position: "absolute",
-            top: "36px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "300px",
-            textAlign: "center",
-            fontSize: "20px",
-            fontFamily: "Manrope",
-            fontWeight: 700,
-            margin: 0,
-            background: "transparent",
-            border: "none",
-            color: "black"
-          }}>
+          <h2
+            style={{
+              position: "absolute",
+              top: "36px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "300px",
+              textAlign: "center",
+              fontSize: "20px",
+              fontFamily: "Manrope",
+              fontWeight: 700,
+              margin: 0,
+              background: "transparent",
+              border: "none",
+              color: "black",
+            }}
+          >
             Route Details
           </h2>
         </div>
 
         {/* Route Content */}
-        <div style={{
-          position: "absolute",
-          width: 428,
-          height: 280,
-          top: 80,
-          left: 19,
-          background: "white",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-          borderRadius: 3,
-          border: "1px solid #E4E4E4",
-          padding: "15px"
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            width: 428,
+            height: 280,
+            top: 80,
+            left: 19,
+            background: "white",
+            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
+            borderRadius: 3,
+            border: "1px solid #E4E4E4",
+            padding: "15px",
+          }}
+        >
           {/* Route Information */}
           <div style={{ marginBottom: "20px" }}>
-            <div style={{ fontSize: "18px", fontWeight: 700, marginBottom: "15px", color: "black", display: "flex", alignItems: "center" }}>
-              <span style={{ marginRight: "10px" }}>{getTravelModeIcon(route.travelMode)}</span>
-              {route.travelMode}
+            <div
+              style={{
+                fontSize: "18px",
+                fontWeight: 700,
+                marginBottom: "15px",
+                color: "black",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ marginRight: "10px" }}>
+                {getTravelModeIcon(route.travelMode)}
+              </span>
+              {getFriendlyTravelModeName(route.travelMode)}
             </div>
-            
-            <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "5px", color: "black" }}>
-              From: <span style={{ fontWeight: 400 }}>{startPoi?.name || "Unknown Location"}</span>
+
+            <div
+              style={{
+                fontSize: "16px",
+                fontWeight: 600,
+                marginBottom: "5px",
+                color: "black",
+              }}
+            >
+              From:{" "}
+              <span style={{ fontWeight: 400 }}>
+                {startPoi?.name || "Unknown Location"}
+              </span>
             </div>
-            
-            <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "15px", color: "black" }}>
-              To: <span style={{ fontWeight: 400 }}>{endPoi?.name || "Unknown Location"}</span>
+
+            <div
+              style={{
+                fontSize: "16px",
+                fontWeight: 600,
+                marginBottom: "15px",
+                color: "black",
+              }}
+            >
+              To:{" "}
+              <span style={{ fontWeight: 400 }}>
+                {endPoi?.name || "Unknown Location"}
+              </span>
             </div>
           </div>
 
           {/* Travel Stats */}
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-            padding: "15px",
-            background: "rgba(228, 228, 228, 0.24)",
-            borderRadius: "5px"
-          }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "20px",
+              padding: "15px",
+              background: "rgba(228, 228, 228, 0.24)",
+              borderRadius: "5px",
+            }}
+          >
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "#666" }}>Distance</div>
-              <div style={{ fontSize: "18px", fontWeight: 700, color: "black" }}>{formatDistance(route.distance)}</div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#666" }}>
+                Distance
+              </div>
+              <div
+                style={{ fontSize: "18px", fontWeight: 700, color: "black" }}
+              >
+                {formatDistance(route.distance)}
+              </div>
             </div>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "#666" }}>Travel Time</div>
-              <div style={{ fontSize: "18px", fontWeight: 700, color: "black" }}>{formatTravelTime(route.travelTime)}</div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#666" }}>
+                Travel Time
+              </div>
+              <div
+                style={{ fontSize: "18px", fontWeight: 700, color: "black" }}
+              >
+                {formatTravelTime(route.travelTime)}
+              </div>
             </div>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "#666" }}>Status</div>
-              <div style={{ 
-                fontSize: "18px", 
-                fontWeight: 700, 
-                color: route.status === "ACCEPTED" ? "#79A44D" :
-                       route.status === "DECLINED" ? "#FF0000" : "#FFD700"
-              }}>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#666" }}>
+                Status
+              </div>
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 700,
+                  color:
+                    route.status === "ACCEPTED"
+                      ? "#79A44D"
+                      : route.status === "DECLINED"
+                      ? "#FF0000"
+                      : "#FFD700",
+                }}
+              >
                 {route.status}
               </div>
             </div>
           </div>
 
           {/* Delete Button */}
-          <div style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "30px"
-          }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "30px",
+            }}
+          >
             <button
               onClick={onDelete}
               style={{
@@ -216,7 +339,7 @@ export default function RouteDetails({ route, pois, onClose, onDelete, onEdit }:
                 fontWeight: 700,
                 color: "white",
                 border: "none",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               Delete Route
