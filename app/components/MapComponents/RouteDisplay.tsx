@@ -1,15 +1,26 @@
-import { Route, RouteAcceptanceStatus } from "@/types/routeTypes";
-import { Polyline } from "react-leaflet";
+"use client";
+
+import { Route } from "@/types/routeTypes";
+import dynamic from "next/dynamic";
 import { useLayerFilter } from "./LayerFilterContext";
+import { getRouteColor } from "@/utils/leafletUtils";
+
+// Dynamically import Leaflet components to avoid SSR issues
+const Polyline = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Polyline),
+  { ssr: false }
+);
 
 interface RouteDisplayProps {
   routes: Route[];
   onRouteClick: (route: Route) => void;
+  zoomToRoute?: (route: Route) => void;
 }
 
 export default function RouteDisplay({
   routes,
   onRouteClick,
+  zoomToRoute,
 }: RouteDisplayProps) {
   // Debug the route data structure
   console.log("Routes in RouteDisplay:", routes);
@@ -67,7 +78,10 @@ export default function RouteDisplay({
                 weight={4}
                 opacity={0.7}
                 eventHandlers={{
-                  click: () => onRouteClick(route),
+                  click: () => {
+                    onRouteClick(route);
+                    if (zoomToRoute) zoomToRoute(route);
+                  },
                 }}
               />
             );
@@ -81,17 +95,4 @@ export default function RouteDisplay({
   );
 }
 
-function getRouteColor(status: RouteAcceptanceStatus): string {
-  console.log("Route status:", status);
-  // adjust based on status
-  switch (status) {
-    case RouteAcceptanceStatus.ACCEPTED:
-      return "#33cc33"; // Keep the original color for approved routes
-    case RouteAcceptanceStatus.PENDING:
-      return "#ff9900"; // Yellow for pending routes "#ff9900"  "#FFD700"
-    case RouteAcceptanceStatus.DECLINED:
-      return "#FF0000"; // Red for rejected routes
-    default:
-      return "#3388ff";
-  }
-}
+// Function removed to avoid duplication

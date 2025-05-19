@@ -1,5 +1,7 @@
+"use client";
+
 // LayerManager.tsx
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Draggable from "react-draggable";
 import { useLayerFilter } from "./LayerFilterContext";
 import { PoiAcceptanceStatus, PoiCategory, PoiPriority } from "@/types/poi";
@@ -21,6 +23,22 @@ export default function LayerManager({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [priorityOpen, setPriorityOpen] = useState(false);
   const [creatorOpen, setCreatorOpen] = useState(false);
+
+  // Add click outside functionality
+  useEffect(() => {
+    if (!onClose) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
 
   const toggleArrayValue = <T,>(array: T[], value: T): T[] =>
     array.includes(value)
@@ -259,12 +277,12 @@ export default function LayerManager({
           {sectionTitle("Filter by Status")}
 
           {checkbox(
-            "route-approved",
+            "route-accepted",
             "Accepted",
-            filter.routeFilter.status.includes("APPROVED"),
+            filter.routeFilter.status.includes("ACCEPTED"),
             () =>
               setRouteFilter({
-                status: toggleArrayValue(filter.routeFilter.status, "APPROVED"),
+                status: toggleArrayValue(filter.routeFilter.status, "ACCEPTED"),
               }),
             "#79A44D"
           )}
@@ -281,12 +299,12 @@ export default function LayerManager({
           )}
 
           {checkbox(
-            "route-rejected",
+            "route-declined",
             "Declined",
-            filter.routeFilter.status.includes("REJECTED"),
+            filter.routeFilter.status.includes("DECLINED"),
             () =>
               setRouteFilter({
-                status: toggleArrayValue(filter.routeFilter.status, "REJECTED"),
+                status: toggleArrayValue(filter.routeFilter.status, "DECLINED"),
               }),
             "#E6393B"
           )}

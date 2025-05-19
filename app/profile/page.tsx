@@ -10,6 +10,7 @@ import { Switch, Input, Button } from "antd";
 import Image from "next/image";
 import Header from "@/components/Header";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import EmergencyContactList from "@/components/EmergencyContactList";
 
 const InfoRow = ({
   label,
@@ -260,79 +261,64 @@ const ProfileContent: React.FC = () => {
                 }
               />
 
-              <InfoRow
-                label="Emergency Contact"
-                value={
-                  <div
+              <div style={{ marginBottom: "0px", marginTop: "16px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderBottom: "1px solid #ddd",
+                    paddingBottom: "8px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <h3 style={{ fontSize: "18px", margin: 0 }}>
+                    Emergency Contacts
+                  </h3>
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      const contactList = document.getElementById(
+                        "emergency-contact-list"
+                      );
+                      if (contactList) {
+                        const typedContactList = contactList as HTMLElement & {
+                          onAddContact?: () => void;
+                        };
+                        if (typedContactList.onAddContact) {
+                          typedContactList.onAddContact();
+                        }
+                      }
+                    }}
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "4px",
+                      backgroundColor: "#22426b",
+                      color: "white",
+                      fontSize: "14px",
+                      padding: "0 12px",
+                      height: "28px",
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "16px",
-                      }}
-                    >
-                      <span>First Name:</span>{" "}
-                      {isEditing ? (
-                        <Input
-                          size="small"
-                          value={editedEmergencyFirstName}
-                          onChange={(e) =>
-                            setEditedEmergencyFirstName(e.target.value)
-                          }
-                        />
-                      ) : (
-                        user.emergencyContact?.firstName || "-"
-                      )}
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "16px",
-                      }}
-                    >
-                      <span>Last Name:</span>{" "}
-                      {isEditing ? (
-                        <Input
-                          size="small"
-                          value={editedEmergencyLastName}
-                          onChange={(e) =>
-                            setEditedEmergencyLastName(e.target.value)
-                          }
-                        />
-                      ) : (
-                        user.emergencyContact?.lastName || "-"
-                      )}
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "16px",
-                      }}
-                    >
-                      <span>Phone:</span>{" "}
-                      {isEditing ? (
-                        <Input
-                          size="small"
-                          value={editedEmergencyPhone}
-                          onChange={(e) =>
-                            setEditedEmergencyPhone(e.target.value)
-                          }
-                        />
-                      ) : (
-                        user.emergencyContact?.phoneNumber || "-"
-                      )}
-                    </div>
-                  </div>
-                }
-              />
+                    Add
+                  </Button>
+                </div>
+                {userId && (
+                  <EmergencyContactList
+                    id="emergency-contact-list"
+                    userId={userId}
+                    hideAddButton={true}
+                    onUpdate={() => {
+                      // Refresh user data when emergency contacts are updated
+                      if (userId) {
+                        apiService
+                          .get<User>("/users/" + userId)
+                          .then((response) => {
+                            setUser(response);
+                          });
+                      }
+                    }}
+                  />
+                )}
+              </div>
 
               <div
                 style={{

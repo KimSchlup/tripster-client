@@ -1,34 +1,42 @@
-import { Icon } from "leaflet";
-import { Marker } from "react-leaflet";
+"use client";
+
+import dynamic from "next/dynamic";
 import { PoiAcceptanceStatus, PointOfInterest } from "@/types/poi";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
+import type { Icon } from "leaflet";
 import { useLayerFilter } from "./LayerFilterContext";
+import { useLeaflet, createColoredMarker } from "@/utils/leafletUtils";
 
-function ColoredMarker(color: string): Icon {
-  const svgString = `
-<svg width="35" height="65" viewBox="-5 -5 45 65" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="white" flood-opacity="0.4"/>
-    </filter>
-  </defs>
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M7.01639 21.8641L17.125 34.5L27.2337 21.8641C29.1862 19.4235 30.25 16.3909 30.25 13.2652V12.625C30.25 5.37626 24.3737 -0.5 17.125 -0.5C9.87626 -0.5 4 5.37626 4 12.625V13.2652C4 16.3909 5.06378 19.4235 7.01639 21.8641ZM17.125 17C19.5412 17 21.5 15.0412 21.5 12.625C21.5 10.2088 19.5412 8.25 17.125 8.25C14.7088 8.25 12.75 10.2088 12.75 12.625C12.75 15.0412 14.7088 17 17.125 17Z" stroke="white" stroke-width="1.2" filter="url(#glow)" fill="${color}" shape-rendering="geometricPrecision"/>
-</svg>
-`;
-  const svgUrl = `data:image/svg+xml;base64,${btoa(svgString)}`;
-
-  return new Icon({
-    iconUrl: svgUrl,
-    iconSize: [52, 52],
-    iconAnchor: [32, 32],
-  });
-}
+// Dynamically import Leaflet components to avoid SSR issues
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
 
 export const DisplayPOIs: FC<{
   pois: PointOfInterest[];
   setSelectedPoiId: (id: number) => void;
-}> = ({ pois, setSelectedPoiId }) => {
+  zoomToPoi?: (poi: PointOfInterest) => void;
+}> = ({ pois, setSelectedPoiId, zoomToPoi }) => {
   const { filter } = useLayerFilter();
+  const leaflet = useLeaflet();
+  const [markerIcons, setMarkerIcons] = useState<Record<string, Icon | null>>(
+    {}
+  );
+
+  // Create marker icons when Leaflet is loaded
+  useEffect(() => {
+    if (!leaflet) return;
+
+    const icons: Record<string, Icon | null> = {};
+    // Create icons for each status
+    icons.pending = createColoredMarker(leaflet, "#ff9900");
+    icons.accepted = createColoredMarker(leaflet, "#79A44D");
+    icons.declined = createColoredMarker(leaflet, "#FF0000");
+    icons.default = createColoredMarker(leaflet, "#000000");
+
+    setMarkerIcons(icons);
+  }, [leaflet]);
 
   // Filter POIs based on the layer filter settings
   const filteredPois = pois.filter((poi) => {
@@ -49,27 +57,43 @@ export const DisplayPOIs: FC<{
     return statusFilter && categoryFilter && priorityFilter && creatorFilter;
   });
 
+  // Don't render anything if Leaflet isn't loaded yet
+  if (!leaflet || Object.keys(markerIcons).length === 0) {
+    return null;
+  }
+
   return (
     <>
       {filteredPois.map((poi) => {
-        let color = "#000000";
-        if (poi.status === PoiAcceptanceStatus.PENDING) color = "#ff9900";
-        else if (poi.status === PoiAcceptanceStatus.ACCEPTED) color = "#79A44D";
-        else if (poi.status === PoiAcceptanceStatus.DECLINED) color = "#FF0000";
+        // Select the appropriate icon based on status
+        let icon;
+        if (poi.status === PoiAcceptanceStatus.PENDING) {
+          icon = markerIcons.pending;
+        } else if (poi.status === PoiAcceptanceStatus.ACCEPTED) {
+          icon = markerIcons.accepted;
+        } else if (poi.status === PoiAcceptanceStatus.DECLINED) {
+          icon = markerIcons.declined;
+        } else {
+          icon = markerIcons.default;
+        }
 
-        return (
+        // Only render the marker if we have a valid icon
+        return icon ? (
           <Marker
             key={poi.poiId}
             position={[
               poi.coordinate.coordinates[1],
               poi.coordinate.coordinates[0],
             ]}
-            icon={ColoredMarker(color)}
+            icon={icon}
             eventHandlers={{
-              click: () => setSelectedPoiId(poi.poiId),
+              click: () => {
+                setSelectedPoiId(poi.poiId);
+                if (zoomToPoi) zoomToPoi(poi);
+              },
             }}
           />
-        );
+        ) : null;
       })}
     </>
   );

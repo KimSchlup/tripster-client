@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Draggable from "react-draggable";
 import { PoiCategory, PoiPriority, Comment } from "@/types/poi";
@@ -51,6 +51,20 @@ export default function POIWindow({
   const [newComment, setNewComment] = useState("");
 
   const nodeRef = useRef<HTMLDivElement>(null!);
+
+  // Add click outside functionality
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
 
   console.log("Status:", status);
 
