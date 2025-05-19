@@ -58,9 +58,11 @@ export default function POIList({ pois, onClose, onPoiSelect }: POIListProps) {
         ref={nodeRef}
         style={{
           width: 465,
-          height: 635,
+          minHeight: "200px",
+          maxHeight: "635px",
+          height: "auto",
           position: "absolute",
-          top: "100px",
+          top: "0",
           left: "100px",
           background: "rgba(255, 255, 255, 0.70)",
           boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.05)",
@@ -70,6 +72,8 @@ export default function POIList({ pois, onClose, onPoiSelect }: POIListProps) {
           zIndex: 2000,
           overflowY: "auto",
           paddingTop: "60px",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <div
@@ -129,6 +133,7 @@ export default function POIList({ pois, onClose, onPoiSelect }: POIListProps) {
             alignItems: "center",
             gap: "20px",
             padding: "0 10px 20px 10px",
+            flex: "1 1 auto",
           }}
         >
           {pois.map((poi) => (

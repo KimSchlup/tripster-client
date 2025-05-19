@@ -479,6 +479,21 @@ function RoadtripContent() {
       }
     });
 
+    // Add handlers to close context menu when scrolling/zooming the map
+    useMapEvent("movestart", () => {
+      if (contextMenuLatLng && contextMenuScreenPosition) {
+        setContextMenuLatLng(null);
+        setContextMenuScreenPosition(null);
+      }
+    });
+
+    useMapEvent("zoomstart", () => {
+      if (contextMenuLatLng && contextMenuScreenPosition) {
+        setContextMenuLatLng(null);
+        setContextMenuScreenPosition(null);
+      }
+    });
+
     return null;
   }
 
