@@ -148,6 +148,28 @@ function RoadtripContent() {
     y: number;
   } | null>(null);
   const [showPOIList, setShowPOIList] = useState(false);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+
+  // Add click outside handler for context menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(event.target as Node)
+      ) {
+        setContextMenuLatLng(null);
+        setContextMenuScreenPosition(null);
+      }
+    };
+
+    if (contextMenuLatLng && contextMenuScreenPosition) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [contextMenuLatLng, contextMenuScreenPosition]);
 
   // Route state
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -448,6 +470,15 @@ function RoadtripContent() {
         y: e.originalEvent.clientY,
       });
     });
+
+    // Add click handler to close context menu when clicking on the map
+    useMapEvent("click", () => {
+      if (contextMenuLatLng && contextMenuScreenPosition) {
+        setContextMenuLatLng(null);
+        setContextMenuScreenPosition(null);
+      }
+    });
+
     return null;
   }
 
@@ -658,6 +689,7 @@ function RoadtripContent() {
       )}
       {contextMenuLatLng && contextMenuScreenPosition && (
         <div
+          ref={contextMenuRef}
           style={{
             position: "absolute",
             top: contextMenuScreenPosition.y,

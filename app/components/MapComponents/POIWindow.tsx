@@ -52,24 +52,6 @@ export default function POIWindow({
 
   const nodeRef = useRef<HTMLDivElement>(null!);
 
-  // Add click outside functionality
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [onClose]);
-
-  console.log("Status:", status);
-
-  console.log("POIWindow showVotingButtons:", showVotingButtons);
-
   // Handle click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -87,6 +69,291 @@ export default function POIWindow({
     };
   }, [onClose]);
 
+  // Render different layouts based on whether it's a new POI or an existing one
+  if (isNew) {
+    // New POI form - similar to RouteForm
+    return (
+      <Draggable handle=".handle" nodeRef={nodeRef}>
+        <div
+          ref={nodeRef}
+          style={{
+            width: 465,
+            height: 450,
+            position: "absolute",
+            top: "100px",
+            left: "100px",
+            background: "rgba(255, 255, 255, 0.70)",
+            boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.05)",
+            borderRadius: 10,
+            border: "1px solid #DDDDDD",
+            backdropFilter: "blur(5px)",
+            zIndex: 2000,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            className="handle"
+            style={{
+              position: "absolute",
+              width: "100%",
+              height: "60px",
+              top: "0px",
+              left: "0px",
+            }}
+          >
+            <button
+              onClick={onClose}
+              style={{
+                position: "absolute",
+                top: "14px",
+                bottom: "14px",
+                left: "17px",
+                width: "35px",
+                height: "35px",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "20px",
+                color: "#000000",
+              }}
+            >
+              <Image
+                src="/map-elements/close.svg"
+                alt="Close"
+                width={24}
+                height={24}
+                style={{
+                  cursor: "pointer",
+                }}
+              />
+            </button>
+            <h2
+              style={{
+                position: "absolute",
+                top: "36px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "300px",
+                textAlign: "center",
+                fontSize: "20px",
+                fontFamily: "Manrope",
+                fontWeight: 700,
+                margin: 0,
+                background: "transparent",
+                border: "none",
+                color: "black",
+              }}
+            >
+              Create POI
+            </h2>
+          </div>
+
+          {/* Form Content */}
+          <div
+            style={{
+              width: 428,
+              margin: "80px auto 0",
+              background: "white",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
+              borderRadius: 3,
+              border: "1px solid #E4E4E4",
+              padding: "15px",
+            }}
+          >
+            {/* Name Field */}
+            <div style={{ marginBottom: "20px" }}>
+              <label
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  marginBottom: "5px",
+                  display: "block",
+                  color: "black",
+                }}
+              >
+                Name
+              </label>
+              <input
+                type="text"
+                value={editableTitle}
+                onChange={(e) => setEditableTitle(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  fontSize: "14px",
+                  borderRadius: "3px",
+                  border: "1px solid #E4E4E4",
+                  background: "rgba(228, 228, 228, 0.24)",
+                  color: "black",
+                }}
+              />
+            </div>
+
+            {/* Description Field */}
+            <div style={{ marginBottom: "20px" }}>
+              <label
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  marginBottom: "5px",
+                  display: "block",
+                  color: "black",
+                }}
+              >
+                Description
+              </label>
+              <textarea
+                value={editableDescription}
+                onChange={(e) => setEditableDescription(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  fontSize: "14px",
+                  borderRadius: "3px",
+                  border: "1px solid #E4E4E4",
+                  background: "rgba(228, 228, 228, 0.24)",
+                  color: "black",
+                  height: "80px",
+                  resize: "none",
+                }}
+              />
+            </div>
+
+            {/* Category and Priority Selection */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "20px",
+              }}
+            >
+              <div style={{ width: "48%" }}>
+                <label
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    marginBottom: "5px",
+                    display: "block",
+                    color: "black",
+                  }}
+                >
+                  Category
+                </label>
+                <select
+                  value={editableCategory}
+                  onChange={(e) =>
+                    setEditableCategory(e.target.value as PoiCategory)
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    fontSize: "14px",
+                    borderRadius: "3px",
+                    border: "1px solid #E4E4E4",
+                    background: "rgba(228, 228, 228, 0.24)",
+                    color: "black",
+                  }}
+                >
+                  {Object.values(PoiCategory).map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ width: "48%" }}>
+                <label
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    marginBottom: "5px",
+                    display: "block",
+                    color: "black",
+                  }}
+                >
+                  Priority
+                </label>
+                <select
+                  value={editablePriority}
+                  onChange={(e) =>
+                    setEditablePriority(e.target.value as PoiPriority)
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    fontSize: "14px",
+                    borderRadius: "3px",
+                    border: "1px solid #E4E4E4",
+                    background: "rgba(228, 228, 228, 0.24)",
+                    color: "black",
+                  }}
+                >
+                  {Object.values(PoiPriority).map((priority) => (
+                    <option key={priority} value={priority}>
+                      {priority}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "20px",
+                marginTop: "30px",
+              }}
+            >
+              <button
+                onClick={() => {
+                  onSave?.({
+                    title: editableTitle,
+                    description: editableDescription,
+                    category: editableCategory,
+                    priority: editablePriority,
+                  });
+                }}
+                style={{
+                  width: "127px",
+                  height: "40px",
+                  background: "#007bff",
+                  borderRadius: "3px",
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  color: "white",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Create
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  width: "127px",
+                  height: "40px",
+                  background: "black",
+                  borderRadius: "3px",
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  color: "white",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </Draggable>
+    );
+  }
+
+  // Existing POI view - keep the original design
   return (
     <>
       {/* Overlay to capture clicks outside */}
@@ -107,7 +374,7 @@ export default function POIWindow({
             width: 465,
             height: 700,
             position: "absolute",
-            top: "0px",
+            top: "10px",
             left: "100px",
             background: "rgba(255, 255, 255, 0.70)",
             boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.05)",
