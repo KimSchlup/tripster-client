@@ -6,20 +6,13 @@
 
 Mapmates is an interactive road trip planning and management application designed to make your travel experiences seamless and enjoyable. Here's a walkthrough of the main user journey:
 
-### 1. Authentication
-![Login Screen](public/login.png)
-
-Users begin their Mapmates experience by either:
-- Registering a new account
-- Logging in to an existing account
-
-### 2. Dashboard - My Roadtrips
+### 1. Dashboard - My Roadtrips
 After authentication, users land on the My Roadtrips page where they can:
 - Create a new road trip
 - View existing road trips
 - Access trip details
 
-### 3. Road Trip Planning
+### 2. Road Trip Planning
 When creating or editing a road trip, users can:
 - Set trip details (name, dates, etc.)
 - Plan routes using an interactive map
@@ -27,13 +20,13 @@ When creating or editing a road trip, users can:
 - Create and manage checklists
 - Invite other members to the trip
 
-### 4. Collaborative Features
+### 3. Collaborative Features
 - Invite team members to join your road trip
 - Collaborate on route planning
 - Share and update checklists
 - Manage trip settings
 
-### 5. On-Trip Experience
+### 4. On-Trip Experience
 - Track your route
 - Mark checklist items as complete
 - Add and manage POIs
