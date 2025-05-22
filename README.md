@@ -24,6 +24,7 @@ When creating or editing a road trip, users can:
 - Add Points of Interest (POIs)
 - Create and manage checklists
 - Invite other members to the trip
+- Limite the scope of the trip by setting a bounding box
 
 ![Roadtrip](screenshots/Roadtrip_Page.png) 
 
